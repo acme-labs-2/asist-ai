@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACME Labs · Consulta por documento</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <main>
+        <section class="panel">
+            <div class="panel-inner">
+                <div class="console" id="consoleOutput">
+                    <span id="typewriter"></span><span class="cursor" id="cursor"></span>
+                </div>
+                <div class="search-container" id="searchContainer">
+                    <label for="dniInput">📌 Ingresa un DNI o entidad</label>
+                    <div class="input-row">
+                        <input type="text" id="dniInput" placeholder="Ej: 34340714 o Creditia" maxlength="50" onkeydown="if(event.key==='Enter') buscarDNI()">
+                        <div class="button-group">
+                            <button onclick="buscarDNI()">🔍 CONSULTAR</button>
+                            <button class="btn-copiar-busqueda" id="btnCopiar" onclick="copiarResultado()">
+                                📋 COPIAR
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="result" id="resultContent">
+                    <div id="resultText" class="result-moderno"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <script src="script.js"></script>
+</body>
+</html>
