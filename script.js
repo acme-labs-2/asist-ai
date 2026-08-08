@@ -530,9 +530,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         "",
         "Mi búsqueda es inteligente.",
         "🔍 Si ingresas un número → busco DNI en la base de datos.",
-        "📋 Si ingresas letras → busco políticas de entidades.",
-        "",
-        "💡 Pronto voy a tener mas herramientas, si mi desarrollador tiene ganas..."
+        "📋 Si ingresas letras → busco políticas de entidades."
     ];
     
     typewriterElement.innerHTML = '';
