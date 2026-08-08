@@ -526,7 +526,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 	"   - políticas de entidades con las que trabajamos.",
         "",
         "Tengo un archivo con políticas de entidades cargado.",
-        `Tambien una base de datos con ${total} registros para busquedas por DNI.`,
+        `Tambien una base de datos con +2M de registros para busquedas por DNI.`,
         "",
         "Mi búsqueda es inteligente.",
         "🔍 Si ingresas un número → busco DNI en la base de datos.",
