@@ -1,8 +1,76 @@
-Sí. El README anterior quedó desactualizado principalmente porque ahora **Assist-AI tiene una tercera API (`crediticia.php`)**, cálculo de morosidad, detalle de deudas, comando de descargas y el acceso preparado para un futuro chat con IA. También cambió la lógica de detección de consultas.
-
-Tomando como base tu `script.js` actualizado —incluyendo las tres APIs y las nuevas funciones— , te dejo el README completo listo para GitHub.
-
 # Assist-AI 🤖
+
+> **Assist-AI** es una plataforma inteligente de consulta desarrollada por **ACME Labs**, creada para centralizar herramientas de información mediante una interfaz web rápida, liviana y orientada a operadores.
+>
+> El proyecto incorpora una **identidad digital propia**, representada por un personaje virtual diseñado como extensión visual del sistema. Este personaje fue construido mediante un proceso de generación asistida por inteligencia artificial, utilizando referencias visuales, definición de rasgos, estilo gráfico y adaptación progresiva hasta obtener una representación consistente de Assist-AI.
+>
+> La identidad del personaje funciona como un elemento de interfaz y reconocimiento de marca, permitiendo representar al asistente en diferentes escenarios, expresiones, poses y contextos tecnológicos sin perder coherencia visual. Su objetivo es humanizar la interacción con el sistema manteniendo una estética vinculada a inteligencia artificial, infraestructura digital y automatización.
+>
+> Desde el punto de vista técnico, Assist-AI combina una interfaz frontend completamente desarrollada con **HTML5, CSS3 y JavaScript vanilla**, sin frameworks externos ni procesos de compilación. La arquitectura está orientada a simplicidad, velocidad de carga y facilidad de mantenimiento.
+>
+> La experiencia visual está inspirada en **terminales informáticas, centros de monitoreo, interfaces cyberpunk y sistemas de inteligencia artificial**, integrando una estética tecnológica con una arquitectura web minimalista.
+
+---
+
+Interfaz web de asistencia y consulta desarrollada en **HTML, CSS y JavaScript vanilla**.
+
+Assist-AI funciona como un **frontend estático inteligente**, encargado de interpretar las consultas del operador, comunicarse con servicios externos mediante APIs y presentar los resultados en una interfaz unificada.
+
+El sistema centraliza diferentes herramientas:
+
+* 🔍 Consulta de personas mediante DNI.
+* 📊 Consulta de información crediticia y cálculo automático de nivel de morosidad.
+* 📋 Consulta de políticas internas de entidades.
+* 📥 Acceso a programas y herramientas utilizadas por el equipo.
+* 📋 Conversión de resultados a texto plano para copiar.
+* 📱 Generación automática de enlaces WhatsApp y Telegram.
+* 🤖 Arquitectura preparada para incorporar módulos conversacionales mediante IA.
+
+La aplicación no utiliza frameworks externos ni dependencias de Node.js.
+
+---
+
+# Identidad visual y personaje digital
+
+Assist-AI cuenta con una identidad visual basada en un personaje digital generado mediante técnicas de creación asistida por inteligencia artificial.
+
+El proceso de construcción visual contempla:
+
+```text
+Referencias visuales
+        │
+        ▼
+Definición de estilo
+        │
+        ▼
+Generación de imágenes
+        │
+        ▼
+Selección de rasgos consistentes
+        │
+        ▼
+Creación de identidad visual
+        │
+        ▼
+Aplicación en interfaces y escenarios
+```
+
+El objetivo no es únicamente generar imágenes aisladas, sino establecer una representación visual reutilizable del asistente.
+
+La construcción del personaje considera:
+
+```text
+✓ Rasgos visuales consistentes
+✓ Estilo gráfico definido
+✓ Paleta cromática asociada a la interfaz
+✓ Integración con fondos tecnológicos
+✓ Adaptación a diferentes escenarios
+✓ Reconocimiento visual del producto
+```
+
+El personaje funciona como una capa de identidad sobre la arquitectura técnica de Assist-AI, convirtiendo una herramienta de consulta tradicional en una experiencia de interacción más cercana y reconocible.
+
+---
 
 Interfaz web de asistencia y consulta desarrollada en **HTML, CSS y JavaScript vanilla**.
 
@@ -1754,7 +1822,3 @@ mostrarDescargas()
 Copyright © ACME Labs
 
 Todos los derechos reservados.
-
-
-
-También corregí la arquitectura respecto del README viejo: ahora **no son solamente dos APIs**, sino tres, y la búsqueda de DNI dispara una segunda consulta crediticia cuando corresponde. 
