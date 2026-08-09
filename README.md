@@ -1,101 +1,138 @@
-# ACME Labs — Asist-ai → Consulta por Documento y Entidades
+Sí. El README anterior quedó desactualizado principalmente porque ahora **Assist-AI tiene una tercera API (`crediticia.php`)**, cálculo de morosidad, detalle de deudas, comando de descargas y el acceso preparado para un futuro chat con IA. También cambió la lógica de detección de consultas.
 
-Interfaz web de consulta desarrollada en **HTML, CSS y JavaScript vanilla**.
-La herramienta permite realizar dos tipos de consultas desde un único campo de entrada:
+Tomando como base tu `script.js` actualizado —incluyendo las tres APIs y las nuevas funciones— , te dejo el README completo listo para GitHub.
 
-1. **Consulta de personas por DNI**
-2. **Consulta de políticas de entidades mediante texto**
+# Assist-AI 🤖
 
-La aplicación funciona como **frontend estático** y consume APIs externas mediante `fetch()`.
+Interfaz web de asistencia y consulta desarrollada en **HTML, CSS y JavaScript vanilla**.
+
+Assist-AI funciona como un **frontend estático** que centraliza diferentes herramientas de consulta desde una única interfaz:
+
+* 🔍 Consulta de personas mediante DNI.
+* 📊 Consulta de información crediticia y cálculo de nivel de morosidad.
+* 📋 Consulta de políticas de entidades.
+* 📥 Acceso a programas de descarga utilizados por el equipo.
+* 📋 Copiado de resultados en texto plano.
+* 📱 Enlaces directos a WhatsApp y Telegram.
+* 🤖 Interfaz preparada para incorporar un chat con IA.
+
+La aplicación no utiliza frameworks ni dependencias de Node.js.
 
 ---
 
-## 1. Arquitectura
+# 1. Arquitectura
 
-La aplicación está compuesta por tres capas principales:
+Assist-AI está compuesto por un frontend estático que se comunica directamente con APIs externas mediante `fetch()`.
 
 ```text
-┌─────────────────────────────────────────────┐
-│                  NAVEGADOR                  │
-│                                             │
-│  index.html                                 │
-│      │                                      │
-│      ├── styles.css                         │
-│      │                                      │
-│      └── script.js                          │
-│              │                              │
-└──────────────┼──────────────────────────────┘
+┌─────────────────────────────────────────────────────┐
+│                    NAVEGADOR                         │
+│                                                     │
+│  index.html                                         │
+│      │                                              │
+│      ├── styles.css                                 │
+│      │                                              │
+│      └── script.js                                  │
+│              │                                      │
+└──────────────┼──────────────────────────────────────┘
                │
                │ HTTPS / fetch()
                │
-       ┌───────┴────────┐
-       │                │
-       ▼                ▼
-┌──────────────┐ ┌──────────────┐
-│ xfinder.php  │ │   pol.php    │
-│              │ │              │
-│ Consulta     │ │ Consulta de  │
-│ por DNI      │ │ políticas    │
-└──────────────┘ └──────────────┘
-       │                │
-       ▼                ▼
- Base de datos       Datos de
- de personas         entidades
+       ┌───────┼───────────────┬───────────────┐
+       │       │               │               │
+       ▼       ▼               ▼               ▼
+┌──────────┐ ┌──────────┐ ┌──────────────┐ ┌──────────────┐
+│ xfinder  │ │   pol    │ │  crediticia  │ │  downloads   │
+│   .php   │ │   .php   │ │     .php     │ │              │
+├──────────┤ ├──────────┤ ├──────────────┤ ├──────────────┤
+│ Personas │ │Políticas │ │ Información  │ │ Programas    │
+│ por DNI  │ │entidades │ │ crediticia   │ │ descargables │
+└──────────┘ └──────────┘ └──────────────┘ └──────────────┘
 ```
 
-El frontend **no contiene directamente la base de datos**. Toda consulta de información se realiza mediante endpoints HTTP.
+El frontend no contiene directamente la base de datos.
+
+Las consultas se realizan mediante endpoints HTTP y los resultados son procesados y renderizados en el navegador.
 
 ---
 
 # 2. Estructura del proyecto
 
 ```text
-tu-proyecto/
+Assist-AI/
 │
 ├── index.html
 ├── styles.css
 ├── script.js
 │
 └── assets/
+    ├── f10.png
     ├── f12.png
     ├── f13.png
+    ├── ai.png
     ├── w.png
     └── t.png
 ```
 
-### `index.html`
-
-Contiene la estructura HTML de la aplicación:
-
-* Panel principal
-* Consola inicial
-* Campo de búsqueda
-* Botón de consulta
-* Botón de copia
-* Contenedor de resultados
-* Referencias a CSS y JavaScript
-
-No contiene lógica de negocio.
-
 ---
 
-### `styles.css`
+# 3. Archivos principales
 
-Contiene exclusivamente la presentación visual.
+## `index.html`
+
+Contiene la estructura HTML de la aplicación.
 
 Incluye:
 
-* Tema oscuro
-* Estética de consola
-* Bordes violetas/neón
-* Animaciones
-* Responsive design
-* Tarjetas de resultados
-* Estados de error
-* Indicadores visuales
-* Adaptación para dispositivos móviles
+* Panel principal.
+* Consola inicial.
+* Campo de búsqueda.
+* Botón de consulta.
+* Botón de copia.
+* Contenedor de resultados.
+* Referencias a CSS y JavaScript.
 
-La aplicación utiliza:
+La estructura no contiene la lógica principal de las consultas.
+
+Ejemplo:
+
+```html
+<input
+    type="text"
+    id="dniInput"
+    placeholder="Ej: 34340714 o Creditia"
+    maxlength="50"
+>
+```
+
+El usuario puede introducir:
+
+```text
+34340714
+Creditia
+descargas
+```
+
+---
+
+## `styles.css`
+
+Contiene la presentación visual de Assist-AI.
+
+Incluye:
+
+* Tema oscuro.
+* Estética de consola.
+* Bordes violetas/neón.
+* Panel principal con geometría recortada.
+* Animaciones.
+* Estados de carga.
+* Tarjetas de resultados.
+* Indicadores de riesgo.
+* Responsive design.
+* Adaptación para dispositivos móviles.
+
+La tipografía principal es:
 
 ```text
 Lucida Console
@@ -103,33 +140,48 @@ Monaco
 monospace
 ```
 
-como familia tipográfica principal.
+Los colores principales se encuentran centralizados en `:root`.
+
+```css
+:root {
+    --violet: #4f46e5;
+    --violet-soft: #818cf8;
+    --violet-neon: #4338ca;
+    --green: #31db72;
+    --red: #ff756f;
+    --gold: #ffb530;
+}
+```
 
 ---
 
-### `script.js`
+## `script.js`
 
-Contiene toda la lógica de funcionamiento.
+Contiene toda la lógica de funcionamiento de Assist-AI.
 
-Responsabilidades:
+Entre sus responsabilidades se encuentran:
 
-* Comunicación con APIs
-* Detección del tipo de búsqueda
-* Consulta por DNI
-* Consulta de políticas
-* Renderizado de resultados
-* Animación inicial
-* Spinner de conexión
-* Copiado de resultados
-* Generación de enlaces WhatsApp
-* Generación de enlaces Telegram
-* Manejo de errores
+* Comunicación con APIs.
+* Detección automática del tipo de consulta.
+* Consulta por DNI.
+* Consulta crediticia.
+* Cálculo de morosidad.
+* Consulta de políticas.
+* Detección del comando de descargas.
+* Renderizado dinámico.
+* Animación inicial.
+* Estados de carga.
+* Copiado de resultados.
+* Generación de enlaces WhatsApp.
+* Generación de enlaces Telegram.
+* Manejo de errores.
+* Preparación del futuro chat con IA.
 
 ---
 
-# 3. Endpoints utilizados
+# 4. APIs utilizadas
 
-Actualmente se utilizan dos APIs.
+Actualmente Assist-AI utiliza tres endpoints principales.
 
 ## API de personas
 
@@ -149,7 +201,9 @@ Consulta de estadísticas:
 GET /api/xfinder.php?stats=true
 ```
 
-La respuesta esperada para una consulta de DNI es un objeto JSON.
+La consulta de estadísticas se utiliza durante la inicialización de la aplicación.
+
+La API devuelve un objeto JSON.
 
 Ejemplo conceptual:
 
@@ -175,7 +229,7 @@ Ejemplo conceptual:
 }
 ```
 
-También puede devolver:
+También puede devolver un registro marcado como fallecido:
 
 ```json
 {
@@ -198,7 +252,51 @@ o un error:
 
 ---
 
-# 4. API de políticas
+# 5. API de información crediticia
+
+Endpoint:
+
+```javascript
+const CREDIT_API_URL = 'https://carover0.xyz/api/crediticia.php';
+```
+
+Consulta:
+
+```text
+GET /api/crediticia.php?dni=34340714
+```
+
+Esta API se consulta automáticamente después de obtener los datos personales de un DNI.
+
+La consulta crediticia solamente se realiza cuando el registro no está marcado como fallecido.
+
+```javascript
+if (!data.fallecido) {
+    // consulta crediticia
+}
+```
+
+La respuesta esperada es una lista de registros de deuda.
+
+Ejemplo conceptual:
+
+```json
+[
+    {
+        "Entidad": "ENTIDAD",
+        "Periodo": "2026-01",
+        "Monto": "50000",
+        "Situacion": "4",
+        "SituacionDesc": "Situación de riesgo"
+    }
+]
+```
+
+Si la consulta crediticia produce un error, la información crediticia se ignora y se muestran igualmente los datos principales de la persona.
+
+---
+
+# 6. API de políticas
 
 Endpoint:
 
@@ -244,36 +342,39 @@ Si no existen resultados:
 
 ---
 
-# 5. Lógica de búsqueda
+# 7. Sistema de búsqueda inteligente
 
-La aplicación utiliza una única caja de búsqueda.
+Assist-AI utiliza una única caja de búsqueda.
 
-El comportamiento depende del contenido ingresado.
-
-```text
-                    ENTRADA
-                       │
-                       ▼
-                 ¿Es numérica?
-                  /          \
-                SÍ            NO
-                │              │
-                ▼              ▼
-          Consulta DNI    Consulta políticas
-                │              │
-                ▼              ▼
-        xfinder.php          pol.php
-```
-
-La detección se realiza mediante:
+La función:
 
 ```javascript
-const esNumero = /^\d+$/.test(query);
+detectarComando(query)
+```
+
+determina qué operación debe ejecutarse.
+
+```text
+                         ENTRADA
+                            │
+                            ▼
+                    detectarComando()
+                            │
+             ┌──────────────┼───────────────┐
+             │              │               │
+             ▼              ▼               ▼
+        DESCARGAS          DNI          POLÍTICAS
+             │              │               │
+             ▼              ▼               ▼
+        Programas       xfinder.php       pol.php
+                            │
+                            ▼
+                       crediticia.php
 ```
 
 ---
 
-## 5.1 Consulta por DNI
+# 8. Consulta por DNI
 
 Si la entrada contiene exclusivamente números:
 
@@ -283,183 +384,220 @@ Si la entrada contiene exclusivamente números:
 
 se considera una consulta de DNI.
 
-La aplicación exige un mínimo de 6 dígitos.
+La expresión utilizada es:
 
 ```javascript
-if (query.length < 6) {
-    // DNI inválido
-}
+/^\d+$/
 ```
 
-Luego realiza:
-
-```javascript
-fetch(`${API_URL}?dni=${encodeURIComponent(query)}`)
-```
-
----
-
-## 5.2 Consulta de entidad
-
-Si la entrada contiene caracteres no numéricos:
-
-```text
-Creditia
-```
-
-se considera una búsqueda de entidad.
-
-La aplicación ejecuta:
-
-```javascript
-buscarPoliticasAPI(query)
-```
-
-que realiza:
-
-```javascript
-fetch(`${POL_API_URL}?q=${encodeURIComponent(termino)}`)
-```
-
-La búsqueda requiere como mínimo 2 caracteres.
-
----
-
-# 6. Interfaz de usuario
-
-La interfaz tiene dos estados principales.
-
-## Estado inicial
-
-Al cargar la página aparece una consola animada.
-
-El texto se escribe carácter por carácter mediante JavaScript.
+El DNI debe tener como mínimo 6 dígitos.
 
 Ejemplo:
 
 ```text
-Hola, soy tu asistente 👋
-
-Puedo ayudarte a buscar datos de personas o políticas
-de entidades con las que trabajamos.
-
-Espera mientras me conecto con mi servidor.
-
-Archivo con politicas de entidades cargado.
-Base de datos lista: 2,219,227 registros
+34340714 → DNI válido
+123456   → DNI válido
+12345    → DNI demasiado corto
 ```
 
-Durante la inicialización también se consulta:
+El flujo es:
 
 ```text
-/api/xfinder.php?stats=true
+Usuario
+   │
+   ▼
+34340714
+   │
+   ▼
+detectarComando()
+   │
+   ▼
+xfinder.php
+   │
+   ▼
+Datos personales
+   │
+   ▼
+crediticia.php
+   │
+   ▼
+Datos crediticios
+   │
+   ▼
+Cálculo de morosidad
+   │
+   ▼
+Renderizado final
 ```
-
-para obtener el número total de registros.
 
 ---
 
-## Spinner de conexión
+# 9. Consulta de información crediticia
 
-Durante la inicialización se ejecuta un spinner:
-
-```text
-Conectado a 45.67.217.147... -
-Conectado a 45.67.217.147... \
-Conectado a 45.67.217.147... |
-Conectado a 45.67.217.147... /
-```
-
-Al finalizar:
-
-```text
-Conectado a 45.67.217.147... ✅
-```
-
-> El texto mostrado corresponde a una representación visual de la conexión. La comunicación real con la API se realiza mediante HTTPS utilizando `fetch()`.
-
----
-
-# 7. Renderizado de resultados
-
-Los resultados se generan dinámicamente mediante JavaScript.
-
-El contenedor principal es:
-
-```html
-<div id="resultText" class="result-moderno"></div>
-```
-
-La función responsable de las consultas de personas es:
+Cuando se obtiene un registro normal de una persona, Assist-AI intenta consultar automáticamente la API crediticia.
 
 ```javascript
-mostrarResultado(data)
+const creditResponse =
+    await fetch(`${CREDIT_API_URL}?dni=${encodeURIComponent(comando.valor)}`);
 ```
 
-La función responsable de las políticas es:
+La información crediticia se incorpora al resultado principal.
+
+El usuario puede visualizar:
+
+```text
+📊 NIVEL DE MOROSIDAD
+
+Estado
+Porcentaje
+Deudas normales
+En riesgo
+Irrecuperables
+Monto total
+```
+
+y:
+
+```text
+💳 DETALLE DE DEUDAS
+```
+
+con información individual de cada registro.
+
+---
+
+# 10. Cálculo del nivel de morosidad
+
+La función:
 
 ```javascript
-mostrarPoliticas(resultados, termino)
+calcularMorosidad(deudas)
+```
+
+clasifica las deudas según el campo:
+
+```javascript
+deuda.Situacion
+```
+
+Actualmente se contemplan:
+
+```text
+Situación 1 → Normal
+Situación 4 → Alto riesgo
+Situación 5 → Irrecuperable
+```
+
+El cálculo utiliza un sistema de ponderación:
+
+```text
+Normal          = 0 puntos
+Alto riesgo     = 2 puntos
+Irrecuperable   = 3 puntos
+```
+
+El puntaje se calcula mediante:
+
+```javascript
+puntaje =
+    (deudasIrrecuperables * 3) +
+    (deudasRiesgo * 2);
+```
+
+El máximo posible es:
+
+```javascript
+maxPuntaje = totalDeudas * 3;
+```
+
+El porcentaje resultante se calcula como:
+
+```javascript
+porcentaje =
+    Math.round((puntaje / maxPuntaje) * 100);
 ```
 
 ---
 
-# 8. Consulta de personas
+# 11. Clasificación de morosidad
 
-Los resultados de una persona normal se dividen en tres bloques.
+El resultado se divide en cuatro niveles.
 
-## Datos personales
+| Porcentaje | Nivel | Estado             |
+| ---------: | ----: | ------------------ |
+|         0% |     0 | 💚 Sin morosidad   |
+|   1% – 33% |     1 | 🟡 Morosidad baja  |
+|  34% – 66% |     2 | 🟠 Morosidad media |
+| 67% – 100% |     3 | 🔴 Morosidad alta  |
+
+La interfaz representa el resultado mediante una barra de progreso.
+
+Ejemplo conceptual:
 
 ```text
-👤 DATOS PERSONALES
-
-Nombre
-DNI
-Domicilio
-Localidad
-Provincia
+Bajo riesgo                         Alto riesgo
+     │                                  │
+     ├───────────────██████─────────────┤
+                     42%
 ```
 
-## Datos laborales
+También se muestran estadísticas:
 
 ```text
-💼 DATOS LABORALES
-
-Empleador
-CUIT
-Empleados
-```
-
-## Contacto
-
-```text
-📱 CONTACTO
-
-Celular 1
-Celular 2
-Fijo 1
-Fijo 2
-Email
-```
-
-Finalmente se muestra la fuente:
-
-```text
-📌 Fuente
-📅 Fecha del dato
+Normales
+En riesgo
+Irrecuperables
+Total de deudas
+Monto total
 ```
 
 ---
 
-# 9. Registros de personas fallecidas
+# 12. Detalle de deudas
 
-La API puede devolver un registro marcado mediante:
+La función:
+
+```javascript
+mostrarDeudas(deudas)
+```
+
+genera una sección con los registros individuales.
+
+Cada deuda puede mostrar:
+
+```text
+Entidad
+Periodo
+Monto
+Estado
+Descripción
+```
+
+Ejemplo:
+
+```text
+💳 DETALLE DE DEUDAS
+
+ENTIDAD A                         Alto riesgo
+2026-01                           $50.000
+Situación de riesgo
+
+ENTIDAD B                         Irrecuperable
+2025-12                           $120.000
+Situación irrecuperable
+```
+
+---
+
+# 13. Registros de personas fallecidas
+
+La API de personas puede devolver:
 
 ```javascript
 data.fallecido
 ```
 
-Cuando este valor es verdadero, la aplicación utiliza un diseño diferente.
+Cuando el valor es verdadero, Assist-AI utiliza un diseño específico.
 
 Se muestra:
 
@@ -468,21 +606,284 @@ Se muestra:
 ✝ FALLECIDO
 ```
 
-y posteriormente los datos personales.
+y los datos personales disponibles.
 
-También se muestra explícitamente:
+También se muestra:
 
 ```text
 ⚠️ ESTA PERSONA SE ENCUENTRA FALLECIDA
 ```
 
-En este caso no se muestran los bloques laborales ni de contacto utilizados para los registros normales.
+En este caso no se consulta la API crediticia.
+
+El resultado contiene:
+
+```text
+Nombre
+DNI
+Domicilio
+Localidad
+Provincia
+Origen
+Fecha
+```
 
 ---
 
-# 10. Enlaces de contacto
+# 14. Consulta de políticas
 
-Los números celulares detectados se convierten automáticamente en enlaces.
+Si la entrada contiene texto y no corresponde a un comando especial ni a un DNI:
+
+```text
+Creditia
+```
+
+se ejecuta:
+
+```javascript
+buscarPoliticasAPI(query)
+```
+
+que realiza:
+
+```text
+GET /api/pol.php?q=Creditia
+```
+
+La interfaz muestra:
+
+```text
+📋 POLÍTICAS: CREDITIA
+
+🏢 Creditia
+
+Lugar de pago
+Reasignación
+Cobro de más
+Certificado
+Observaciones
+Página
+```
+
+La búsqueda requiere como mínimo 2 caracteres.
+
+---
+
+# 15. Comando de descargas
+
+Assist-AI incorpora un comando especial para mostrar los programas utilizados por el equipo.
+
+Se activa mediante palabras relacionadas con:
+
+```text
+descarga
+descargas
+programa
+programas
+software
+apps
+aplicaciones
+download
+anydesk
+collector
+zoiper
+```
+
+Por ejemplo:
+
+```text
+descargas
+```
+
+o:
+
+```text
+AnyDesk
+```
+
+activan el panel de programas.
+
+---
+
+# 16. Programas disponibles
+
+Actualmente el panel de descargas contempla:
+
+| Programa     | Archivo         | Descripción           |
+| ------------ | --------------- | --------------------- |
+| 📦 WinRAR    | `winrar.exe`    | Compresor de archivos |
+| 🖥️ AnyDesk  | `anydesk.rar`   | Escritorio remoto     |
+| 📊 Collector | `collector.rar` | CRM                   |
+| 📞 Zoiper    | `zoiper.rar`    | Cliente VoIP          |
+
+Los archivos se sirven desde:
+
+```text
+https://carover0.xyz/downloads/
+```
+
+Ejemplo:
+
+```text
+https://carover0.xyz/downloads/winrar.exe
+```
+
+La interfaz también muestra un orden recomendado de instalación.
+
+---
+
+# 17. Fondos dinámicos
+
+Assist-AI utiliza diferentes fondos según el estado de la aplicación.
+
+## Fondo inicial
+
+```text
+assets/f13.png
+```
+
+## Fondo de búsqueda
+
+```text
+assets/f12.png
+```
+
+## Fondo de descargas
+
+```text
+assets/f10.png
+```
+
+La función responsable de cambiar el fondo es:
+
+```javascript
+cambiarFondo(imagen)
+```
+
+Ejemplo:
+
+```javascript
+cambiarFondo('f10.png');
+```
+
+---
+
+# 18. Consola inicial
+
+Al cargar la aplicación aparece una consola animada.
+
+El texto se escribe carácter por carácter mediante:
+
+```javascript
+iniciarEscritura(lines)
+```
+
+Actualmente informa al usuario sobre las funciones disponibles.
+
+Conceptualmente:
+
+```text
+Bienvenido a asistAI 🤖
+Tu asistente inteligente para búsqueda de datos.
+
+💡 Puedo ayudarte a buscar:
+   - datos de personas con su historial crediticio.
+   - políticas de entidades con las que trabajamos.
+   - programas de descarga.
+
+Tengo un archivo con políticas de entidades cargado.
+También una base de datos con +2M registros para búsquedas por DNI.
+
+Mi búsqueda es inteligente.
+
+🔍 Si ingresas un número → busco DNI en la base de datos.
+📋 Si ingresas letras → busco políticas de entidades.
+📥 Si ingresas 'descargas' te muestro los links de los programas que usamos.
+```
+
+El número total de registros de la API se obtiene antes de mostrar la consola.
+
+---
+
+# 19. Estadísticas de la base de datos
+
+Durante la inicialización se consulta:
+
+```text
+/api/xfinder.php?stats=true
+```
+
+La función utilizada es:
+
+```javascript
+obtenerTotalRegistros()
+```
+
+La respuesta esperada:
+
+```json
+{
+    "total": 2219227
+}
+```
+
+El número se convierte mediante:
+
+```javascript
+Number(data.total).toLocaleString('es-AR')
+```
+
+El resultado se almacena temporalmente en:
+
+```javascript
+let totalRegistros = 'Cargando...';
+```
+
+La función utiliza cache en memoria para evitar consultas repetidas durante la misma ejecución.
+
+---
+
+# 20. Chat con IA
+
+La interfaz incluye actualmente un acceso visual preparado para un futuro chat con IA.
+
+Durante la inicialización se reemplaza la línea:
+
+```text
+🤖 [  CHAT CON IA  ]
+```
+
+por un pequeño botón con:
+
+```text
+assets/ai.png
+```
+
+La función utilizada es:
+
+```javascript
+agregarBotonChatMini()
+```
+
+Actualmente el botón ejecuta:
+
+```javascript
+abrirChatIA()
+```
+
+que muestra:
+
+```text
+🤖 Próximamente: Chat con IA en vivo!
+```
+
+La funcionalidad de chat todavía no está implementada.
+
+---
+
+# 21. Enlaces de contacto
+
+Los números celulares detectados en los resultados se convierten automáticamente en enlaces.
 
 ## WhatsApp
 
@@ -492,7 +893,19 @@ La función:
 whatsappLink(numero)
 ```
 
-normaliza el número eliminando caracteres no numéricos.
+normaliza el número eliminando caracteres no numéricos:
+
+```javascript
+numero.replace(/\D/g, '')
+```
+
+Si el número no comienza con:
+
+```text
+54
+```
+
+se agrega automáticamente.
 
 Ejemplo:
 
@@ -503,16 +916,10 @@ Ejemplo:
 se transforma en:
 
 ```text
-1112345678
+541112345678
 ```
 
-Si el número no comienza con `54`, se agrega:
-
-```text
-54
-```
-
-El enlace final tiene el formato:
+y genera:
 
 ```text
 https://wa.me/541112345678
@@ -528,7 +935,7 @@ La función:
 telegramLink(numero)
 ```
 
-utiliza el mismo proceso de normalización.
+utiliza la misma normalización.
 
 El enlace generado tiene el formato:
 
@@ -545,7 +952,7 @@ assets/t.png
 
 ---
 
-# 11. Copiado de resultados
+# 22. Copiado de resultados
 
 El botón:
 
@@ -553,21 +960,15 @@ El botón:
 📋 COPIAR
 ```
 
-permanece oculto hasta que existe un resultado.
+permanece oculto hasta que existe un resultado disponible.
 
-Cuando aparece un resultado:
-
-```javascript
-btnCopiar.classList.add('visible');
-```
-
-La información se almacena en:
+Los resultados se almacenan en:
 
 ```javascript
 let ultimoResultado = '';
 ```
 
-y se copia mediante:
+La copia principal utiliza:
 
 ```javascript
 navigator.clipboard.writeText(ultimoResultado)
@@ -595,17 +996,17 @@ después de 3 segundos.
 
 ---
 
-# 12. Conversión de resultados a texto plano
+# 23. Texto plano
 
-La función:
+Assist-AI convierte los resultados visuales en texto estructurado para facilitar su copia.
+
+La función principal es:
 
 ```javascript
-construirTextoPlano(data)
+construirTextoPlano(data, creditData)
 ```
 
-convierte el objeto JSON recibido desde la API en texto estructurado.
-
-Ejemplo:
+Un resultado puede incluir:
 
 ```text
 🔍 INFORME DNI 34340714
@@ -630,85 +1031,53 @@ Ejemplo:
   Fijo 2: -
   Email: correo@example.com
 
+📊 NIVEL DE MOROSIDAD
+  Estado: 🟠 Morosidad media
+  Porcentaje: 42%
+  Deudas normales: 1
+  En riesgo: 2
+  Irrecuperables: 1
+  Monto total: $250.000
+
+💳 DETALLE DE DEUDAS
+  1. ENTIDAD
+     Periodo: 2026-01
+     Monto: $50.000
+     Estado: Alto riesgo
+
 📌 ORIGEN
   Fecha: 2026-08-07
   Proveedor: FUENTE
 ```
 
-Este texto es el que se almacena en:
-
-```javascript
-ultimoResultado
-```
-
-para ser copiado al portapapeles.
-
 ---
 
-# 13. Consulta de estadísticas
-
-Durante la carga inicial se ejecuta:
-
-```javascript
-obtenerTotalRegistros()
-```
-
-La función consulta:
-
-```text
-/api/xfinder.php?stats=true
-```
-
-Si la API devuelve:
-
-```json
-{
-    "total": 2219227
-}
-```
-
-JavaScript convierte el número mediante:
-
-```javascript
-Number(data.total).toLocaleString('es-AR')
-```
-
-Si la API no responde correctamente, se utiliza un valor fallback:
-
-```text
-2,219,227
-```
-
----
-
-# 14. Manejo de errores
+# 24. Manejo de errores
 
 La aplicación contempla diferentes tipos de error.
 
-### Entrada vacía
+## Entrada vacía
 
 ```text
 ⚠️ Ingrese un DNI (mínimo 6 dígitos) o nombre de entidad
 (mínimo 2 letras).
 ```
 
-### DNI demasiado corto
+## DNI demasiado corto
 
 ```text
 ⚠️ Ingrese un DNI válido (mínimo 6 dígitos).
 ```
 
-### Sin resultados
+## Sin políticas
 
 ```text
 ❌ No se encontraron políticas para "Creditia"
 ```
 
-o el mensaje de error enviado por la API.
+## Error HTTP
 
-### Error HTTP
-
-Si el servidor responde con un estado diferente de `2xx`:
+Si una API responde con un estado diferente de `2xx`:
 
 ```javascript
 if (!response.ok) {
@@ -716,21 +1085,44 @@ if (!response.ok) {
 }
 ```
 
-### Error general
+## Error general
 
-Si ocurre una excepción durante la consulta:
+Si ocurre una excepción:
 
 ```text
 ❌ Error al consultar la base de datos
 ```
 
-y debajo se muestra el mensaje técnico de JavaScript.
+y se muestra debajo el mensaje técnico correspondiente.
 
 ---
 
-# 15. Cambios visuales durante la búsqueda
+# 25. Estados de carga
 
-Al comenzar una consulta se ejecuta:
+Durante una consulta se muestra un indicador visual.
+
+```text
+🟪 🟪 ⬛ ⬛ 🟪
+
+Buscando...
+```
+
+Los bloques utilizan animaciones CSS para indicar que la consulta se encuentra en proceso.
+
+Las animaciones utilizadas son:
+
+```css
+pulseBox
+dots
+fadeIn
+blink
+```
+
+---
+
+# 26. Preparación de búsqueda
+
+Al ejecutar una consulta se utiliza:
 
 ```javascript
 prepararBusqueda()
@@ -739,10 +1131,10 @@ prepararBusqueda()
 Esta función:
 
 1. Oculta la consola inicial.
-2. Mueve visualmente el buscador hacia arriba.
-3. Cambia el fondo.
+2. Mueve el buscador hacia arriba.
+3. Cambia el fondo de la interfaz.
 
-Concretamente:
+Se aplican las clases:
 
 ```javascript
 consoleElement.classList.add('oculto');
@@ -750,54 +1142,75 @@ searchContainer.classList.add('arriba');
 document.body.classList.add('fondo-busqueda');
 ```
 
-El fondo inicial utiliza:
+---
+
+# 27. Reinicio del estado
+
+La función:
+
+```javascript
+reiniciarEstado()
+```
+
+restablece el estado visual de la aplicación.
+
+Se utiliza al cargar la página.
+
+Restablece:
+
+* Campo de búsqueda.
+* Resultados.
+* Botón de copia.
+* Consola.
+* Cursor.
+* Animación inicial.
+* Fondo.
+* Resultado almacenado.
+
+El fondo inicial vuelve a:
 
 ```text
 assets/f13.png
 ```
 
-y durante la búsqueda:
-
-```text
-assets/f12.png
-```
-
 ---
 
-# 16. Responsive design
+# 28. Responsive design
 
-La aplicación posee un breakpoint:
+La aplicación posee un breakpoint principal:
 
 ```css
 @media (max-width:700px)
 ```
 
-En pantallas pequeñas:
+En dispositivos móviles:
 
 * El panel ocupa prácticamente todo el ancho.
-* Los botones pasan a disposición vertical.
 * El campo de búsqueda ocupa todo el ancho.
-* Los campos de resultados pasan de horizontal a vertical.
-* Se reducen tamaños tipográficos.
-* El encabezado de resultados se centra.
+* Los botones pasan a disposición vertical.
+* Los resultados cambian de estructura horizontal a vertical.
+* Se reducen los tamaños tipográficos.
+* El encabezado de los resultados se centra.
 
-Esto permite utilizar la herramienta tanto en escritorio como en dispositivos móviles.
+La interfaz está diseñada para utilizarse tanto desde escritorio como desde dispositivos móviles.
 
 ---
 
-# 17. Dependencias
+# 29. Dependencias
 
-La aplicación no utiliza frameworks externos.
+Assist-AI no utiliza frameworks externos.
 
 No requiere:
 
-* Node.js
-* npm
-* React
-* Vue
-* Angular
-* jQuery
-* Bootstrap
+```text
+Node.js
+npm
+React
+Vue
+Angular
+jQuery
+Bootstrap
+```
 
 Utiliza exclusivamente:
 
@@ -809,11 +1222,11 @@ Fetch API
 Clipboard API
 ```
 
-Las únicas dependencias externas son los endpoints HTTP utilizados para obtener los datos.
+No existe un proceso de compilación.
 
 ---
 
-# 18. Requisitos del servidor
+# 30. Requisitos del servidor
 
 El frontend puede alojarse en cualquier servidor capaz de servir archivos estáticos.
 
@@ -822,15 +1235,13 @@ Por ejemplo:
 ```text
 Nginx
 Apache
-GitLab Pages
 GitHub Pages
+GitLab Pages
 Cloudflare Pages
 Servidor HTTP simple
 ```
 
-No es necesario ejecutar JavaScript en el servidor.
-
-La estructura publicada debe conservar las rutas relativas:
+La estructura publicada debe conservar:
 
 ```text
 index.html
@@ -839,13 +1250,15 @@ script.js
 assets/
 ```
 
+Las APIs utilizadas por el frontend deben estar disponibles mediante HTTPS.
+
 ---
 
-# 19. Ejecución local
+# 31. Ejecución local
 
 Puede utilizarse cualquier servidor HTTP estático.
 
-Ejemplo con Python:
+Por ejemplo, con Python:
 
 ```bash
 python3 -m http.server 8080
@@ -863,21 +1276,19 @@ No se recomienda abrir directamente:
 file:///ruta/index.html
 ```
 
-porque determinadas funcionalidades del navegador y las políticas CORS pueden comportarse de forma diferente bajo `file://`.
+porque algunas funcionalidades del navegador y las políticas CORS pueden comportarse de forma diferente bajo `file://`.
 
 ---
 
-# 20. CORS
+# 32. CORS
 
-Como el frontend realiza solicitudes desde el navegador hacia:
+Como Assist-AI realiza solicitudes desde el navegador hacia:
 
 ```text
 https://carover0.xyz
 ```
 
-los endpoints deben permitir solicitudes provenientes del dominio donde esté alojada la aplicación.
-
-El servidor de las APIs debe configurar correctamente los encabezados CORS.
+los endpoints deben permitir solicitudes desde el dominio donde esté alojado el frontend.
 
 Ejemplo conceptual:
 
@@ -891,97 +1302,112 @@ Para desarrollo puede utilizarse:
 Access-Control-Allow-Origin: *
 ```
 
-aunque para producción es preferible restringir el origen.
+En producción es preferible restringir el origen al dominio autorizado.
 
 ---
 
-# 21. Seguridad
+# 33. Seguridad
 
-El frontend **no contiene credenciales ni tokens privados**.
+El frontend no contiene credenciales privadas ni tokens de autenticación.
 
 Las URLs de las APIs son visibles porque forman parte del código JavaScript ejecutado por el navegador:
 
 ```javascript
 const API_URL = 'https://carover0.xyz/api/xfinder.php';
 const POL_API_URL = 'https://carover0.xyz/api/pol.php';
+const CREDIT_API_URL = 'https://carover0.xyz/api/crediticia.php';
 ```
 
-Por lo tanto:
+Por este motivo:
 
 > Todo dato que el navegador necesita para realizar una consulta debe considerarse públicamente observable.
 
-Si las APIs requieren autenticación, las credenciales no deben incorporarse directamente en `script.js`.
+Si en el futuro las APIs requieren autenticación, las credenciales no deben incorporarse directamente en `script.js`.
 
-La autenticación debería realizarse mediante un backend intermedio o mediante mecanismos diseñados específicamente para clientes públicos.
+La autenticación debería gestionarse mediante un backend intermedio o mediante mecanismos específicamente diseñados para clientes públicos.
 
 ---
 
-# 22. Flujo completo de una consulta
+# 34. Flujo completo de una consulta por DNI
 
 Ejemplo:
 
 ```text
 Usuario
    │
-   │ Ingresa: 34340714
+   │ 34340714
    ▼
 buscarDNI()
    │
-   ├── trim()
-   │
-   ├── valida longitud
-   │
-   ├── detectar si es numérico
+   ▼
+detectarComando()
    │
    ▼
-API_URL
+¿Es DNI?
    │
-   │ GET /api/xfinder.php?dni=34340714
    ▼
-Servidor
+xfinder.php
    │
    ▼
 JSON
    │
-   ▼
-mostrarResultado(data)
-   │
    ├── Datos personales
    ├── Datos laborales
    ├── Contacto
-   ├── WhatsApp
-   ├── Telegram
-   └── Fuente
+   └── Estado
    │
    ▼
-construirTextoPlano()
+¿Está fallecido?
    │
-   ▼
-ultimoResultado
+   ├── SÍ ──► Mostrar registro fallecido
    │
-   ▼
-📋 COPIAR
+   └── NO
+        │
+        ▼
+   crediticia.php
+        │
+        ▼
+   Registros de deuda
+        │
+        ▼
+   calcularMorosidad()
+        │
+        ├── Nivel
+        ├── Porcentaje
+        ├── Estadísticas
+        └── Monto total
+        │
+        ▼
+   mostrarResultado()
+        │
+        ▼
+   construirTextoPlano()
+        │
+        ▼
+   📋 COPIAR
 ```
 
 ---
 
-# 23. Flujo de búsqueda de entidad
+# 35. Flujo de búsqueda de entidad
 
 Ejemplo:
 
 ```text
 Usuario
    │
-   │ Ingresa: Creditia
+   │ Creditia
    ▼
 buscarDNI()
    │
-   ├── trim()
-   │
-   ├── detectar que NO es numérico
+   ▼
+detectarComando()
    │
    ▼
-buscarPoliticasAPI("Creditia")
+¿Es texto?
+   │
+   ▼
+buscarPoliticasAPI()
    │
    ▼
 GET /api/pol.php?q=Creditia
@@ -1009,35 +1435,83 @@ ultimoResultado
 
 ---
 
-# 24. Funciones principales de `script.js`
+# 36. Flujo del comando de descargas
+
+Ejemplo:
+
+```text
+Usuario
+   │
+   │ descargas
+   ▼
+buscarDNI()
+   │
+   ▼
+detectarComando()
+   │
+   ▼
+tipo = descargas
+   │
+   ▼
+mostrarDescargas()
+   │
+   ├── WinRAR
+   ├── AnyDesk
+   ├── Collector
+   └── Zoiper
+   │
+   ▼
+Links de descarga
+   │
+   ▼
+ultimoResultado
+   │
+   ▼
+📋 COPIAR
+```
+
+---
+
+# 37. Funciones principales de `script.js`
 
 | Función                   | Responsabilidad                     |
 | ------------------------- | ----------------------------------- |
 | `obtenerTotalRegistros()` | Obtiene estadísticas de la API      |
 | `buscarPoliticasAPI()`    | Consulta políticas de entidades     |
+| `buscarCrediticiaAPI()`   | Consulta información crediticia     |
+| `calcularMorosidad()`     | Calcula el nivel de morosidad       |
+| `mostrarMorosidad()`      | Renderiza el indicador de morosidad |
+| `mostrarDeudas()`         | Renderiza el detalle de deudas      |
+| `mostrarDescargas()`      | Renderiza los programas disponibles |
 | `mostrarPoliticas()`      | Renderiza políticas                 |
-| `iniciarSpinnerEnLinea()` | Ejecuta spinner de conexión         |
-| `iniciarEscritura()`      | Ejecuta animación de consola        |
+| `iniciarEscritura()`      | Ejecuta la animación inicial        |
+| `agregarBotonChatMini()`  | Inserta el acceso al futuro chat    |
+| `abrirChatIA()`           | Punto de entrada del futuro chat IA |
 | `mostrarResultado()`      | Renderiza resultados de personas    |
 | `construirTextoPlano()`   | Genera texto para copiar            |
 | `copiarResultado()`       | Copia información al portapapeles   |
 | `prepararBusqueda()`      | Cambia la interfaz al modo búsqueda |
+| `reiniciarEstado()`       | Restablece el estado inicial        |
+| `detectarComando()`       | Determina el tipo de consulta       |
 | `buscarDNI()`             | Controlador principal de búsqueda   |
 
 ---
 
-# 25. Variables globales
+# 38. Variables principales
 
-### URLs de API
+## URLs de API
 
 ```javascript
 const API_URL
 const POL_API_URL
+const CREDIT_API_URL
 ```
 
 Definen los endpoints utilizados por el frontend.
 
-### Resultado actual
+---
+
+## Resultado actual
 
 ```javascript
 let ultimoResultado = '';
@@ -1045,33 +1519,27 @@ let ultimoResultado = '';
 
 Contiene el último resultado convertido a texto plano.
 
-### Spinner
+---
+
+## Total de registros
 
 ```javascript
-let spinnerInterval = null;
-let spinnerIndex = 0;
-let spinnerActive = false;
-let spinnerResolve = null;
+let totalRegistros = 'Cargando...';
 ```
 
-Controlan el estado de la animación de conexión.
-
-### Caracteres del spinner
-
-```javascript
-const spinnerChars = ['-', '\\', '|', '/'];
-```
+Almacena temporalmente el número de registros obtenido desde la API.
 
 ---
 
-# 26. Personalización
+# 39. Personalización
 
 ## Cambiar API de personas
 
 Modificar:
 
 ```javascript
-const API_URL = 'https://carover0.xyz/api/xfinder.php';
+const API_URL =
+    'https://carover0.xyz/api/xfinder.php';
 ```
 
 ## Cambiar API de políticas
@@ -1079,12 +1547,22 @@ const API_URL = 'https://carover0.xyz/api/xfinder.php';
 Modificar:
 
 ```javascript
-const POL_API_URL = 'https://carover0.xyz/api/pol.php';
+const POL_API_URL =
+    'https://carover0.xyz/api/pol.php';
+```
+
+## Cambiar API crediticia
+
+Modificar:
+
+```javascript
+const CREDIT_API_URL =
+    'https://carover0.xyz/api/crediticia.php';
 ```
 
 ## Cambiar colores
 
-Los colores principales están centralizados en:
+Modificar las variables de `:root`:
 
 ```css
 :root {
@@ -1097,15 +1575,19 @@ Los colores principales están centralizados en:
 }
 ```
 
-## Cambiar fondos
+## Cambiar fondo inicial
 
 Modificar:
 
 ```css
-background: #020105 url("assets/f13.png");
+background:
+    #020105 url("assets/f13.png")
+    center top/cover fixed no-repeat;
 ```
 
-y:
+## Cambiar fondo de búsqueda
+
+Modificar:
 
 ```css
 body.fondo-busqueda {
@@ -1113,36 +1595,56 @@ body.fondo-busqueda {
 }
 ```
 
+El fondo de descargas se cambia desde JavaScript:
+
+```javascript
+cambiarFondo('f10.png');
+```
+
 ---
 
-# 27. Consideraciones técnicas
+# 40. Consideraciones técnicas
 
-## Validación del tipo de consulta
+## Detección de comandos
 
-Actualmente la lógica diferencia:
+La lógica actual sigue este orden:
 
 ```text
-Solo números → DNI
-Cualquier otro carácter → Entidad
+1. Comando de descargas
+2. DNI numérico
+3. Búsqueda de políticas
+4. Error
 ```
 
 Por lo tanto:
 
 ```text
-34340714        → DNI
-123456          → DNI
-Creditia        → Entidad
-creditia 2026  → Entidad
-ABC123          → Entidad
+descargas      → Programas
+AnyDesk        → Programas
+34340714       → DNI
+Creditia       → Políticas
+creditia 2026  → Políticas
+ABC123         → Políticas
 ```
 
-La validación del DNI se limita actualmente a la longitud mínima y al contenido numérico.
+---
+
+## Validación de DNI
+
+La validación actual comprueba:
+
+```text
+Solo números
+Mínimo 6 dígitos
+```
+
+No realiza una validación adicional sobre la estructura o existencia del DNI.
 
 ---
 
 ## Normalización telefónica
 
-La aplicación elimina todos los caracteres que no sean números:
+Los teléfonos se normalizan eliminando caracteres no numéricos:
 
 ```javascript
 numero.replace(/\D/g, '')
@@ -1156,13 +1658,13 @@ Esto permite procesar formatos como:
 +54 11 1234-5678
 ```
 
-Sin embargo, la normalización implementada es deliberadamente simple y no constituye una validación completa de numeración telefónica argentina.
+La implementación es deliberadamente simple y no constituye una validación completa de numeración telefónica argentina.
 
 ---
 
-# 28. Estado actual del proyecto
+# 41. Estado actual del proyecto
 
-La herramienta está diseñada como un **frontend liviano para consulta de información mediante APIs**, con una interfaz orientada a operadores que necesitan realizar búsquedas rápidamente.
+Assist-AI funciona actualmente como una interfaz unificada para diferentes consultas y herramientas internas.
 
 Características principales:
 
@@ -1170,26 +1672,34 @@ Características principales:
 ✓ Frontend estático
 ✓ HTML / CSS / JavaScript vanilla
 ✓ Una única caja de búsqueda
-✓ Detección automática DNI / entidad
-✓ Consulta mediante HTTPS
+✓ Detección automática de comandos
+✓ Consulta por DNI
+✓ Consulta de información crediticia
+✓ Cálculo de nivel de morosidad
+✓ Detalle de deudas
+✓ Consulta de políticas
+✓ Comando de descargas
+✓ Links de programas
 ✓ Renderizado dinámico
-✓ Animación de consola
+✓ Consola animada
 ✓ Indicador de carga
 ✓ Copiado de resultados
 ✓ Enlaces WhatsApp
 ✓ Enlaces Telegram
-✓ Manejo de errores
+✓ Registros de personas fallecidas
+✓ Fondos dinámicos
 ✓ Responsive
 ✓ Sin frameworks
 ✓ Sin dependencias npm
 ✓ Sin credenciales en frontend
+✓ Interfaz preparada para futuro chat con IA
 ```
 
 ---
 
-# 29. Mantenimiento
+# 42. Mantenimiento
 
-Para modificar la aplicación se recomienda respetar la separación de responsabilidades:
+Para modificar Assist-AI se recomienda mantener la separación de responsabilidades:
 
 ```text
 index.html
@@ -1207,33 +1717,44 @@ lógica + APIs
 
 No se recomienda colocar lógica de negocio dentro de `index.html` ni estilos extensos dentro de `script.js`.
 
-Los cambios en los endpoints deben realizarse únicamente en las constantes:
+Los cambios en los endpoints deben realizarse en:
 
 ```javascript
 API_URL
 POL_API_URL
+CREDIT_API_URL
 ```
 
-La modificación de la estructura de los datos provenientes de las APIs debe acompañarse con cambios en:
+La modificación de la estructura de datos provenientes de las APIs debe acompañarse con cambios en las funciones correspondientes:
 
 ```javascript
 mostrarResultado()
 mostrarPoliticas()
+mostrarMorosidad()
+mostrarDeudas()
 construirTextoPlano()
+```
+
+La lógica de comandos debe modificarse en:
+
+```javascript
+detectarComando()
+```
+
+La interfaz de descargas se modifica principalmente dentro de:
+
+```javascript
+mostrarDescargas()
 ```
 
 ---
 
-# 30. Licencia
+# 43. Licencia
 
-Definir aquí la licencia correspondiente al proyecto.
-
-Ejemplo:
-
-```text
 Copyright © ACME Labs
 
 Todos los derechos reservados.
-```
 
-Si el repositorio se publica bajo una licencia open source, reemplazar esta sección por la licencia correspondiente.
+
+
+También corregí la arquitectura respecto del README viejo: ahora **no son solamente dos APIs**, sino tres, y la búsqueda de DNI dispara una segunda consulta crediticia cuando corresponde. 
