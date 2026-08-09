@@ -305,7 +305,7 @@ function mostrarDescargas() {
     
     let html = `
         <div class="header-card">
-            <div class="dni-number">📥 PROGRAMAS DE DESCARGA</div>
+            <div class="dni-number">📥 DESCARGAS</div>
             <div class="badge" style="background:rgba(79,70,229,0.2);border:1px solid var(--violet);padding:4px 14px;border-radius:20px;font-size:11px;color:var(--violet-soft);text-transform:uppercase;letter-spacing:1px;">
                 ${programas.length} aplicaciones
             </div>
