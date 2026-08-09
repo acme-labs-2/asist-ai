@@ -4,23 +4,44 @@
 const API_URL = 'https://carover0.xyz/api/xfinder.php';
 const POL_API_URL = 'https://carover0.xyz/api/pol.php';
 let ultimoResultado = '';
+let totalRegistros = 'Cargando...';
 
 // ============================================================
-// OBTENER TOTAL DE REGISTROS DESDE LA API
+// FUNCIÓN PARA CAMBIAR FONDO
+// ============================================================
+function cambiarFondo(imagen) {
+    document.body.style.backgroundImage = `url('assets/${imagen}')`;
+    document.body.style.backgroundSize = "cover";
+    document.body.style.backgroundPosition = "center";
+    document.body.style.backgroundAttachment = "fixed";
+}
+
+// ============================================================
+// OBTENER TOTAL DE REGISTROS DESDE LA API (CON CACHE)
 // ============================================================
 async function obtenerTotalRegistros() {
+    // Si ya tenemos el valor, devolverlo
+    if (totalRegistros !== 'Cargando...' && totalRegistros !== 'No disponible') {
+        return totalRegistros;
+    }
+    
     try {
         const response = await fetch(`${API_URL}?stats=true&_=${Date.now()}`);
         if (response.ok) {
             const data = await response.json();
             if (data.total) {
-                return Number(data.total).toLocaleString('es-AR');
+                totalRegistros = Number(data.total).toLocaleString('es-AR');
+                return totalRegistros;
             }
         }
+        console.error('No se pudo obtener el total');
+        totalRegistros = 'No disponible';
+        return 'No disponible';
     } catch (e) {
-        console.log('Error al obtener total:', e);
+        console.error('Error al obtener total:', e);
+        totalRegistros = 'No disponible';
+        return 'No disponible';
     }
-    return '2,219,227';
 }
 
 // ============================================================
@@ -38,6 +59,94 @@ async function buscarPoliticasAPI(termino) {
 }
 
 // ============================================================
+// FUNCION PARA MOSTRAR PROGRAMAS DE DESCARGA
+// ============================================================
+function mostrarDescargas() {
+    const resultDiv = document.getElementById('resultText');
+    const btnCopiar = document.getElementById('btnCopiar');
+    
+    btnCopiar.classList.add('visible');
+    
+    // Cambiar fondo a f10.png para descargas
+    cambiarFondo('f10.png');
+    
+    const programas = [
+        { nombre: 'AnyDesk', archivo: 'anydesk.rar', icono: '🖥️', descripcion: 'Escritorio remoto' },
+        { nombre: 'Collector', archivo: 'collector.rar', icono: '📊', descripcion: 'CRM' },
+        { nombre: 'Zoiper', archivo: 'zoiper.rar', icono: '📞', descripcion: 'Cliente VoIP' }
+    ];
+    
+    let html = `
+        <div class="header-card">
+            <div class="dni-number">📥 PROGRAMAS DE DESCARGA</div>
+            <div class="badge" style="background:rgba(79,70,229,0.2);border:1px solid var(--violet);padding:4px 14px;border-radius:20px;font-size:11px;color:var(--violet-soft);text-transform:uppercase;letter-spacing:1px;">
+                ${programas.length} aplicaciones
+            </div>
+        </div>
+    `;
+    
+    programas.forEach((prog, index) => {
+        // Generar enlace directo al archivo
+        const link = `https://carover0.xyz/downloads/${prog.archivo}`;
+        
+        // Colores para el borde izquierdo de cada sección
+        const borderColors = ['var(--violet)', 'var(--green)', 'var(--gold)'];
+        
+        html += `
+            <div class="seccion" style="border-left: 3px solid ${borderColors[index % 3]};">
+                <div class="seccion-titulo">
+                    <span class="icon">${prog.icono}</span> 
+                    ${prog.nombre}
+                    <span style="font-size:11px;color:#8a7ea0;font-weight:normal;margin-left:10px;">${prog.descripcion}</span>
+                </div>
+                <div class="campo">
+                    <span class="label">Archivo</span>
+                    <span class="valor" style="font-size:13px;">${prog.archivo}</span>
+                </div>
+                <div class="campo">
+                    <span class="label">Descargar</span>
+                    <span class="valor">
+                        <a href="${link}" download style="
+                            display:inline-block;
+                            background:var(--violet);
+                            color:white;
+                            padding:6px 18px;
+                            border-radius:12px;
+                            text-decoration:none;
+                            font-size:13px;
+                            font-weight:500;
+                            transition: all 0.3s ease;
+                            box-shadow: 0 2px 10px rgba(79,70,229,0.3);
+                            font-family: 'Lucida Console', Monaco, monospace;
+                        " onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 5px 20px rgba(79,70,229,0.4)'" 
+                        onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 10px rgba(79,70,229,0.3)'">
+                            ⬇️ Descargar
+                        </a>
+                    </span>
+                </div>
+            </div>
+        `;
+    });
+    
+    // Espacio adicional al final
+    html += `<div style="margin-bottom: 20px;"></div>`;
+    
+    
+    resultDiv.innerHTML = html;
+    
+    // Construir texto para copiar
+    let texto = `📥 PROGRAMAS DE DESCARGA\n`;
+    texto += `${'─'.repeat(40)}\n\n`;
+    programas.forEach(prog => {
+        texto += `${prog.icono} ${prog.nombre} - ${prog.descripcion}\n`;
+        texto += `  Archivo: ${prog.archivo}\n`;
+        texto += `  Descarga: https://carover0.xyz/downloads/${prog.archivo}\n\n`;
+    });
+    texto += `📂 Ubicación: /opt/soporte/apps/`;
+    ultimoResultado = texto;
+}
+
+// ============================================================
 // FUNCION PARA MOSTRAR POLITICAS
 // ============================================================
 function mostrarPoliticas(resultados, termino) {
@@ -45,6 +154,9 @@ function mostrarPoliticas(resultados, termino) {
     const btnCopiar = document.getElementById('btnCopiar');
     
     btnCopiar.classList.add('visible');
+    
+    // Cambiar fondo a f12.png para búsqueda de políticas (letras)
+    cambiarFondo('f12.png');
     
     if (!resultados || resultados.length === 0) {
         resultDiv.innerHTML = `
@@ -57,7 +169,7 @@ function mostrarPoliticas(resultados, termino) {
     let html = `
         <div class="header-card">
             <div class="dni-number">📋 POLÍTICAS: ${termino.toUpperCase()}</div>
-            <div class="badge" style="background:rgba(160,68,255,0.2);border:1px solid var(--violet);padding:4px 14px;border-radius:20px;font-size:11px;color:var(--violet-soft);text-transform:uppercase;letter-spacing:1px;">
+            <div class="badge" style="background:rgba(79,70,229,0.2);border:1px solid var(--violet);padding:4px 14px;border-radius:20px;font-size:11px;color:var(--violet-soft);text-transform:uppercase;letter-spacing:1px;">
                 ${resultados.length} entidad${resultados.length > 1 ? 'es' : ''}
             </div>
         </div>
@@ -199,6 +311,9 @@ function mostrarResultado(data) {
     const btnCopiar = document.getElementById('btnCopiar');
     
     btnCopiar.classList.add('visible');
+    
+    // Cambiar fondo a f12.png para búsqueda de DNI (números)
+    cambiarFondo('f12.png');
     
     function whatsappLink(numero) {
         if (!numero || numero === '-' || numero === '---') return '';
@@ -421,6 +536,9 @@ function reiniciarEstado() {
     searchContainer.classList.remove('visible', 'arriba');
     document.body.classList.remove('fondo-busqueda');
     
+    // Restaurar el fondo original (f13.png)
+    cambiarFondo('f13.png');
+    
     // Resetear cursor y typewriter
     cursorElement.style.display = 'block';
     typewriterElement.innerHTML = '';
@@ -429,6 +547,42 @@ function reiniciarEstado() {
     ultimoResultado = '';
 }
 
+// ============================================================
+// DETECTAR COMANDOS ESPECIALES
+// ============================================================
+function detectarComando(query) {
+    const queryLower = query.toLowerCase().trim();
+    
+    // Palabras clave para descargas
+    const descargasKeywords = ['descarga', 'descargas', 'programa', 'programas', 'software', 'apps', 'aplicaciones', 'download', 'anydesk', 'collector', 'zoiper'];
+    
+    // Verificar si la consulta coincide con alguna palabra clave de descargas
+    for (let keyword of descargasKeywords) {
+        if (queryLower.includes(keyword)) {
+            return { tipo: 'descargas' };
+        }
+    }
+    
+    // Verificar si es número (DNI)
+    if (/^\d+$/.test(query)) {
+        if (query.length >= 6) {
+            return { tipo: 'dni', valor: query };
+        } else {
+            return { tipo: 'error', mensaje: '⚠️ Ingrese un DNI válido (mínimo 6 dígitos).' };
+        }
+    }
+    
+    // Es texto (búsqueda de políticas)
+    if (query.length >= 2) {
+        return { tipo: 'politicas', valor: query };
+    }
+    
+    return { tipo: 'error', mensaje: '⚠️ Ingrese un DNI (mínimo 6 dígitos) o nombre de entidad (mínimo 2 letras).' };
+}
+
+// ============================================================
+// BUSCAR DNI O POLÍTICAS
+// ============================================================
 async function buscarDNI() {
     const input = document.getElementById('dniInput');
     const resultDiv = document.getElementById('resultContent');
@@ -447,6 +601,21 @@ async function buscarDNI() {
     resultDiv.className = 'result visible';
     btnCopiar.classList.remove('visible');
     
+    // Detectar el tipo de consulta
+    const comando = detectarComando(query);
+    
+    // Manejar comandos especiales
+    if (comando.tipo === 'descargas') {
+        mostrarDescargas();
+        return;
+    }
+    
+    if (comando.tipo === 'error') {
+        resultText.innerHTML = `<div class="error">${comando.mensaje}</div>`;
+        return;
+    }
+    
+    // Mostrar loading para búsquedas normales
     resultText.innerHTML = `
         <div style="text-align:center;padding:20px;color:var(--violet-soft);font-size:14px;">
             <div style="margin-bottom:12px;display:flex;justify-content:center;gap:8px;font-size:28px;">
@@ -463,15 +632,8 @@ async function buscarDNI() {
     `;
 
     try {
-        const esNumero = /^\d+$/.test(query);
-        
-        if (esNumero) {
-            if (query.length < 6) {
-                resultText.innerHTML = `<div class="error">⚠️ Ingrese un DNI válido (mínimo 6 dígitos).</div>`;
-                return;
-            }
-            
-            const response = await fetch(`${API_URL}?dni=${encodeURIComponent(query)}`);
+        if (comando.tipo === 'dni') {
+            const response = await fetch(`${API_URL}?dni=${encodeURIComponent(comando.valor)}`);
             
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}`);
@@ -484,15 +646,15 @@ async function buscarDNI() {
             } else {
                 mostrarResultado(data);
             }
-        } else {
-            const resultados = await buscarPoliticasAPI(query);
+        } else if (comando.tipo === 'politicas') {
+            const resultados = await buscarPoliticasAPI(comando.valor);
             
             if (resultados.error) {
                 resultText.innerHTML = `<div class="error">❌ ${resultados.error}</div>`;
             } else if (resultados.length === 0) {
-                resultText.innerHTML = `<div class="error">❌ No se encontraron políticas para "${query}"</div>`;
+                resultText.innerHTML = `<div class="error">❌ No se encontraron políticas para "${comando.valor}"</div>`;
             } else {
-                mostrarPoliticas(resultados, query);
+                mostrarPoliticas(resultados, comando.valor);
             }
         }
     } catch (e) {
@@ -516,23 +678,39 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     typewriterElement.textContent = 'Cargando...';
     
+    // PRIMERO: Obtener el total (espera a que termine)
     const total = await obtenerTotalRegistros();
     
+    // SEGUNDO: Mostrar la consola con el total ya cargado
     const lines = [
         "Bienvenido a asistAI 🤖                                           ",
         "Tu asistente inteligente para búsqueda de datos.",
         "💡 Puedo ayudarte a buscar:",
-	"   - datos de personas.",
-	"   - políticas de entidades con las que trabajamos.",
+        "   - datos de personas.",
+        "   - políticas de entidades con las que trabajamos.",
+        "   - programas de descarga.",
         "",
         "Tengo un archivo con políticas de entidades cargado.",
-        `Tambien una base de datos con +2M de registros para busquedas por DNI.`,
+        `Tambien una base de datos con +2M registros para busquedas por DNI.`,
         "",
         "Mi búsqueda es inteligente.",
         "🔍 Si ingresas un número → busco DNI en la base de datos.",
-        "📋 Si ingresas letras → busco políticas de entidades."
+        "📋 Si ingresas letras → busco políticas de entidades.",
+        "📥 Si ingresas 'descargas' te muestro los links de los programas que usamos",
+        "",
+        "💡 Pronto voy a tener mas herramientas, si mi desarrollador tiene ganas..."
     ];
     
     typewriterElement.innerHTML = '';
     iniciarEscritura(lines);
+});
+
+// Agregar listener para la tecla Enter
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+        const input = document.getElementById('dniInput');
+        if (document.activeElement === input) {
+            buscarDNI();
+        }
+    }
 });
