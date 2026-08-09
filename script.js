@@ -3,6 +3,7 @@
 // ============================================================
 const API_URL = 'https://carover0.xyz/api/xfinder.php';
 const POL_API_URL = 'https://carover0.xyz/api/pol.php';
+const CREDIT_API_URL = 'https://carover0.xyz/api/crediticia.php';
 let ultimoResultado = '';
 let totalRegistros = 'Cargando...';
 
@@ -59,6 +60,203 @@ async function buscarPoliticasAPI(termino) {
 }
 
 // ============================================================
+// FUNCION PARA BUSCAR DATOS CREDITICIOS VÍA API
+// ============================================================
+async function buscarCrediticiaAPI(dni) {
+    try {
+        const response = await fetch(`${CREDIT_API_URL}?dni=${encodeURIComponent(dni)}`);
+        if (!response.ok) throw new Error('Error al consultar datos crediticios');
+        return await response.json();
+    } catch (e) {
+        console.error('Error en búsqueda crediticia:', e);
+        return { error: e.message };
+    }
+}
+
+// ============================================================
+// FUNCION PARA CALCULAR NIVEL DE MOROSIDAD
+// ============================================================
+function calcularMorosidad(deudas) {
+    if (!deudas || deudas.length === 0) {
+        return {
+            nivel: 0,
+            porcentaje: 0,
+            label: 'Sin deudas registradas',
+            color: '#00c896',
+            totalDeudas: 0,
+            deudasNormales: 0,
+            deudasRiesgo: 0,
+            deudasIrrecuperables: 0,
+            montoTotal: 0
+        };
+    }
+
+    let totalDeudas = deudas.length;
+    let deudasNormales = 0;
+    let deudasRiesgo = 0;
+    let deudasIrrecuperables = 0;
+    let montoTotal = 0;
+
+    deudas.forEach(deuda => {
+        const situacion = parseInt(deuda.Situacion) || 1;
+        const monto = parseFloat(deuda.Monto) || 0;
+        
+        montoTotal += monto;
+
+        if (situacion === 1) {
+            deudasNormales++;
+        } else if (situacion === 4) {
+            deudasRiesgo++;
+        } else if (situacion === 5) {
+            deudasIrrecuperables++;
+        }
+    });
+
+    // Calcular porcentaje de morosidad (peso: irrecuperables = 3, riesgo = 2, normales = 0)
+    let puntaje = (deudasIrrecuperables * 3) + (deudasRiesgo * 2);
+    let maxPuntaje = totalDeudas * 3;
+    let porcentaje = maxPuntaje > 0 ? Math.round((puntaje / maxPuntaje) * 100) : 0;
+
+    let nivel, color, label;
+    if (porcentaje === 0) {
+        nivel = 0;
+        color = '#00c896';
+        label = '💚 Sin morosidad';
+    } else if (porcentaje <= 33) {
+        nivel = 1;
+        color = '#ffb530';
+        label = '🟡 Morosidad baja';
+    } else if (porcentaje <= 66) {
+        nivel = 2;
+        color = '#ff6b6b';
+        label = '🟠 Morosidad media';
+    } else {
+        nivel = 3;
+        color = '#ff1744';
+        label = '🔴 Morosidad alta';
+    }
+
+    return {
+        nivel,
+        porcentaje,
+        label,
+        color,
+        totalDeudas,
+        deudasNormales,
+        deudasRiesgo,
+        deudasIrrecuperables,
+        montoTotal
+    };
+}
+
+// ============================================================
+// FUNCION PARA MOSTRAR PROGRESO DE MOROSIDAD
+// ============================================================
+function mostrarMorosidad(deudas) {
+    const morosidad = calcularMorosidad(deudas);
+    
+    let html = `
+        <div class="seccion" style="border-left: 3px solid ${morosidad.color};">
+            <div class="seccion-titulo">
+                <span class="icon">📊</span> 
+                NIVEL DE MOROSIDAD
+                <span style="font-size:11px;color:${morosidad.color};font-weight:normal;margin-left:10px;">${morosidad.label}</span>
+            </div>
+            
+            <!-- Barra de progreso -->
+            <div style="margin:10px 0 12px 0;">
+                <div style="display:flex;justify-content:space-between;font-size:11px;color:#8a7ea0;margin-bottom:4px;">
+                    <span>Bajo riesgo</span>
+                    <span>${morosidad.porcentaje}%</span>
+                    <span>Alto riesgo</span>
+                </div>
+                <div style="width:100%;height:8px;background:rgba(255,255,255,0.1);border-radius:4px;overflow:hidden;position:relative;">
+                    <div style="width:${morosidad.porcentaje}%;height:100%;background:${morosidad.color};border-radius:4px;transition:width 1s ease;box-shadow:0 0 20px ${morosidad.color}40;"></div>
+                </div>
+            </div>
+            
+            <!-- Estadísticas -->
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px;">
+                <div style="background:rgba(0,200,150,0.1);border-radius:8px;padding:8px;text-align:center;">
+                    <div style="font-size:10px;color:#8a7ea0;">Normales</div>
+                    <div style="font-size:16px;font-weight:bold;color:#00c896;">${morosidad.deudasNormales}</div>
+                </div>
+                <div style="background:rgba(255,181,48,0.1);border-radius:8px;padding:8px;text-align:center;">
+                    <div style="font-size:10px;color:#8a7ea0;">En riesgo</div>
+                    <div style="font-size:16px;font-weight:bold;color:#ffb530;">${morosidad.deudasRiesgo}</div>
+                </div>
+                <div style="background:rgba(255,23,68,0.1);border-radius:8px;padding:8px;text-align:center;">
+                    <div style="font-size:10px;color:#8a7ea0;">Irrecuperables</div>
+                    <div style="font-size:16px;font-weight:bold;color:#ff1744;">${morosidad.deudasIrrecuperables}</div>
+                </div>
+            </div>
+            
+            <!-- Monto total -->
+            <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(160,68,255,0.1);display:flex;justify-content:space-between;font-size:12px;">
+                <span style="color:#8a7ea0;">Total de deudas</span>
+                <span style="color:#fff;font-weight:bold;">${morosidad.totalDeudas}</span>
+                <span style="color:#8a7ea0;">Monto total</span>
+                <span style="color:#ffb530;font-weight:bold;">$${morosidad.montoTotal.toLocaleString()}</span>
+            </div>
+        </div>
+    `;
+    
+    return html;
+}
+
+// ============================================================
+// FUNCION PARA MOSTRAR DEUDAS DETALLADAS
+// ============================================================
+function mostrarDeudas(deudas) {
+    if (!deudas || deudas.length === 0) return '';
+    
+    let html = `
+        <div class="seccion">
+            <div class="seccion-titulo">
+                <span class="icon">💳</span> 
+                DETALLE DE DEUDAS
+                <span style="font-size:11px;color:#8a7ea0;font-weight:normal;margin-left:10px;">${deudas.length} registros</span>
+            </div>
+    `;
+    
+    deudas.forEach((deuda, index) => {
+        const situacion = parseInt(deuda.Situacion) || 1;
+        let colorSituacion = '#00c896';
+        let situacionLabel = 'Normal';
+        
+        if (situacion === 4) {
+            colorSituacion = '#ffb530';
+            situacionLabel = 'Alto riesgo';
+        } else if (situacion === 5) {
+            colorSituacion = '#ff1744';
+            situacionLabel = 'Irrecuperable';
+        }
+        
+        const monto = parseFloat(deuda.Monto) || 0;
+        
+        html += `
+            <div style="
+                padding:8px 0;
+                border-bottom: ${index < deudas.length - 1 ? '1px solid rgba(160,68,255,0.05)' : 'none'};
+            ">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;">
+                    <span style="font-size:12px;color:#f0ecf5;">${deuda.Entidad || 'Sin entidad'}</span>
+                    <span style="font-size:11px;color:${colorSituacion};font-weight:bold;">${situacionLabel}</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:11px;color:#8a7ea0;margin-top:2px;">
+                    <span>${deuda.Periodo || '-'}</span>
+                    <span>$${monto.toLocaleString()}</span>
+                    <span style="font-size:10px;">${deuda.SituacionDesc || ''}</span>
+                </div>
+            </div>
+        `;
+    });
+    
+    html += `</div>`;
+    return html;
+}
+
+// ============================================================
 // FUNCION PARA MOSTRAR PROGRAMAS DE DESCARGA
 // ============================================================
 function mostrarDescargas() {
@@ -71,9 +269,38 @@ function mostrarDescargas() {
     cambiarFondo('f10.png');
     
     const programas = [
-        { nombre: 'AnyDesk', archivo: 'anydesk.rar', icono: '🖥️', descripcion: 'Escritorio remoto' },
-        { nombre: 'Collector', archivo: 'collector.rar', icono: '📊', descripcion: 'CRM' },
-        { nombre: 'Zoiper', archivo: 'zoiper.rar', icono: '📞', descripcion: 'Cliente VoIP' }
+        { 
+            nombre: 'WinRAR', 
+            archivo: 'winrar.exe', 
+            icono: '📦', 
+            descripcion: 'Compresor de archivos',
+            prioridad: 1,
+            mensaje: 'Descarga e instala WinRAR.exe para actualizar si tu versión es muy antigua'
+        },
+        { 
+            nombre: 'AnyDesk', 
+            archivo: 'anydesk.rar', 
+            icono: '🖥️', 
+            descripcion: 'Escritorio remoto',
+            prioridad: 2,
+            mensaje: 'AnyDesk por si necesitas asistencia'
+        },
+        { 
+            nombre: 'Collector', 
+            archivo: 'collector.rar', 
+            icono: '📊', 
+            descripcion: 'CRM',
+            prioridad: 3,
+            mensaje: 'Collector para gestión de clientes'
+        },
+        { 
+            nombre: 'Zoiper', 
+            archivo: 'zoiper.rar', 
+            icono: '📞', 
+            descripcion: 'Cliente VoIP',
+            prioridad: 4,
+            mensaje: 'Zoiper para llamadas VoIP'
+        }
     ];
     
     let html = `
@@ -85,35 +312,37 @@ function mostrarDescargas() {
         </div>
     `;
     
+    // Grid de 2 columnas para las tarjetas
+    html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:15px;">`;
+    
     programas.forEach((prog, index) => {
-        // Generar enlace directo al archivo
         const link = `https://carover0.xyz/downloads/${prog.archivo}`;
         
         // Colores para el borde izquierdo de cada sección
-        const borderColors = ['var(--violet)', 'var(--green)', 'var(--gold)'];
+        const borderColors = ['var(--violet)', 'var(--green)', 'var(--gold)', 'var(--red)'];
         
         html += `
-            <div class="seccion" style="border-left: 3px solid ${borderColors[index % 3]};">
-                <div class="seccion-titulo">
+            <div class="seccion" style="border-left: 3px solid ${borderColors[index % 4]};margin-bottom:0;padding:12px 14px;">
+                <div class="seccion-titulo" style="font-size:10px;margin-bottom:6px;">
                     <span class="icon">${prog.icono}</span> 
                     ${prog.nombre}
-                    <span style="font-size:11px;color:#8a7ea0;font-weight:normal;margin-left:10px;">${prog.descripcion}</span>
+                    <span style="font-size:10px;color:#8a7ea0;font-weight:normal;margin-left:6px;">${prog.descripcion}</span>
                 </div>
-                <div class="campo">
-                    <span class="label">Archivo</span>
-                    <span class="valor" style="font-size:13px;">${prog.archivo}</span>
+                <div class="campo" style="padding:2px 0;">
+                    <span class="label" style="font-size:11px;min-width:60px;">Archivo</span>
+                    <span class="valor" style="font-size:11px;">${prog.archivo}</span>
                 </div>
-                <div class="campo">
-                    <span class="label">Descargar</span>
+                <div class="campo" style="padding:2px 0;border-bottom:none;">
+                    <span class="label" style="font-size:11px;min-width:60px;">Descargar</span>
                     <span class="valor">
                         <a href="${link}" download style="
                             display:inline-block;
                             background:var(--violet);
                             color:white;
-                            padding:6px 18px;
+                            padding:4px 14px;
                             border-radius:12px;
                             text-decoration:none;
-                            font-size:13px;
+                            font-size:12px;
                             font-weight:500;
                             transition: all 0.3s ease;
                             box-shadow: 0 2px 10px rgba(79,70,229,0.3);
@@ -128,9 +357,52 @@ function mostrarDescargas() {
         `;
     });
     
-    // Espacio adicional al final
-    html += `<div style="margin-bottom: 20px;"></div>`;
+    html += `</div>`;
     
+    // Mensajes adicionales con estilo de consola
+    html += `
+        <div style="
+            background:rgba(0,0,0,0.4);
+            border:1px solid rgba(79,70,229,0.2);
+            border-radius:12px;
+            padding:14px 18px;
+            margin-top:5px;
+            font-family: 'Lucida Console', Monaco, monospace;
+            font-size:13px;
+            color:#b8a8d0;
+            line-height:1.8;
+        ">
+            <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:4px;">
+                <span style="color:var(--violet-soft);">$</span>
+                <span>Orden recomendado de instalación:</span>
+            </div>
+            <div style="padding-left:20px;">
+                <div style="display:flex;align-items:center;gap:8px;padding:2px 0;">
+                    <span style="color:var(--green);">▶</span>
+                    <span>1. Descarga e instala <strong style="color:var(--violet-soft);">winrar.exe</strong> para actualizar si tu versión es muy antigua</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;padding:2px 0;">
+                    <span style="color:var(--green);">▶</span>
+                    <span>2. <strong style="color:var(--violet-soft);">AnyDesk</strong> por si necesitas asistencia remota</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;padding:2px 0;">
+                    <span style="color:var(--gold);">▶</span>
+                    <span>Los demás programas no importa el orden de instalación</span>
+                </div>
+            </div>
+            <div style="
+                margin-top:8px;
+                padding-top:8px;
+                border-top:1px solid rgba(79,70,229,0.1);
+                display:flex;
+                align-items:center;
+                gap:8px;
+                font-size:12px;
+                color:#6a7a90;
+            ">
+            </div>
+        </div>
+    `;
     
     resultDiv.innerHTML = html;
     
@@ -142,7 +414,11 @@ function mostrarDescargas() {
         texto += `  Archivo: ${prog.archivo}\n`;
         texto += `  Descarga: https://carover0.xyz/downloads/${prog.archivo}\n\n`;
     });
-    texto += `📂 Ubicación: /opt/soporte/apps/`;
+    texto += `📂 Ubicación: /opt/soporte/apps/\n\n`;
+    texto += `💡 Recomendaciones:\n`;
+    texto += `  1. Descarga e instala winrar.exe para actualizar si tu versión es muy antigua\n`;
+    texto += `  2. AnyDesk por si necesitas asistencia remota\n`;
+    texto += `  Los demás programas no importa el orden de instalación`;
     ultimoResultado = texto;
 }
 
@@ -304,9 +580,9 @@ function abrirChatIA() {
 }
 
 // ============================================================
-// MOSTRAR RESULTADO MODERNO CON WHATSAPP Y TELEGRAM
+// MOSTRAR RESULTADO MODERNO CON WHATSAPP Y TELEGRAM + DATOS CREDITICIOS
 // ============================================================
-function mostrarResultado(data) {
+function mostrarResultado(data, creditData) {
     const resultDiv = document.getElementById('resultText');
     const btnCopiar = document.getElementById('btnCopiar');
     
@@ -416,7 +692,15 @@ function mostrarResultado(data) {
             <div class="campo"><span class="label">Fijo 2</span><span class="valor">${data.fijo2 || '-'}</span></div>
             <div class="campo"><span class="label">Email</span><span class="valor" style="font-size:12px;">${emails}</span></div>
         </div>
+    `;
 
+    // Agregar sección de morosidad si hay datos crediticios
+    if (creditData && creditData.length > 0) {
+        html += mostrarMorosidad(creditData);
+        html += mostrarDeudas(creditData);
+    }
+
+    html += `
         <div class="origen">
             <span>📌 Fuente: ${data.origen || '---'}</span>
             <span>📅 Fecha del dato: ${data.timestamp || '---'}</span>
@@ -424,17 +708,19 @@ function mostrarResultado(data) {
     `;
 
     resultDiv.innerHTML = html;
-    ultimoResultado = construirTextoPlano(data);
+    ultimoResultado = construirTextoPlano(data, creditData);
 }
 
 // ============================================================
-// CONSTRUIR TEXTO PLANO PARA COPIAR
+// CONSTRUIR TEXTO PLANO PARA COPIAR (CON DATOS CREDITICIOS)
 // ============================================================
-function construirTextoPlano(data) {
+function construirTextoPlano(data, creditData) {
     const emails = [data.email, data.email2, data.email3].filter(Boolean).join(', ') || '-';
     
+    let texto = '';
+    
     if (data.fallecido) {
-        return `⚠️ REGISTRO FALLECIDO\n\n` +
+        texto = `⚠️ REGISTRO FALLECIDO\n\n` +
                `Nombre: ${data.nombre || '---'}\n` +
                `DNI: ${data.dni || '---'}\n` +
                `Domicilio: ${data.domicilio || 'Sin domicilio en padrón'}\n` +
@@ -442,9 +728,10 @@ function construirTextoPlano(data) {
                `Provincia: ${data.provincia || '-'}\n\n` +
                `⚠️ ESTA PERSONA SE ENCUENTRA FALLECIDA\n\n` +
                `Origen: ${data.origen || '---'} · Fecha: ${data.timestamp || '---'}`;
+        return texto;
     }
 
-    return `🔍 INFORME DNI ${data.dni || '---'}\n` +
+    texto = `🔍 INFORME DNI ${data.dni || '---'}\n` +
            `${'─'.repeat(40)}\n\n` +
            `👤 DATOS PERSONALES\n` +
            `  Nombre: ${data.nombre || '---'}\n` +
@@ -461,10 +748,40 @@ function construirTextoPlano(data) {
            `  Celular 2: ${data.celular2 || '-'}\n` +
            `  Fijo 1: ${data.fijo1 || '-'}\n` +
            `  Fijo 2: ${data.fijo2 || '-'}\n` +
-           `  Email: ${emails}\n\n` +
-           `📌 ORIGEN\n` +
-           `  Fecha: ${data.timestamp || '---'}\n` +
-           `  Proveedor: ${data.origen || '---'}`;
+           `  Email: ${emails}\n\n`;
+
+    // Agregar datos crediticios si existen
+    if (creditData && creditData.length > 0) {
+        const morosidad = calcularMorosidad(creditData);
+        texto += `📊 NIVEL DE MOROSIDAD\n` +
+                `  Estado: ${morosidad.label}\n` +
+                `  Porcentaje: ${morosidad.porcentaje}%\n` +
+                `  Deudas normales: ${morosidad.deudasNormales}\n` +
+                `  En riesgo: ${morosidad.deudasRiesgo}\n` +
+                `  Irrecuperables: ${morosidad.deudasIrrecuperables}\n` +
+                `  Monto total: $${morosidad.montoTotal.toLocaleString()}\n\n` +
+                `💳 DETALLE DE DEUDAS\n`;
+        
+        creditData.forEach((deuda, index) => {
+            const situacion = parseInt(deuda.Situacion) || 1;
+            let situacionLabel = 'Normal';
+            if (situacion === 4) situacionLabel = 'Alto riesgo';
+            else if (situacion === 5) situacionLabel = 'Irrecuperable';
+            
+            texto += `  ${index + 1}. ${deuda.Entidad || 'Sin entidad'}\n`;
+            texto += `     Periodo: ${deuda.Periodo || '-'}\n`;
+            texto += `     Monto: $${(parseFloat(deuda.Monto) || 0).toLocaleString()}\n`;
+            texto += `     Estado: ${situacionLabel}\n`;
+            texto += `     Descripción: ${deuda.SituacionDesc || ''}\n`;
+        });
+        texto += `\n`;
+    }
+
+    texto += `📌 ORIGEN\n` +
+            `  Fecha: ${data.timestamp || '---'}\n` +
+            `  Proveedor: ${data.origen || '---'}`;
+
+    return texto;
 }
 
 // ============================================================
@@ -633,6 +950,7 @@ async function buscarDNI() {
 
     try {
         if (comando.tipo === 'dni') {
+            // Buscar datos personales
             const response = await fetch(`${API_URL}?dni=${encodeURIComponent(comando.valor)}`);
             
             if (!response.ok) {
@@ -643,9 +961,27 @@ async function buscarDNI() {
             
             if (data.error) {
                 resultText.innerHTML = `<div class="error">❌ ${data.error}</div>`;
-            } else {
-                mostrarResultado(data);
+                return;
             }
+            
+            // Buscar datos crediticios (si no está fallecido)
+            let creditData = null;
+            if (!data.fallecido) {
+                try {
+                    const creditResponse = await fetch(`${CREDIT_API_URL}?dni=${encodeURIComponent(comando.valor)}`);
+                    if (creditResponse.ok) {
+                        creditData = await creditResponse.json();
+                        // Si la respuesta tiene error, ignorar
+                        if (creditData && creditData.error) {
+                            creditData = null;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Error al obtener datos crediticios:', e);
+                }
+            }
+            
+            mostrarResultado(data, creditData);
         } else if (comando.tipo === 'politicas') {
             const resultados = await buscarPoliticasAPI(comando.valor);
             
@@ -686,7 +1022,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         "Bienvenido a asistAI 🤖                                           ",
         "Tu asistente inteligente para búsqueda de datos.",
         "💡 Puedo ayudarte a buscar:",
-        "   - datos de personas.",
+        "   - datos de personas con su historial crediticio.",
         "   - políticas de entidades con las que trabajamos.",
         "   - programas de descarga.",
         "",
