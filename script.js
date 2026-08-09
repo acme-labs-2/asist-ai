@@ -21,7 +21,6 @@ function cambiarFondo(imagen) {
 // OBTENER TOTAL DE REGISTROS DESDE LA API (CON CACHE)
 // ============================================================
 async function obtenerTotalRegistros() {
-    // Si ya tenemos el valor, devolverlo
     if (totalRegistros !== 'Cargando...' && totalRegistros !== 'No disponible') {
         return totalRegistros;
     }
@@ -55,20 +54,6 @@ async function buscarPoliticasAPI(termino) {
         return await response.json();
     } catch (e) {
         console.error('Error en búsqueda de políticas:', e);
-        return { error: e.message };
-    }
-}
-
-// ============================================================
-// FUNCION PARA BUSCAR DATOS CREDITICIOS VÍA API
-// ============================================================
-async function buscarCrediticiaAPI(dni) {
-    try {
-        const response = await fetch(`${CREDIT_API_URL}?dni=${encodeURIComponent(dni)}`);
-        if (!response.ok) throw new Error('Error al consultar datos crediticios');
-        return await response.json();
-    } catch (e) {
-        console.error('Error en búsqueda crediticia:', e);
         return { error: e.message };
     }
 }
@@ -112,7 +97,6 @@ function calcularMorosidad(deudas) {
         }
     });
 
-    // Calcular porcentaje de morosidad (peso: irrecuperables = 3, riesgo = 2, normales = 0)
     let puntaje = (deudasIrrecuperables * 3) + (deudasRiesgo * 2);
     let maxPuntaje = totalDeudas * 3;
     let porcentaje = maxPuntaje > 0 ? Math.round((puntaje / maxPuntaje) * 100) : 0;
@@ -163,7 +147,6 @@ function mostrarMorosidad(deudas) {
                 <span style="font-size:11px;color:${morosidad.color};font-weight:normal;margin-left:10px;">${morosidad.label}</span>
             </div>
             
-            <!-- Barra de progreso -->
             <div style="margin:10px 0 12px 0;">
                 <div style="display:flex;justify-content:space-between;font-size:11px;color:#8a7ea0;margin-bottom:4px;">
                     <span>Bajo riesgo</span>
@@ -175,7 +158,6 @@ function mostrarMorosidad(deudas) {
                 </div>
             </div>
             
-            <!-- Estadísticas -->
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px;">
                 <div style="background:rgba(0,200,150,0.1);border-radius:8px;padding:8px;text-align:center;">
                     <div style="font-size:10px;color:#8a7ea0;">Normales</div>
@@ -191,7 +173,6 @@ function mostrarMorosidad(deudas) {
                 </div>
             </div>
             
-            <!-- Monto total -->
             <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(160,68,255,0.1);display:flex;justify-content:space-between;font-size:12px;">
                 <span style="color:#8a7ea0;">Total de deudas</span>
                 <span style="color:#fff;font-weight:bold;">${morosidad.totalDeudas}</span>
@@ -264,8 +245,6 @@ function mostrarDescargas() {
     const btnCopiar = document.getElementById('btnCopiar');
     
     btnCopiar.classList.add('visible');
-    
-    // Cambiar fondo a f10.png para descargas
     cambiarFondo('f10.png');
     
     const programas = [
@@ -273,33 +252,25 @@ function mostrarDescargas() {
             nombre: 'WinRAR', 
             archivo: 'winrar.exe', 
             icono: '📦', 
-            descripcion: 'Compresor de archivos',
-            prioridad: 1,
-            mensaje: 'Descarga e instala WinRAR.exe para actualizar si tu versión es muy antigua'
+            descripcion: 'Compresor de archivos'
         },
         { 
             nombre: 'AnyDesk', 
             archivo: 'anydesk.rar', 
             icono: '🖥️', 
-            descripcion: 'Escritorio remoto',
-            prioridad: 2,
-            mensaje: 'AnyDesk por si necesitas asistencia'
+            descripcion: 'Escritorio remoto'
         },
         { 
             nombre: 'Collector', 
             archivo: 'collector.rar', 
             icono: '📊', 
-            descripcion: 'CRM',
-            prioridad: 3,
-            mensaje: 'Collector para gestión de clientes'
+            descripcion: 'CRM'
         },
         { 
             nombre: 'Zoiper', 
             archivo: 'zoiper.rar', 
             icono: '📞', 
-            descripcion: 'Cliente VoIP',
-            prioridad: 4,
-            mensaje: 'Zoiper para llamadas VoIP'
+            descripcion: 'Cliente VoIP'
         }
     ];
     
@@ -312,13 +283,10 @@ function mostrarDescargas() {
         </div>
     `;
     
-    // Grid de 2 columnas para las tarjetas
     html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:15px;">`;
     
     programas.forEach((prog, index) => {
         const link = `https://carover0.xyz/downloads/${prog.archivo}`;
-        
-        // Colores para el borde izquierdo de cada sección
         const borderColors = ['var(--violet)', 'var(--green)', 'var(--gold)', 'var(--red)'];
         
         html += `
@@ -359,7 +327,6 @@ function mostrarDescargas() {
     
     html += `</div>`;
     
-    // Mensajes adicionales con estilo de consola
     html += `
         <div style="
             background:rgba(0,0,0,0.4);
@@ -390,23 +357,11 @@ function mostrarDescargas() {
                     <span>Los demás programas no importa el orden de instalación</span>
                 </div>
             </div>
-            <div style="
-                margin-top:8px;
-                padding-top:8px;
-                border-top:1px solid rgba(79,70,229,0.1);
-                display:flex;
-                align-items:center;
-                gap:8px;
-                font-size:12px;
-                color:#6a7a90;
-            ">
-            </div>
         </div>
     `;
     
     resultDiv.innerHTML = html;
     
-    // Construir texto para copiar
     let texto = `📥 PROGRAMAS DE DESCARGA\n`;
     texto += `${'─'.repeat(40)}\n\n`;
     programas.forEach(prog => {
@@ -430,8 +385,6 @@ function mostrarPoliticas(resultados, termino) {
     const btnCopiar = document.getElementById('btnCopiar');
     
     btnCopiar.classList.add('visible');
-    
-    // Cambiar fondo a f12.png para búsqueda de políticas (letras)
     cambiarFondo('f12.png');
     
     if (!resultados || resultados.length === 0) {
@@ -467,7 +420,6 @@ function mostrarPoliticas(resultados, termino) {
     
     resultDiv.innerHTML = html;
     
-    // Construir texto para copiar
     let texto = `📋 POLÍTICAS: ${termino.toUpperCase()}\n`;
     texto += `${'─'.repeat(40)}\n\n`;
     resultados.forEach(item => {
@@ -490,9 +442,6 @@ const typewriterElement = document.getElementById('typewriter');
 const cursorElement = document.getElementById('cursor');
 const consoleElement = document.getElementById('consoleOutput');
 
-// ============================================================
-// EFECTO DE ESCRITURA TIPO CONSOLA (SIN SPINNER)
-// ============================================================
 async function iniciarEscritura(lines) {
     let lineIndex = 0;
     let charIndex = 0;
@@ -526,7 +475,6 @@ async function iniciarEscritura(lines) {
             searchContainer.classList.add('visible');
             document.getElementById('dniInput').focus();
             
-            // Agregar el botón mini después de que termine la escritura
             if (!botonAgregado) {
                 botonAgregado = true;
                 agregarBotonChatMini();
@@ -538,12 +486,11 @@ async function iniciarEscritura(lines) {
 }
 
 // ============================================================
-// AGREGAR BOTÓN CHAT MINI (estilo WhatsApp/Telegram)
+// AGREGAR BOTÓN CHAT MINI
 // ============================================================
 function agregarBotonChatMini() {
     const consoleDiv = document.getElementById('consoleOutput');
     
-    // Buscar la línea que contiene "🤖 [  CHAT CON IA  ]"
     const lines = consoleDiv.innerHTML.split('<br>');
     let lastLineIndex = -1;
     
@@ -554,7 +501,6 @@ function agregarBotonChatMini() {
     }
     
     if (lastLineIndex !== -1) {
-        // Reemplazar con el botón mini (exactamente como los de WhatsApp)
         const botonHTML = `
             🤖 <a href="#" onclick="abrirChatIA(); return false;" style="
                 display: inline-block;
@@ -573,154 +519,20 @@ function agregarBotonChatMini() {
 }
 
 // ============================================================
-// FUNCIÓN PARA ABRIR CHAT IA (mini)
+// FUNCIÓN PARA ABRIR CHAT IA
 // ============================================================
 function abrirChatIA() {
     alert('🤖 Próximamente: Chat con IA en vivo!\n\nMientras tanto, puedes usar la búsqueda inteligente.');
 }
 
 // ============================================================
-// MOSTRAR RESULTADO MODERNO CON WHATSAPP Y TELEGRAM + DATOS CREDITICIOS
-// ============================================================
-function mostrarResultado(data, creditData) {
-    const resultDiv = document.getElementById('resultText');
-    const btnCopiar = document.getElementById('btnCopiar');
-    
-    btnCopiar.classList.add('visible');
-    
-    // Cambiar fondo a f12.png para búsqueda de DNI (números)
-    cambiarFondo('f12.png');
-    
-    function whatsappLink(numero) {
-        if (!numero || numero === '-' || numero === '---') return '';
-        const clean = numero.replace(/\D/g, '');
-        if (clean.length < 6) return '';
-        const fullNumber = clean.startsWith('54') ? clean : '54' + clean;
-        return `https://wa.me/${fullNumber}`;
-    }
-    
-    function telegramLink(numero) {
-        if (!numero || numero === '-' || numero === '---') return '';
-        const clean = numero.replace(/\D/g, '');
-        if (clean.length < 6) return '';
-        const fullNumber = clean.startsWith('54') ? clean : '54' + clean;
-        return `https://t.me/+${fullNumber}`;
-    }
-    
-    function campoContacto(label, valor) {
-        if (!valor || valor === '-' || valor === '---') {
-            return `<div class="campo"><span class="label">${label}</span><span class="valor">-</span></div>`;
-        }
-        const clean = valor.replace(/\D/g, '');
-        if (clean.length < 6) return `<div class="campo"><span class="label">${label}</span><span class="valor">${valor}</span></div>`;
-        
-        const waLink = whatsappLink(valor);
-        const tgLink = telegramLink(valor);
-        
-        return `<div class="campo">
-            <span class="label">${label}</span>
-            <span class="valor">
-                ${valor}
-                <a href="${waLink}" target="_blank" style="display:inline-block;margin-left:8px;text-decoration:none;vertical-align:middle;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'" title="WhatsApp">
-                    <img src="assets/w.png" alt="WhatsApp" style="width:20px;height:20px;display:inline-block;vertical-align:middle;border-radius:4px;">
-                </a>
-                <a href="${tgLink}" target="_blank" style="display:inline-block;margin-left:6px;text-decoration:none;vertical-align:middle;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'" title="Telegram">
-                    <img src="assets/t.png" alt="Telegram" style="width:20px;height:20px;display:inline-block;vertical-align:middle;border-radius:4px;">
-                </a>
-            </span>
-        </div>`;
-    }
-
-    let html = '';
-
-    if (data.fallecido) {
-        html = `
-            <div class="header-card">
-                <div class="dni-number">⚠️ ${data.dni || '---'}</div>
-                <div class="badge fallecido">✝ FALLECIDO</div>
-            </div>
-            <div class="seccion">
-                <div class="seccion-titulo"><span class="icon">👤</span> DATOS PERSONALES</div>
-                <div class="campo"><span class="label">Nombre</span><span class="valor">${data.nombre || '---'}</span></div>
-                <div class="campo"><span class="label">DNI</span><span class="valor">${data.dni || '---'}</span></div>
-                <div class="campo"><span class="label">Domicilio</span><span class="valor">${data.domicilio || 'Sin domicilio en padrón'}</span></div>
-                <div class="campo"><span class="label">Localidad</span><span class="valor">${data.localidad || '-'}</span></div>
-                <div class="campo"><span class="label">Provincia</span><span class="valor">${data.provincia || '-'}</span></div>
-            </div>
-            <div class="seccion" style="border-color: rgba(255,117,111,0.3);">
-                <div class="seccion-titulo"><span class="icon">⚠️</span> ESTA PERSONA SE ENCUENTRA FALLECIDA</div>
-            </div>
-            <div class="origen">
-                <span>Origen: ${data.origen || '---'}</span>
-                <span>Fecha: ${data.timestamp || '---'}</span>
-            </div>
-        `;
-        
-        resultDiv.innerHTML = html;
-        ultimoResultado = construirTextoPlano(data);
-        return;
-    }
-
-    const emails = [data.email, data.email2, data.email3].filter(Boolean).join(', ') || '-';
-
-    html = `
-        <div class="header-card">
-            <div class="dni-number">🔍 ${data.dni || '---'}</div>
-        </div>
-
-        <div class="seccion">
-            <div class="seccion-titulo"><span class="icon">👤</span> DATOS PERSONALES</div>
-            <div class="campo"><span class="label">Nombre</span><span class="valor">${data.nombre || '---'}</span></div>
-            <div class="campo"><span class="label">DNI</span><span class="valor">${data.dni || '---'}</span></div>
-            <div class="campo"><span class="label">Domicilio</span><span class="valor">${data.domicilio || 'Sin domicilio en padrón'}</span></div>
-            <div class="campo"><span class="label">Localidad</span><span class="valor">${data.localidad || '-'}</span></div>
-            <div class="campo"><span class="label">Provincia</span><span class="valor">${data.provincia || '-'}</span></div>
-        </div>
-
-        <div class="seccion">
-            <div class="seccion-titulo"><span class="icon">💼</span> DATOS LABORALES</div>
-            <div class="campo"><span class="label">Empleador</span><span class="valor">${data.empleador || 'Sin empleo conocido'}</span></div>
-            <div class="campo"><span class="label">CUIT</span><span class="valor">${data.cuit || '-'}</span></div>
-            <div class="campo"><span class="label">Empleados</span><span class="valor">${data.empleados || '-'}</span></div>
-        </div>
-
-        <div class="seccion">
-            <div class="seccion-titulo"><span class="icon">📱</span> CONTACTO</div>
-            ${campoContacto('Celular 1', data.celular1)}
-            ${campoContacto('Celular 2', data.celular2)}
-            <div class="campo"><span class="label">Fijo 1</span><span class="valor">${data.fijo1 || '-'}</span></div>
-            <div class="campo"><span class="label">Fijo 2</span><span class="valor">${data.fijo2 || '-'}</span></div>
-            <div class="campo"><span class="label">Email</span><span class="valor" style="font-size:12px;">${emails}</span></div>
-        </div>
-    `;
-
-    // Agregar sección de morosidad si hay datos crediticios
-    if (creditData && creditData.length > 0) {
-        html += mostrarMorosidad(creditData);
-        html += mostrarDeudas(creditData);
-    }
-
-    html += `
-        <div class="origen">
-            <span>📌 Fuente: ${data.origen || '---'}</span>
-            <span>📅 Fecha del dato: ${data.timestamp || '---'}</span>
-        </div>
-    `;
-
-    resultDiv.innerHTML = html;
-    ultimoResultado = construirTextoPlano(data, creditData);
-}
-
-// ============================================================
-// CONSTRUIR TEXTO PLANO PARA COPIAR (CON DATOS CREDITICIOS)
+// CONSTRUIR TEXTO PLANO PARA COPIAR
 // ============================================================
 function construirTextoPlano(data, creditData) {
     const emails = [data.email, data.email2, data.email3].filter(Boolean).join(', ') || '-';
     
-    let texto = '';
-    
     if (data.fallecido) {
-        texto = `⚠️ REGISTRO FALLECIDO\n\n` +
+        return `⚠️ REGISTRO FALLECIDO\n\n` +
                `Nombre: ${data.nombre || '---'}\n` +
                `DNI: ${data.dni || '---'}\n` +
                `Domicilio: ${data.domicilio || 'Sin domicilio en padrón'}\n` +
@@ -728,10 +540,9 @@ function construirTextoPlano(data, creditData) {
                `Provincia: ${data.provincia || '-'}\n\n` +
                `⚠️ ESTA PERSONA SE ENCUENTRA FALLECIDA\n\n` +
                `Origen: ${data.origen || '---'} · Fecha: ${data.timestamp || '---'}`;
-        return texto;
     }
 
-    texto = `🔍 INFORME DNI ${data.dni || '---'}\n` +
+    let texto = `🔍 INFORME DNI ${data.dni || '---'}\n` +
            `${'─'.repeat(40)}\n\n` +
            `👤 DATOS PERSONALES\n` +
            `  Nombre: ${data.nombre || '---'}\n` +
@@ -750,7 +561,6 @@ function construirTextoPlano(data, creditData) {
            `  Fijo 2: ${data.fijo2 || '-'}\n` +
            `  Email: ${emails}\n\n`;
 
-    // Agregar datos crediticios si existen
     if (creditData && creditData.length > 0) {
         const morosidad = calcularMorosidad(creditData);
         texto += `📊 NIVEL DE MOROSIDAD\n` +
@@ -815,7 +625,7 @@ function copiarResultado() {
 }
 
 // ============================================================
-// PREPARAR BÚSQUEDA Y CONSULTAR (INTELIGENTE)
+// PREPARAR BÚSQUEDA
 // ============================================================
 function prepararBusqueda() {
     consoleElement.classList.add('oculto');
@@ -825,10 +635,9 @@ function prepararBusqueda() {
 }
 
 // ============================================================
-// REINICIAR ESTADO COMPLETO (al recargar la página)
+// REINICIAR ESTADO
 // ============================================================
 function reiniciarEstado() {
-    // Resetear elementos visuales
     const consoleElement = document.getElementById('consoleOutput');
     const typewriterElement = document.getElementById('typewriter');
     const cursorElement = document.getElementById('cursor');
@@ -838,29 +647,18 @@ function reiniciarEstado() {
     const btnCopiar = document.getElementById('btnCopiar');
     const dniInput = document.getElementById('dniInput');
     
-    // Limpiar input
     dniInput.value = '';
-    
-    // Ocultar resultados
     resultContent.className = 'result';
     resultText.innerHTML = '';
     btnCopiar.classList.remove('visible');
     btnCopiar.textContent = '📋 COPIAR';
     btnCopiar.classList.remove('copiado');
-    
-    // Resetear consola
     consoleElement.classList.remove('oculto');
     searchContainer.classList.remove('visible', 'arriba');
     document.body.classList.remove('fondo-busqueda');
-    
-    // Restaurar el fondo original (f13.png)
     cambiarFondo('f13.png');
-    
-    // Resetear cursor y typewriter
     cursorElement.style.display = 'block';
     typewriterElement.innerHTML = '';
-    
-    // Resetear último resultado
     ultimoResultado = '';
 }
 
@@ -869,18 +667,14 @@ function reiniciarEstado() {
 // ============================================================
 function detectarComando(query) {
     const queryLower = query.toLowerCase().trim();
-    
-    // Palabras clave para descargas
     const descargasKeywords = ['descarga', 'descargas', 'programa', 'programas', 'software', 'apps', 'aplicaciones', 'download', 'anydesk', 'collector', 'zoiper'];
     
-    // Verificar si la consulta coincide con alguna palabra clave de descargas
     for (let keyword of descargasKeywords) {
         if (queryLower.includes(keyword)) {
             return { tipo: 'descargas' };
         }
     }
     
-    // Verificar si es número (DNI)
     if (/^\d+$/.test(query)) {
         if (query.length >= 6) {
             return { tipo: 'dni', valor: query };
@@ -889,7 +683,6 @@ function detectarComando(query) {
         }
     }
     
-    // Es texto (búsqueda de políticas)
     if (query.length >= 2) {
         return { tipo: 'politicas', valor: query };
     }
@@ -898,41 +691,52 @@ function detectarComando(query) {
 }
 
 // ============================================================
-// BUSCAR DNI O POLÍTICAS
+// BUSCAR DNI O POLÍTICAS - CON CONTROL DE EJECUCIÓN
 // ============================================================
+let buscando = false; // Bandera para evitar ejecuciones duplicadas
+
 async function buscarDNI() {
+    // Si ya está buscando, ignorar
+    if (buscando) {
+        console.log('Búsqueda en progreso, ignorando...');
+        return;
+    }
+    
     const input = document.getElementById('dniInput');
-    const resultDiv = document.getElementById('resultContent');
+    const resultContent = document.getElementById('resultContent');
     const resultText = document.getElementById('resultText');
     const btnCopiar = document.getElementById('btnCopiar');
     const query = input.value.trim();
 
     if (!query || query.length < 2) {
-        resultDiv.className = 'result visible';
+        resultContent.className = 'result visible';
         btnCopiar.classList.remove('visible');
         resultText.innerHTML = `<div class="error">⚠️ Ingrese un DNI (mínimo 6 dígitos) o nombre de entidad (mínimo 2 letras).</div>`;
         return;
     }
 
+    // Marcar como buscando
+    buscando = true;
+
     prepararBusqueda();
-    resultDiv.className = 'result visible';
+    resultContent.className = 'result visible';
     btnCopiar.classList.remove('visible');
     
-    // Detectar el tipo de consulta
     const comando = detectarComando(query);
     
-    // Manejar comandos especiales
     if (comando.tipo === 'descargas') {
         mostrarDescargas();
+        buscando = false;
         return;
     }
     
     if (comando.tipo === 'error') {
         resultText.innerHTML = `<div class="error">${comando.mensaje}</div>`;
+        buscando = false;
         return;
     }
     
-    // Mostrar loading para búsquedas normales
+    // ===== MOSTRAR LOADING INICIAL =====
     resultText.innerHTML = `
         <div style="text-align:center;padding:20px;color:var(--violet-soft);font-size:14px;">
             <div style="margin-bottom:12px;display:flex;justify-content:center;gap:8px;font-size:28px;">
@@ -943,45 +747,141 @@ async function buscarDNI() {
                 <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.6s;">🟪</span>
             </div>
             <div style="letter-spacing:2px;color:var(--violet-soft);font-size:13px;">
-                Buscando<span style="display:inline-block;animation: dots 1.5s steps(4) infinite;">...</span>
+                Buscando en base de datos<span style="display:inline-block;animation: dots 1.5s steps(4) infinite;">...</span>
             </div>
         </div>
     `;
+    
+    await new Promise(resolve => setTimeout(resolve, 50));
 
     try {
         if (comando.tipo === 'dni') {
-            // Buscar datos personales
+            // ===== PASO 1: CONSULTAR XFINDER =====
+            resultText.innerHTML = `
+                <div style="text-align:center;padding:20px;color:var(--violet-soft);font-size:14px;">
+                    <div style="margin-bottom:12px;display:flex;justify-content:center;gap:8px;font-size:28px;">
+                        <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0s;">🟪</span>
+                        <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.15s;">🟪</span>
+                        <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.3s;">⬛</span>
+                        <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.45s;">⬛</span>
+                        <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.6s;">🟪</span>
+                    </div>
+                    <div style="letter-spacing:2px;color:var(--violet-soft);font-size:13px;">
+                        📋 Buscando datos personales<span style="display:inline-block;animation: dots 1.5s steps(4) infinite;">...</span>
+                    </div>
+                </div>
+            `;
+            
+            await new Promise(resolve => setTimeout(resolve, 50));
+            
             const response = await fetch(`${API_URL}?dni=${encodeURIComponent(comando.valor)}`);
             
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
-            
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const data = await response.json();
             
             if (data.error) {
                 resultText.innerHTML = `<div class="error">❌ ${data.error}</div>`;
+                buscando = false;
                 return;
             }
             
-            // Buscar datos crediticios (si no está fallecido)
-            let creditData = null;
+            // ===== PASO 2: MOSTRAR DATOS DE XFINDER =====
+            mostrarResultadoXfinder(data);
+            
+            // ===== PASO 3: CONSULTAR CREDITICIA =====
             if (!data.fallecido) {
+                // Eliminar cualquier contenedor anterior de crediticia
+                const oldContainer = document.getElementById('creditContainer');
+                if (oldContainer) {
+                    oldContainer.remove();
+                }
+                
+                // Crear contenedor para crediticia (loading)
+                const creditContainer = document.createElement('div');
+                creditContainer.id = 'creditContainer';
+                creditContainer.innerHTML = `
+                    <div style="text-align:center;padding:20px;color:var(--violet-soft);font-size:14px;border:1px solid rgba(160,68,255,0.1);border-radius:12px;margin-top:10px;">
+                        <div style="margin-bottom:12px;display:flex;justify-content:center;gap:8px;font-size:28px;">
+                            <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0s;">🟪</span>
+                            <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.15s;">🟪</span>
+                            <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.3s;">⬛</span>
+                            <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.45s;">⬛</span>
+                            <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.6s;">🟪</span>
+                        </div>
+                        <div style="letter-spacing:2px;color:var(--violet-soft);font-size:13px;">
+                            💳 Buscando historial crediticio<span style="display:inline-block;animation: dots 1.5s steps(4) infinite;">...</span>
+                        </div>
+                    </div>
+                `;
+                resultText.appendChild(creditContainer);
+                
+                // Forzar renderizado
+                await new Promise(resolve => setTimeout(resolve, 50));
+                
                 try {
                     const creditResponse = await fetch(`${CREDIT_API_URL}?dni=${encodeURIComponent(comando.valor)}`);
                     if (creditResponse.ok) {
-                        creditData = await creditResponse.json();
-                        // Si la respuesta tiene error, ignorar
-                        if (creditData && creditData.error) {
-                            creditData = null;
+                        const creditData = await creditResponse.json();
+                        
+                        const container = document.getElementById('creditContainer');
+                        
+                        if (creditData && !creditData.error && creditData.length > 0) {
+                            if (container) {
+                                const morosidadHTML = mostrarMorosidad(creditData);
+                                const deudasHTML = mostrarDeudas(creditData);
+                                container.outerHTML = morosidadHTML + deudasHTML;
+                            }
+                            ultimoResultado = construirTextoPlano(data, creditData);
+                        } else {
+                            if (container) {
+                                container.remove();
+                            }
+                            const sinDatosHTML = `
+                                <div style="text-align:center;padding:12px;color:#8a7ea0;font-size:13px;border:1px solid rgba(160,68,255,0.1);border-radius:12px;margin-top:10px;">
+                                    📭 Sin historial crediticio registrado
+                                </div>
+                            `;
+                            resultText.innerHTML += sinDatosHTML;
+                            ultimoResultado = construirTextoPlano(data, null);
                         }
+                    } else {
+                        const container = document.getElementById('creditContainer');
+                        if (container) {
+                            container.remove();
+                        }
+                        const errorHTML = `
+                            <div style="text-align:center;padding:12px;color:#ff6b6b;font-size:13px;border:1px solid rgba(255,107,107,0.2);border-radius:12px;margin-top:10px;">
+                                ⚠️ No se pudo consultar el historial crediticio
+                            </div>
+                        `;
+                        resultText.innerHTML += errorHTML;
+                        ultimoResultado = construirTextoPlano(data, null);
                     }
                 } catch (e) {
                     console.warn('Error al obtener datos crediticios:', e);
+                    const container = document.getElementById('creditContainer');
+                    if (container) {
+                        container.remove();
+                    }
+                    const errorHTML = `
+                        <div style="text-align:center;padding:12px;color:#ff6b6b;font-size:13px;border:1px solid rgba(255,107,107,0.2);border-radius:12px;margin-top:10px;">
+                            ⚠️ Error al consultar historial crediticio
+                        </div>
+                    `;
+                    resultText.innerHTML += errorHTML;
+                    ultimoResultado = construirTextoPlano(data, null);
                 }
+            } else {
+                const origenHTML = `
+                    <div class="origen">
+                        <span>📌 Fuente: ${data.origen || '---'}</span>
+                        <span>📅 Fecha del dato: ${data.timestamp || '---'}</span>
+                    </div>
+                `;
+                resultText.innerHTML += origenHTML;
+                ultimoResultado = construirTextoPlano(data);
             }
             
-            mostrarResultado(data, creditData);
         } else if (comando.tipo === 'politicas') {
             const resultados = await buscarPoliticasAPI(comando.valor);
             
@@ -1003,21 +903,131 @@ async function buscarDNI() {
             </div>
         `;
     }
+    
+    // Marcar como terminado
+    buscando = false;
+}
+
+
+// ============================================================
+// MOSTRAR RESULTADO XFINDER (SOLO DATOS PERSONALES)
+// ============================================================
+function mostrarResultadoXfinder(data) {
+    const resultDiv = document.getElementById('resultText');
+    const btnCopiar = document.getElementById('btnCopiar');
+    
+    btnCopiar.classList.add('visible');
+    cambiarFondo('f12.png');
+    
+    function whatsappLink(numero) {
+        if (!numero || numero === '-' || numero === '---') return '';
+        const clean = numero.replace(/\D/g, '');
+        if (clean.length < 6) return '';
+        const fullNumber = clean.startsWith('54') ? clean : '54' + clean;
+        return `https://wa.me/${fullNumber}`;
+    }
+    
+    function telegramLink(numero) {
+        if (!numero || numero === '-' || numero === '---') return '';
+        const clean = numero.replace(/\D/g, '');
+        if (clean.length < 6) return '';
+        const fullNumber = clean.startsWith('54') ? clean : '54' + clean;
+        return `https://t.me/+${fullNumber}`;
+    }
+    
+    function campoContacto(label, valor) {
+        if (!valor || valor === '-' || valor === '---') {
+            return `<div class="campo"><span class="label">${label}</span><span class="valor">-</span></div>`;
+        }
+        const clean = valor.replace(/\D/g, '');
+        if (clean.length < 6) return `<div class="campo"><span class="label">${label}</span><span class="valor">${valor}</span></div>`;
+        
+        const waLink = whatsappLink(valor);
+        const tgLink = telegramLink(valor);
+        
+        return `<div class="campo">
+            <span class="label">${label}</span>
+            <span class="valor">
+                ${valor}
+                <a href="${waLink}" target="_blank" style="display:inline-block;margin-left:8px;text-decoration:none;vertical-align:middle;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'" title="WhatsApp">
+                    <img src="assets/w.png" alt="WhatsApp" style="width:20px;height:20px;display:inline-block;vertical-align:middle;border-radius:4px;">
+                </a>
+                <a href="${tgLink}" target="_blank" style="display:inline-block;margin-left:6px;text-decoration:none;vertical-align:middle;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'" title="Telegram">
+                    <img src="assets/t.png" alt="Telegram" style="width:20px;height:20px;display:inline-block;vertical-align:middle;border-radius:4px;">
+                </a>
+            </span>
+        </div>`;
+    }
+
+    let html = '';
+
+    if (data.fallecido) {
+        html = `
+            <div class="header-card">
+                <div class="dni-number">⚠️ ${data.dni || '---'}</div>
+                <div class="badge fallecido">✝ FALLECIDO</div>
+            </div>
+            <div class="seccion">
+                <div class="seccion-titulo"><span class="icon">👤</span> DATOS PERSONALES</div>
+                <div class="campo"><span class="label">Nombre</span><span class="valor">${data.nombre || '---'}</span></div>
+                <div class="campo"><span class="label">DNI</span><span class="valor">${data.dni || '---'}</span></div>
+                <div class="campo"><span class="label">Domicilio</span><span class="valor">${data.domicilio || 'Sin domicilio en padrón'}</span></div>
+                <div class="campo"><span class="label">Localidad</span><span class="valor">${data.localidad || '-'}</span></div>
+                <div class="campo"><span class="label">Provincia</span><span class="valor">${data.provincia || '-'}</span></div>
+            </div>
+            <div class="seccion" style="border-color: rgba(255,117,111,0.3);">
+                <div class="seccion-titulo"><span class="icon">⚠️</span> ESTA PERSONA SE ENCUENTRA FALLECIDA</div>
+            </div>
+        `;
+        
+        resultDiv.innerHTML = html;
+        return;
+    }
+
+    const emails = [data.email, data.email2, data.email3].filter(Boolean).join(', ') || '-';
+
+    html = `
+        <div class="header-card">
+            <div class="dni-number">🔍 ${data.dni || '---'}</div>
+        </div>
+
+        <div class="seccion">
+            <div class="seccion-titulo"><span class="icon">👤</span> DATOS PERSONALES</div>
+            <div class="campo"><span class="label">Nombre</span><span class="valor">${data.nombre || '---'}</span></div>
+            <div class="campo"><span class="label">DNI</span><span class="valor">${data.dni || '---'}</span></div>
+            <div class="campo"><span class="label">Domicilio</span><span class="valor">${data.domicilio || 'Sin domicilio en padrón'}</span></div>
+            <div class="campo"><span class="label">Localidad</span><span class="valor">${data.localidad || '-'}</span></div>
+            <div class="campo"><span class="label">Provincia</span><span class="valor">${data.provincia || '-'}</span></div>
+        </div>
+
+        <div class="seccion">
+            <div class="seccion-titulo"><span class="icon">💼</span> DATOS LABORALES</div>
+            <div class="campo"><span class="label">Empleador</span><span class="valor">${data.empleador || 'Sin empleo conocido'}</span></div>
+            <div class="campo"><span class="label">CUIT</span><span class="valor">${data.cuit || '-'}</span></div>
+            <div class="campo"><span class="label">Empleados</span><span class="valor">${data.empleados || '-'}</span></div>
+        </div>
+
+        <div class="seccion">
+            <div class="seccion-titulo"><span class="icon">📱</span> CONTACTO</div>
+            ${campoContacto('Celular 1', data.celular1)}
+            ${campoContacto('Celular 2', data.celular2)}
+            <div class="campo"><span class="label">Fijo 1</span><span class="valor">${data.fijo1 || '-'}</span></div>
+            <div class="campo"><span class="label">Fijo 2</span><span class="valor">${data.fijo2 || '-'}</span></div>
+            <div class="campo"><span class="label">Email</span><span class="valor" style="font-size:12px;">${emails}</span></div>
+        </div>
+    `;
+
+    resultDiv.innerHTML = html;
 }
 
 // ============================================================
 // INICIALIZACIÓN
 // ============================================================
 document.addEventListener('DOMContentLoaded', async () => {
-    // REINICIAR ESTADO COMPLETO AL CARGAR LA PÁGINA
     reiniciarEstado();
-    
     typewriterElement.textContent = 'Cargando...';
-    
-    // PRIMERO: Obtener el total (espera a que termine)
     const total = await obtenerTotalRegistros();
     
-    // SEGUNDO: Mostrar la consola con el total ya cargado
     const lines = [
         "Bienvenido a asistAI 🤖                                           ",
         "Tu asistente inteligente para búsqueda de datos.",
