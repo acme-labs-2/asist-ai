@@ -86,7 +86,7 @@ async function verificarSesion() {
 
 // ===== CERRAR SESIÓN =====
 function logout() {
-    if (confirm('¿Estás seguro de que queres cerrar sesión?')) {
+    if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
         localStorage.removeItem('asistAI_token');
         localStorage.removeItem('asistAI_user');
         localStorage.removeItem('asistAI_logged');
@@ -155,7 +155,7 @@ async function buscarPoliticasAPI(termino) {
 }
 
 // ============================================================
-// FUNCION PARA CALCULAR NIVEL DE MOROSIDAD
+// FUNCION PARA CALCULAR NIVEL DE MOROSIDAD (CORREGIDA)
 // ============================================================
 function calcularMorosidad(deudas) {
     if (!deudas || deudas.length === 0) {
@@ -179,17 +179,25 @@ function calcularMorosidad(deudas) {
     let montoTotal = 0;
 
     deudas.forEach(deuda => {
+        // Usar el campo numérico correcto - asegurarse que sea parseInt
         const situacion = parseInt(deuda.Situacion) || 1;
         const monto = parseFloat(deuda.Monto) || 0;
         
         montoTotal += monto;
 
+        // Clasificación correcta según los valores numéricos
+        // 1 = Normal
+        // 4 = Alto riesgo
+        // 5 = Irrecuperable
         if (situacion === 1) {
             deudasNormales++;
         } else if (situacion === 4) {
             deudasRiesgo++;
         } else if (situacion === 5) {
             deudasIrrecuperables++;
+        } else {
+            // Si hay otros valores, clasificar como riesgo por defecto
+            deudasRiesgo++;
         }
     });
 
@@ -282,7 +290,7 @@ function mostrarMorosidad(deudas) {
 }
 
 // ============================================================
-// FUNCION PARA MOSTRAR DEUDAS DETALLADAS
+// FUNCION PARA MOSTRAR DEUDAS DETALLADAS (CORREGIDA)
 // ============================================================
 function mostrarDeudas(deudas) {
     if (!deudas || deudas.length === 0) return '';
@@ -297,6 +305,7 @@ function mostrarDeudas(deudas) {
     `;
     
     deudas.forEach((deuda, index) => {
+        // Usar el mismo criterio que en calcularMorosidad
         const situacion = parseInt(deuda.Situacion) || 1;
         let colorSituacion = '#00c896';
         let situacionLabel = 'Normal';
@@ -307,6 +316,10 @@ function mostrarDeudas(deudas) {
         } else if (situacion === 5) {
             colorSituacion = '#ff1744';
             situacionLabel = 'Irrecuperable';
+        } else if (situacion !== 1) {
+            // Cualquier otro valor lo tratamos como riesgo
+            colorSituacion = '#ffb530';
+            situacionLabel = 'En riesgo';
         }
         
         const monto = parseFloat(deuda.Monto) || 0;
@@ -1105,9 +1118,6 @@ function mostrarResultadoXfinder(data) {
     resultDiv.innerHTML = html;
 }
 
-// ============================================================
-// INICIALIZACIÓN (MODIFICADA CON LOGIN)
-// ============================================================
 async function iniciarApp() {
     reiniciarEstado();
     typewriterElement.textContent = 'Cargando...';
