@@ -1,4 +1,100 @@
 // ============================================================
+// SISTEMA DE AUTENTICACIÓN (LOGIN CON SERVIDOR)
+// ============================================================
+
+// ===== FUNCIÓN DE LOGIN =====
+async function loginSubmit() {
+    const user = document.getElementById('loginUser').value.trim().toLowerCase();
+    const pass = document.getElementById('loginPass').value.trim();
+    const errorEl = document.getElementById('loginError');
+    const loginBtn = document.querySelector('.login-box button');
+    
+    if (!user || !pass) {
+        errorEl.textContent = '❌ Ingresa usuario y contraseña';
+        errorEl.style.display = 'block';
+        return;
+    }
+    
+    loginBtn.disabled = true;
+    loginBtn.textContent = '⏳ Verificando...';
+    
+    try {
+        const response = await fetch('https://carover0.xyz/api/login.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user, pass })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            errorEl.style.display = 'none';
+            localStorage.setItem('asistAI_token', data.token);
+            localStorage.setItem('asistAI_user', data.user);
+            localStorage.setItem('asistAI_logged', 'true');
+            
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'block';
+            document.getElementById('userDisplay').textContent = '👤 ' + data.user;
+            
+            iniciarApp();
+        } else {
+            errorEl.textContent = '❌ ' + (data.error || 'Credenciales incorrectas');
+            errorEl.style.display = 'block';
+            document.getElementById('loginPass').value = '';
+            document.getElementById('loginUser').focus();
+        }
+    } catch (e) {
+        errorEl.textContent = '❌ Error al conectar con el servidor';
+        errorEl.style.display = 'block';
+        console.error('Login error:', e);
+    }
+    
+    loginBtn.disabled = false;
+    loginBtn.textContent = '🔓 INGRESAR';
+}
+
+// ===== VERIFICAR SESIÓN EXISTENTE =====
+async function verificarSesion() {
+    const token = localStorage.getItem('asistAI_token');
+    const user = localStorage.getItem('asistAI_user');
+    const logged = localStorage.getItem('asistAI_logged');
+    
+    if (!token || !user || logged !== 'true') {
+        return false;
+    }
+    
+    try {
+        const response = await fetch(`https://carover0.xyz/api/verificar_sesion.php?token=${encodeURIComponent(token)}`);
+        const data = await response.json();
+        
+        if (data.valid) {
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'block';
+            document.getElementById('userDisplay').textContent = '👤 ' + data.user;
+            return true;
+        }
+    } catch (e) {
+        console.warn('Error al verificar sesión:', e);
+    }
+    
+    localStorage.removeItem('asistAI_token');
+    localStorage.removeItem('asistAI_user');
+    localStorage.removeItem('asistAI_logged');
+    return false;
+}
+
+// ===== CERRAR SESIÓN =====
+function logout() {
+    if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
+        localStorage.removeItem('asistAI_token');
+        localStorage.removeItem('asistAI_user');
+        localStorage.removeItem('asistAI_logged');
+        location.reload();
+    }
+}
+
+// ============================================================
 // FUNCIONES DE BÚSQUEDA
 // ============================================================
 const API_URL = 'https://carover0.xyz/api/xfinder.php';
@@ -693,10 +789,9 @@ function detectarComando(query) {
 // ============================================================
 // BUSCAR DNI O POLÍTICAS - CON CONTROL DE EJECUCIÓN
 // ============================================================
-let buscando = false; // Bandera para evitar ejecuciones duplicadas
+let buscando = false;
 
 async function buscarDNI() {
-    // Si ya está buscando, ignorar
     if (buscando) {
         console.log('Búsqueda en progreso, ignorando...');
         return;
@@ -715,7 +810,6 @@ async function buscarDNI() {
         return;
     }
 
-    // Marcar como buscando
     buscando = true;
 
     prepararBusqueda();
@@ -736,7 +830,6 @@ async function buscarDNI() {
         return;
     }
     
-    // ===== MOSTRAR LOADING INICIAL =====
     resultText.innerHTML = `
         <div style="text-align:center;padding:20px;color:var(--violet-soft);font-size:14px;">
             <div style="margin-bottom:12px;display:flex;justify-content:center;gap:8px;font-size:28px;">
@@ -756,7 +849,6 @@ async function buscarDNI() {
 
     try {
         if (comando.tipo === 'dni') {
-            // ===== PASO 1: CONSULTAR XFINDER =====
             resultText.innerHTML = `
                 <div style="text-align:center;padding:20px;color:var(--violet-soft);font-size:14px;">
                     <div style="margin-bottom:12px;display:flex;justify-content:center;gap:8px;font-size:28px;">
@@ -785,18 +877,14 @@ async function buscarDNI() {
                 return;
             }
             
-            // ===== PASO 2: MOSTRAR DATOS DE XFINDER =====
             mostrarResultadoXfinder(data);
             
-            // ===== PASO 3: CONSULTAR CREDITICIA =====
             if (!data.fallecido) {
-                // Eliminar cualquier contenedor anterior de crediticia
                 const oldContainer = document.getElementById('creditContainer');
                 if (oldContainer) {
                     oldContainer.remove();
                 }
                 
-                // Crear contenedor para crediticia (loading)
                 const creditContainer = document.createElement('div');
                 creditContainer.id = 'creditContainer';
                 creditContainer.innerHTML = `
@@ -815,7 +903,6 @@ async function buscarDNI() {
                 `;
                 resultText.appendChild(creditContainer);
                 
-                // Forzar renderizado
                 await new Promise(resolve => setTimeout(resolve, 50));
                 
                 try {
@@ -904,10 +991,8 @@ async function buscarDNI() {
         `;
     }
     
-    // Marcar como terminado
     buscando = false;
 }
-
 
 // ============================================================
 // MOSTRAR RESULTADO XFINDER (SOLO DATOS PERSONALES)
@@ -1021,9 +1106,9 @@ function mostrarResultadoXfinder(data) {
 }
 
 // ============================================================
-// INICIALIZACIÓN
+// INICIALIZACIÓN (MODIFICADA CON LOGIN)
 // ============================================================
-document.addEventListener('DOMContentLoaded', async () => {
+async function iniciarApp() {
     reiniciarEstado();
     typewriterElement.textContent = 'Cargando...';
     const total = await obtenerTotalRegistros();
@@ -1049,6 +1134,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     typewriterElement.innerHTML = '';
     iniciarEscritura(lines);
+}
+
+// ===== NUEVO: Verificar sesión al cargar =====
+document.addEventListener('DOMContentLoaded', async function() {
+    const logged = await verificarSesion();
+    if (!logged) {
+        document.getElementById('loginOverlay').style.display = 'flex';
+        document.getElementById('loginUser').focus();
+    }
 });
 
 // Agregar listener para la tecla Enter
