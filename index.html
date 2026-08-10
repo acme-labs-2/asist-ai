@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACME Labs · Assist-AI</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* ===== ESTILOS PARA LOGIN ===== */
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 99999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(8px);
+        }
+        .login-box {
+            background: rgba(18, 6, 31, 0.97);
+            border: 2px solid var(--violet);
+            border-radius: 16px;
+            padding: 40px 35px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 0 60px rgba(160, 68, 255, 0.3);
+            animation: slideUp 0.3s ease;
+        }
+        .login-box .logo {
+            text-align: center;
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        .login-box h2 {
+            color: var(--violet-soft);
+            text-align: center;
+            margin-bottom: 5px;
+            font-size: 22px;
+            font-family: 'Lucida Console', Monaco, monospace;
+        }
+        .login-box .subtitle {
+            color: #4a5270;
+            text-align: center;
+            font-size: 12px;
+            margin-bottom: 25px;
+            font-family: 'Lucida Console', Monaco, monospace;
+        }
+        .login-box .input-group {
+            margin-bottom: 15px;
+        }
+        .login-box .input-group label {
+            display: block;
+            color: #8a7ea0;
+            font-size: 12px;
+            margin-bottom: 5px;
+            font-family: 'Lucida Console', Monaco, monospace;
+        }
+        .login-box input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid rgba(160, 68, 255, 0.2);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 14px;
+            font-family: 'Lucida Console', Monaco, monospace;
+            outline: none;
+            transition: all 0.3s;
+            box-sizing: border-box;
+        }
+        .login-box input:focus {
+            border-color: var(--violet);
+            box-shadow: 0 0 0 3px rgba(160, 68, 255, 0.1);
+        }
+        .login-box input::placeholder {
+            color: #4a5270;
+        }
+        .login-box button {
+            width: 100%;
+            padding: 13px;
+            background: var(--violet);
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Lucida Console', Monaco, monospace;
+            margin-top: 5px;
+        }
+        .login-box button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(160, 68, 255, 0.3);
+        }
+        .login-box .error-msg {
+            color: #ff6b6b;
+            font-size: 13px;
+            text-align: center;
+            margin-top: 12px;
+            display: none;
+            font-family: 'Lucida Console', Monaco, monospace;
+        }
+        .login-box .hint {
+            color: #4a5270;
+            font-size: 11px;
+            text-align: center;
+            margin-top: 15px;
+            font-family: 'Lucida Console', Monaco, monospace;
+            border-top: 1px solid rgba(160, 68, 255, 0.1);
+            padding-top: 15px;
+        }
+        .login-box .hint span {
+            color: var(--violet-soft);
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        #mainContent {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== PANTALLA DE LOGIN ===== -->
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-box">
+            <div class="logo">🤖</div>
+            <h2>asistAI</h2>
+            <div class="subtitle">Acceso restringido · Personal autorizado</div>
+            
+            <div class="input-group">
+                <label>👤 Usuario</label>
+                <input type="text" id="loginUser" placeholder="Ej: juan.perez" 
+                       onkeydown="if(event.key==='Enter') loginSubmit()" autofocus>
+            </div>
+            
+            <div class="input-group">
+                <label>🔑 Contraseña</label>
+                <input type="password" id="loginPass" placeholder="••••••••" 
+                       onkeydown="if(event.key==='Enter') loginSubmit()">
+            </div>
+            
+            <button onclick="loginSubmit()">🔓 INGRESAR</button>
+            
+            <div class="error-msg" id="loginError">❌ Usuario o contraseña incorrectos</div>
+            
+            <div class="hint">
+                🔒 Sistema para uso exclusivo del equipo<br>
+                Contacta con <span>Soporte</span> si tenes problemas
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== CONTENIDO PRINCIPAL ===== -->
+    <main id="mainContent">
+        <section class="panel">
+            <div class="panel-inner">
+                <!-- ===== HEADER CON USUARIO Y LOGOUT (CORREGIDO) ===== -->
+                <div style="display:flex;align-items:center;padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid rgba(160,68,255,0.15);gap:20px;flex-wrap:wrap;">
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <span style="font-size:18px;font-weight:bold;color:var(--violet-soft);">asistAI</span>
+                        <span style="font-size:11px;color:#4a5270;background:rgba(79,70,229,0.15);padding:2px 10px;border-radius:10px;">🔒</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <span style="font-size:11px;color:#8a7ea0;" id="userDisplay">👤 usuario</span>
+                        <button onclick="logout()" style="
+                            background:rgba(255,107,107,0.15);
+                            color:#ff6b6b;
+                            border:1px solid rgba(255,107,107,0.2);
+                            border-radius:8px;
+                            padding:4px 12px;
+                            cursor:pointer;
+                            font-size:11px;
+                            font-family:'Lucida Console',Monaco,monospace;
+                            transition:all 0.3s;
+                        " onmouseover="this.style.background='rgba(255,107,107,0.25)'" 
+                        onmouseout="this.style.background='rgba(255,107,107,0.15)'">
+                            🚪 Salir
+                        </button>
+                    </div>
+                </div>
+                <!-- ===== FIN HEADER ===== -->
+
+                <div class="console" id="consoleOutput">
+                    <span id="typewriter"></span><span class="cursor" id="cursor"></span>
+                </div>
+                <div class="search-container" id="searchContainer">
+                    <label for="dniInput">📌 Ingresa un DNI, el nombre de una entidad o descargas</label>
+                    <div class="input-row">
+                        <input type="text" id="dniInput" placeholder="Ej: 34340714 o Creditia" maxlength="50" onkeydown="if(event.key==='Enter') buscarDNI()">
+                        <div class="button-group">
+                            <button onclick="buscarDNI()">🔍 CONSULTAR</button>
+                            <button class="btn-copiar-busqueda" id="btnCopiar" onclick="copiarResultado()">
+                                📋 COPIAR
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="result" id="resultContent">
+                    <div id="resultText" class="result-moderno"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
