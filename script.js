@@ -86,7 +86,7 @@ async function verificarSesion() {
 
 // ===== CERRAR SESIÓN =====
 function logout() {
-    if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
+    if (confirm('¿Estás seguro de que queres cerrar sesión?')) {
         localStorage.removeItem('asistAI_token');
         localStorage.removeItem('asistAI_user');
         localStorage.removeItem('asistAI_logged');
