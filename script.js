@@ -1127,9 +1127,7 @@ async function iniciarApp() {
         "Mi búsqueda es inteligente.",
         "🔍 Si ingresas un número → busco DNI en la base de datos.",
         "📋 Si ingresas letras → busco políticas de entidades.",
-        "📥 Si ingresas 'descargas' te muestro los links de los programas que usamos",
-        "",
-        "💡 Pronto voy a tener mas herramientas, si mi desarrollador tiene ganas..."
+        "📥 Si ingresas 'descargas' te muestro los links de los programas que usamos"
     ];
     
     typewriterElement.innerHTML = '';
