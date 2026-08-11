@@ -6,7 +6,6 @@
     <title>ACME Labs · Assist-AI</title>
     <link rel="stylesheet" href="styles.css">
     <style>
-        /* ===== ESTILOS PARA LOGIN ===== */
         .login-overlay {
             position: fixed;
             top: 0;
@@ -128,7 +127,6 @@
 </head>
 <body>
 
-    <!-- ===== PANTALLA DE LOGIN ===== -->
     <div class="login-overlay" id="loginOverlay">
         <div class="login-box">
             <div class="logo">🤖</div>
@@ -158,35 +156,50 @@
         </div>
     </div>
 
-    <!-- ===== CONTENIDO PRINCIPAL ===== -->
     <main id="mainContent">
         <section class="panel">
             <div class="panel-inner">
-                <!-- ===== HEADER CON USUARIO Y LOGOUT (CORREGIDO) ===== -->
                 <div style="display:flex;align-items:center;padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid rgba(160,68,255,0.15);gap:20px;flex-wrap:wrap;">
                     <div style="display:flex;align-items:center;gap:10px;">
                         <span style="font-size:18px;font-weight:bold;color:var(--violet-soft);">asistAI</span>
                         <span style="font-size:11px;color:#4a5270;background:rgba(79,70,229,0.15);padding:2px 10px;border-radius:10px;">🔒</span>
                     </div>
+
                     <div style="display:flex;align-items:center;gap:12px;">
                         <span style="font-size:11px;color:#8a7ea0;" id="userDisplay">👤 usuario</span>
+                    
+                    <button onclick="soporteTelegram()" style="
+                        background:#CE0E60;
+                        color:#ffffff;
+                        border:none;
+                        border-radius:8px;
+                        padding:4px 12px;
+                        cursor:pointer;
+                        font-size:11px;
+                        font-family:'Lucida Console',Monaco,monospace;
+                        transition:all 0.3s;
+                    " onmouseover="this.style.background='#a00b4d'" 
+                    onmouseout="this.style.background='#CE0E60'">
+                        🗯 Soporte
+                    </button>
+
+                        
                         <button onclick="logout()" style="
-                            background:rgba(255,107,107,0.15);
-                            color:#ff6b6b;
-                            border:1px solid rgba(255,107,107,0.2);
+                            background:#2952FD;
+                            color:#ffffff;
+                            border:none;
                             border-radius:8px;
                             padding:4px 12px;
                             cursor:pointer;
                             font-size:11px;
                             font-family:'Lucida Console',Monaco,monospace;
                             transition:all 0.3s;
-                        " onmouseover="this.style.background='rgba(255,107,107,0.25)'" 
-                        onmouseout="this.style.background='rgba(255,107,107,0.15)'">
+                        " onmouseover="this.style.background='#1a3fd4'" 
+                        onmouseout="this.style.background='#2952FD'">
                             🚪 Salir
                         </button>
                     </div>
                 </div>
-                <!-- ===== FIN HEADER ===== -->
 
                 <div class="console" id="consoleOutput">
                     <span id="typewriter"></span><span class="cursor" id="cursor"></span>
