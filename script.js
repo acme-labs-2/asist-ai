@@ -29,6 +29,14 @@ function iniciarVerificacionPeriodica() {
     }, 300000);
 }
 
+// Llamar a soporte por telegram
+function soporteTelegram() {
+        const telegramUser = 'xsoportedyf';
+        const message = encodeURIComponent('Hola, necesito asistencia con el sistema AssistAI');
+            
+        window.open(`https://t.me/${telegramUser}?text=${message}`, '_blank');
+}
+
 // ===== FUNCIÓN DE LOGIN =====
 async function loginSubmit() {
     const user = document.getElementById('loginUser').value.trim().toLowerCase();
