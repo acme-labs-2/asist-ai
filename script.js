@@ -2,6 +2,33 @@
 // SISTEMA DE AUTENTICACIÓN (LOGIN CON SERVIDOR)
 // ============================================================
 
+// ===== VERIFICACIÓN PERIÓDICA DE SESIÓN (CADA 5 MINUTOS) =====
+let verificacionInterval;
+
+function iniciarVerificacionPeriodica() {
+    if (verificacionInterval) clearInterval(verificacionInterval);
+    
+    verificacionInterval = setInterval(async () => {
+        const token = localStorage.getItem('asistAI_token');
+        if (!token) {
+            clearInterval(verificacionInterval);
+            return;
+        }
+        
+        try {
+            const response = await fetch(`https://carover0.xyz/api/verificar_sesion.php?token=${encodeURIComponent(token)}`);
+            const data = await response.json();
+            
+            if (!data.valid) {
+                console.warn('Sesión expirada, cerrando sesión...');
+                logout();
+            }
+        } catch (e) {
+            console.warn('Error verificando sesión:', e);
+        }
+    }, 300000);
+}
+
 // ===== FUNCIÓN DE LOGIN =====
 async function loginSubmit() {
     const user = document.getElementById('loginUser').value.trim().toLowerCase();
@@ -38,6 +65,8 @@ async function loginSubmit() {
             document.getElementById('userDisplay').textContent = '👤 ' + data.user;
             
             iniciarApp();
+	    
+            iniciarVerificacionPeriodica();
         } else {
             errorEl.textContent = '❌ ' + (data.error || 'Credenciales incorrectas');
             errorEl.style.display = 'block';
@@ -72,20 +101,30 @@ async function verificarSesion() {
             document.getElementById('loginOverlay').style.display = 'none';
             document.getElementById('mainContent').style.display = 'block';
             document.getElementById('userDisplay').textContent = '👤 ' + data.user;
+            iniciarVerificacionPeriodica();
+	    
             return true;
+        } else {
+            // Token inválido - limpiar todo
+            localStorage.removeItem('asistAI_token');
+            localStorage.removeItem('asistAI_user');
+            localStorage.removeItem('asistAI_logged');
+            return false;
         }
     } catch (e) {
         console.warn('Error al verificar sesión:', e);
+        // ERROR DE RED - NO LIMPIAR, solo mostrar login con mensaje
+        return false;
     }
-    
-    localStorage.removeItem('asistAI_token');
-    localStorage.removeItem('asistAI_user');
-    localStorage.removeItem('asistAI_logged');
-    return false;
 }
 
 // ===== CERRAR SESIÓN =====
 function logout() {
+    if (verificacionInterval) {
+        clearInterval(verificacionInterval);
+        verificacionInterval = null;
+    }
+    
     if (confirm('¿Estás seguro de que queres cerrar sesión?')) {
         localStorage.removeItem('asistAI_token');
         localStorage.removeItem('asistAI_user');
@@ -179,16 +218,11 @@ function calcularMorosidad(deudas) {
     let montoTotal = 0;
 
     deudas.forEach(deuda => {
-        // Usar el campo numérico correcto - asegurarse que sea parseInt
         const situacion = parseInt(deuda.Situacion) || 1;
         const monto = parseFloat(deuda.Monto) || 0;
         
         montoTotal += monto;
 
-        // Clasificación correcta según los valores numéricos
-        // 1 = Normal
-        // 4 = Alto riesgo
-        // 5 = Irrecuperable
         if (situacion === 1) {
             deudasNormales++;
         } else if (situacion === 4) {
@@ -196,7 +230,6 @@ function calcularMorosidad(deudas) {
         } else if (situacion === 5) {
             deudasIrrecuperables++;
         } else {
-            // Si hay otros valores, clasificar como riesgo por defecto
             deudasRiesgo++;
         }
     });
@@ -305,7 +338,6 @@ function mostrarDeudas(deudas) {
     `;
     
     deudas.forEach((deuda, index) => {
-        // Usar el mismo criterio que en calcularMorosidad
         const situacion = parseInt(deuda.Situacion) || 1;
         let colorSituacion = '#00c896';
         let situacionLabel = 'Normal';
@@ -317,7 +349,6 @@ function mostrarDeudas(deudas) {
             colorSituacion = '#ff1744';
             situacionLabel = 'Irrecuperable';
         } else if (situacion !== 1) {
-            // Cualquier otro valor lo tratamos como riesgo
             colorSituacion = '#ffb530';
             situacionLabel = 'En riesgo';
         }
@@ -744,7 +775,7 @@ function prepararBusqueda() {
 }
 
 // ============================================================
-// REINICIAR ESTADO
+// REINICIAR ESTADO - CORREGIDO PARA NO BLOQUEAR LA APP
 // ============================================================
 function reiniciarEstado() {
     const consoleElement = document.getElementById('consoleOutput');
@@ -756,18 +787,16 @@ function reiniciarEstado() {
     const btnCopiar = document.getElementById('btnCopiar');
     const dniInput = document.getElementById('dniInput');
     
+    // Limpiar solo lo necesario, no ocultar la consola si ya está visible
     dniInput.value = '';
     resultContent.className = 'result';
     resultText.innerHTML = '';
     btnCopiar.classList.remove('visible');
     btnCopiar.textContent = '📋 COPIAR';
     btnCopiar.classList.remove('copiado');
-    consoleElement.classList.remove('oculto');
-    searchContainer.classList.remove('visible', 'arriba');
-    document.body.classList.remove('fondo-busqueda');
-    cambiarFondo('f13.png');
-    cursorElement.style.display = 'block';
-    typewriterElement.innerHTML = '';
+    // No ocultar consoleElement, no remover clases de searchContainer
+    // No cambiar fondo si no es necesario
+    // No resetear typewriterElement si no es necesario
     ultimoResultado = '';
 }
 
@@ -1118,7 +1147,25 @@ function mostrarResultadoXfinder(data) {
     resultDiv.innerHTML = html;
 }
 
+// ============================================================
+// INICIAR APP - CORREGIDO PARA MANEJAR RECARGA
+// ============================================================
 async function iniciarApp() {
+    // Verificar si la consola ya está visible (para evitar reiniciar en F5)
+    const consoleElement = document.getElementById('consoleOutput');
+    const searchContainer = document.getElementById('searchContainer');
+    
+    // Si ya hay contenido visible, no reiniciar
+    if (consoleElement.classList.contains('oculto') === false && 
+        typewriterElement.innerHTML.length > 0) {
+        return;
+    }
+    
+    // Si estamos en estado de búsqueda, no reiniciar
+    if (searchContainer.classList.contains('visible')) {
+        return;
+    }
+    
     reiniciarEstado();
     typewriterElement.textContent = 'Cargando...';
     const total = await obtenerTotalRegistros();
@@ -1150,6 +1197,11 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (!logged) {
         document.getElementById('loginOverlay').style.display = 'flex';
         document.getElementById('loginUser').focus();
+    } else {
+        // Si ya está logueado, iniciar la app (pero solo si no hay búsqueda activa)
+        setTimeout(() => {
+            iniciarApp();
+        }, 500);
     }
 });
 
@@ -1159,6 +1211,27 @@ document.addEventListener('keydown', function(e) {
         const input = document.getElementById('dniInput');
         if (document.activeElement === input) {
             buscarDNI();
+        }
+    }
+});
+
+// Prevenir comportamiento por defecto de F5 (recargar)
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'F5' || (e.ctrlKey && e.key === 'r')) {
+        e.preventDefault();
+        // En lugar de recargar, limpiar la búsqueda actual
+        const dniInput = document.getElementById('dniInput');
+        if (dniInput) {
+            dniInput.value = '';
+            dniInput.focus();
+        }
+        const resultText = document.getElementById('resultText');
+        if (resultText) {
+            resultText.innerHTML = '';
+        }
+        const btnCopiar = document.getElementById('btnCopiar');
+        if (btnCopiar) {
+            btnCopiar.classList.remove('visible');
         }
     }
 });
