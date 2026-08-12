@@ -29,6 +29,7 @@ function iniciarVerificacionPeriodica() {
     }, 300000);
 }
 
+
 // Llamar a soporte por telegram
 function soporteTelegram() {
         const telegramUser = 'xsoportedyf';
@@ -36,6 +37,7 @@ function soporteTelegram() {
             
         window.open(`https://t.me/${telegramUser}?text=${message}`, '_blank');
 }
+
 
 // ===== FUNCIÓN DE LOGIN =====
 async function loginSubmit() {
@@ -147,6 +149,7 @@ function logout() {
 const API_URL = 'https://carover0.xyz/api/xfinder.php';
 const POL_API_URL = 'https://carover0.xyz/api/pol.php';
 const CREDIT_API_URL = 'https://carover0.xyz/api/crediticia.php';
+const EMPRESAS_API_URL = 'https://carover0.xyz/api/empresas.php'; // NUEVO
 let ultimoResultado = '';
 let totalRegistros = 'Cargando...';
 
@@ -199,6 +202,189 @@ async function buscarPoliticasAPI(termino) {
         console.error('Error en búsqueda de políticas:', e);
         return { error: e.message };
     }
+}
+
+// ============================================================
+// FUNCIÓN PARA BUSCAR EMPRESAS POR CUIT (NUEVO)
+// ============================================================
+async function buscarEmpresaPorCUIT(cuit) {
+    try {
+        const response = await fetch(`${EMPRESAS_API_URL}?cuit=${encodeURIComponent(cuit)}`);
+        if (!response.ok) throw new Error('Error al consultar empresas');
+        return await response.json();
+    } catch (e) {
+        console.error('Error en búsqueda de empresas:', e);
+        return { error: e.message };
+    }
+}
+
+
+// ============================================================
+// FUNCIÓN PARA MOSTRAR EMPRESAS (NUEVO)
+// ============================================================
+function mostrarEmpresas(resultado) {
+    const resultDiv = document.getElementById('resultText');
+    const btnCopiar = document.getElementById('btnCopiar');
+    
+    btnCopiar.classList.add('visible');
+    cambiarFondo('f10.png');
+    
+    if (resultado.error) {
+        resultDiv.innerHTML = `
+            <div class="error">❌ ${resultado.error}</div>
+        `;
+        ultimoResultado = `❌ ${resultado.error}`;
+        return;
+    }
+    
+    if (!resultado.resultados || resultado.resultados.length === 0) {
+        resultDiv.innerHTML = `
+            <div class="error">❌ No se encontraron empresas con CUIT: ${resultado.cuit_buscado}</div>
+        `;
+        ultimoResultado = `❌ No se encontraron empresas con CUIT: ${resultado.cuit_buscado}`;
+        return;
+    }
+    
+    let html = `
+        <div class="header-card">
+            <div class="dni-number">🏢 EMPRESAS</div>
+            <div class="badge" style="background:rgba(79,70,229,0.2);border:1px solid var(--violet);padding:4px 14px;border-radius:20px;font-size:11px;color:var(--violet-soft);text-transform:uppercase;letter-spacing:1px;">
+                ${resultado.total} resultado${resultado.total > 1 ? 's' : ''}
+            </div>
+        </div>
+    `;
+    
+    resultado.resultados.forEach((empresa, index) => {
+        const borderColors = ['var(--violet)', 'var(--green)', 'var(--gold)', 'var(--red)'];
+        
+        // Limpiar y formatear datos
+        const cuit = empresa.EMPLEADOR_CUIT || '-';
+        const razonSocial = empresa.EMPLEADOR_RAZONSOC || 'Sin nombre';
+        const empleados = empresa.CANT_EMPLEADOS || '-';
+        const domicilio = empresa.EMPLEADOR_DOMICILIO || 'Sin domicilio';
+        
+        // Teléfonos
+        const celulares = [
+            empresa.EMPLEADOR_CELULAR1,
+            empresa.EMPLEADOR_CELULAR2,
+            empresa.EMPLEADOR_CELULAR3,
+            empresa.EMPLEADOR_CELULAR4
+        ].filter(Boolean);
+        
+        const fijo = empresa.EMPLEADOR_FIJO1 || '';
+        const emails = [
+            empresa.EMPLEADOR_MAIL1,
+            empresa.EMPLEADOR_MAIL2
+        ].filter(Boolean);
+        
+        // Función para crear links de WhatsApp y Telegram
+        function linkContacto(numero) {
+            if (!numero) return '';
+            const clean = numero.replace(/\D/g, '');
+            if (clean.length < 6) return '';
+            const fullNumber = clean.startsWith('54') ? clean : '54' + clean;
+            
+            return `
+                <a href="https://wa.me/${fullNumber}" target="_blank" style="display:inline-block;margin-left:6px;text-decoration:none;vertical-align:middle;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'" title="WhatsApp">
+                    <img src="assets/w.png" alt="WhatsApp" style="width:18px;height:18px;display:inline-block;vertical-align:middle;border-radius:4px;">
+                </a>
+                <a href="https://t.me/+${fullNumber}" target="_blank" style="display:inline-block;margin-left:4px;text-decoration:none;vertical-align:middle;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'" title="Telegram">
+                    <img src="assets/t.png" alt="Telegram" style="width:18px;height:18px;display:inline-block;vertical-align:middle;border-radius:4px;">
+                </a>
+            `;
+        }
+        
+        html += `
+            <div class="seccion" style="border-left: 3px solid ${borderColors[index % 4]};">
+                <div class="seccion-titulo" style="font-size:13px;">
+                    <span class="icon">🏢</span> 
+                    ${razonSocial}
+                    <span style="font-size:11px;color:#8a7ea0;font-weight:normal;margin-left:8px;">CUIT: ${cuit}</span>
+                </div>
+                
+                <div class="campo">
+                    <span class="label">Empleados</span>
+                    <span class="valor">${empleados}</span>
+                </div>
+                
+                <div class="campo">
+                    <span class="label">Domicilio</span>
+                    <span class="valor" style="font-size:12px;">${domicilio}</span>
+                </div>
+                
+                ${fijo ? `
+                <div class="campo">
+                    <span class="label">Teléfono fijo</span>
+                    <span class="valor">${fijo}</span>
+                </div>
+                ` : ''}
+                
+                ${celulares.length > 0 ? `
+                <div class="campo" style="border-bottom:none;">
+                    <span class="label">Celulares</span>
+                    <span class="valor" style="font-size:12px;">
+                        ${celulares.map((cel, i) => `
+                            ${cel} ${linkContacto(cel)}
+                            ${i < celulares.length - 1 ? ' / ' : ''}
+                        `).join('')}
+                    </span>
+                </div>
+                ` : ''}
+                
+                ${emails.length > 0 ? `
+                <div class="campo" style="border-bottom:none;margin-top:2px;">
+                    <span class="label">Emails</span>
+                    <span class="valor" style="font-size:12px;word-break:break-all;">
+                        ${emails.join(' / ')}
+                    </span>
+                </div>
+                ` : ''}
+            </div>
+        `;
+    });
+    
+    resultDiv.innerHTML = html;
+    
+    // Construir texto plano para copiar
+    let texto = `🏢 EMPRESAS ENCONTRADAS\n`;
+    texto += `${'─'.repeat(40)}\n\n`;
+    texto += `🔍 CUIT buscado: ${resultado.cuit_buscado}\n`;
+    texto += `📊 Total: ${resultado.total}\n\n`;
+    
+    resultado.resultados.forEach((empresa, index) => {
+        texto += `${index + 1}. ${empresa.EMPLEADOR_RAZONSOC || 'Sin nombre'}\n`;
+        texto += `   CUIT: ${empresa.EMPLEADOR_CUIT || '-'}\n`;
+        texto += `   Empleados: ${empresa.CANT_EMPLEADOS || '-'}\n`;
+        texto += `   Domicilio: ${empresa.EMPLEADOR_DOMICILIO || 'Sin domicilio'}\n`;
+        
+        const celulares = [
+            empresa.EMPLEADOR_CELULAR1,
+            empresa.EMPLEADOR_CELULAR2,
+            empresa.EMPLEADOR_CELULAR3,
+            empresa.EMPLEADOR_CELULAR4
+        ].filter(Boolean);
+        
+        if (celulares.length > 0) {
+            texto += `   Celulares: ${celulares.join(' / ')}\n`;
+        }
+        
+        if (empresa.EMPLEADOR_FIJO1) {
+            texto += `   Fijo: ${empresa.EMPLEADOR_FIJO1}\n`;
+        }
+        
+        const emails = [
+            empresa.EMPLEADOR_MAIL1,
+            empresa.EMPLEADOR_MAIL2
+        ].filter(Boolean);
+        
+        if (emails.length > 0) {
+            texto += `   Emails: ${emails.join(' / ')}\n`;
+        }
+        
+        texto += '\n';
+    });
+    
+    ultimoResultado = texto;
 }
 
 // ============================================================
@@ -809,7 +995,7 @@ function reiniciarEstado() {
 }
 
 // ============================================================
-// DETECTAR COMANDOS ESPECIALES
+// DETECTAR COMANDOS ESPECIALES - ACTUALIZADO
 // ============================================================
 function detectarComando(query) {
     const queryLower = query.toLowerCase().trim();
@@ -821,23 +1007,30 @@ function detectarComando(query) {
         }
     }
     
+    // 🔴 IMPORTANTE: DETECTAR CUIT PRIMERO (10 dígitos o más)
+    if (/^\d{10,}$/.test(query)) {
+        return { tipo: 'empresa', valor: query };
+    }
+    
+    // Luego DNI (6-9 dígitos)
     if (/^\d+$/.test(query)) {
-        if (query.length >= 6) {
+        if (query.length >= 6 && query.length <= 9) {
             return { tipo: 'dni', valor: query };
         } else {
-            return { tipo: 'error', mensaje: '⚠️ Ingrese un DNI válido (mínimo 6 dígitos).' };
+            return { tipo: 'error', mensaje: '⚠️ Ingrese un DNI válido (6-9 dígitos) o CUIT (10 dígitos).' };
         }
     }
     
+    // Políticas
     if (query.length >= 2) {
         return { tipo: 'politicas', valor: query };
     }
     
-    return { tipo: 'error', mensaje: '⚠️ Ingrese un DNI (mínimo 6 dígitos) o nombre de entidad (mínimo 2 letras).' };
+    return { tipo: 'error', mensaje: '⚠️ Ingrese un DNI (6-9 dígitos), CUIT (10 dígitos) o nombre de entidad (mínimo 2 letras).' };
 }
 
 // ============================================================
-// BUSCAR DNI O POLÍTICAS - CON CONTROL DE EJECUCIÓN
+// BUSCAR DNI, CUIT O POLÍTICAS - ACTUALIZADO Y CORREGIDO
 // ============================================================
 let buscando = false;
 
@@ -856,7 +1049,7 @@ async function buscarDNI() {
     if (!query || query.length < 2) {
         resultContent.className = 'result visible';
         btnCopiar.classList.remove('visible');
-        resultText.innerHTML = `<div class="error">⚠️ Ingrese un DNI (mínimo 6 dígitos) o nombre de entidad (mínimo 2 letras).</div>`;
+        resultText.innerHTML = `<div class="error">⚠️ Ingrese un DNI (6-9 dígitos), CUIT (10 dígitos) o nombre de entidad (mínimo 2 letras).</div>`;
         return;
     }
 
@@ -880,6 +1073,7 @@ async function buscarDNI() {
         return;
     }
     
+    // Mostrar loading
     resultText.innerHTML = `
         <div style="text-align:center;padding:20px;color:var(--violet-soft);font-size:14px;">
             <div style="margin-bottom:12px;display:flex;justify-content:center;gap:8px;font-size:28px;">
@@ -898,7 +1092,30 @@ async function buscarDNI() {
     await new Promise(resolve => setTimeout(resolve, 50));
 
     try {
-        if (comando.tipo === 'dni') {
+        // ===== EMPRESA (CUIT) =====
+        if (comando.tipo === 'empresa') {
+            resultText.innerHTML = `
+                <div style="text-align:center;padding:20px;color:var(--violet-soft);font-size:14px;">
+                    <div style="margin-bottom:12px;display:flex;justify-content:center;gap:8px;font-size:28px;">
+                        <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0s;">🟪</span>
+                        <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.15s;">🟪</span>
+                        <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.3s;">⬛</span>
+                        <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.45s;">⬛</span>
+                        <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.6s;">🟪</span>
+                    </div>
+                    <div style="letter-spacing:2px;color:var(--violet-soft);font-size:13px;">
+                        🏢 Buscando empresas por CUIT<span style="display:inline-block;animation: dots 1.5s steps(4) infinite;">...</span>
+                    </div>
+                </div>
+            `;
+            
+            await new Promise(resolve => setTimeout(resolve, 50));
+            
+            const resultado = await buscarEmpresaPorCUIT(comando.valor);
+            mostrarEmpresas(resultado);
+            
+        // ===== DNI =====
+        } else if (comando.tipo === 'dni') {
             resultText.innerHTML = `
                 <div style="text-align:center;padding:20px;color:var(--violet-soft);font-size:14px;">
                     <div style="margin-bottom:12px;display:flex;justify-content:center;gap:8px;font-size:28px;">
@@ -1019,6 +1236,7 @@ async function buscarDNI() {
                 ultimoResultado = construirTextoPlano(data);
             }
             
+        // ===== POLÍTICAS =====
         } else if (comando.tipo === 'politicas') {
             const resultados = await buscarPoliticasAPI(comando.valor);
             
@@ -1043,6 +1261,8 @@ async function buscarDNI() {
     
     buscando = false;
 }
+
+
 
 // ============================================================
 // MOSTRAR RESULTADO XFINDER (SOLO DATOS PERSONALES)
@@ -1182,15 +1402,18 @@ async function iniciarApp() {
         "Bienvenido a asistAI 🤖                                           ",
         "Tu asistente inteligente para búsqueda de datos.",
         "💡 Puedo ayudarte a buscar:",
-        "   - datos de personas con su historial crediticio.",
-        "   - políticas de entidades con las que trabajamos.",
-        "   - programas de descarga.",
+        "   - Personas: ingresa un DNI (6-9 dígitos).",
+        "   - Empresas: ingresa un CUIT (10 dígitos).",
+        "   - Políticas: ingresa el nombre de una entidad.",
+        "   - Programas: ingresa 'descargas'.",
         "",
         "Tengo un archivo con políticas de entidades cargado.",
         `Tambien una base de datos con +2M registros para busquedas por DNI.`,
+        "Y un registro de empresas para búsquedas por CUIT.",
         "",
         "Mi búsqueda es inteligente.",
-        "🔍 Si ingresas un número → busco DNI en la base de datos.",
+        "🔍 Si ingresas un número de 6-9 dígitos → busco DNI.",
+        "🔢 Si ingresas 10 dígitos o más → busco CUIT de empresa.",
         "📋 Si ingresas letras → busco políticas de entidades.",
         "📥 Si ingresas 'descargas' te muestro los links de los programas que usamos"
     ];
