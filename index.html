@@ -221,6 +221,30 @@
                 </div>
             </div>
         </section>
+        <!-- ===== CHAT FLOTANTE ===== -->
+<div id="chatFloat" class="chat-float">
+    <button id="chatToggle" class="chat-toggle" onclick="toggleChat()">
+        💬
+    </button>
+    <div id="chatWindow" class="chat-window" style="display:none;">
+        <div class="chat-header">
+            <span>🤖 AssistAI Chat</span>
+            <button onclick="toggleChat()" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;">✕</button>
+        </div>
+        <div id="chatMessages" class="chat-messages">
+            <div class="chat-message bot">
+                Hola! Soy AssistAI 🤖<br>
+                Puedo calcular tu CUIL a partir de un DNI.<br>
+                <span style="font-size:12px;color:#8a7ea0;">Ejemplo: "DNI 12345678" o "calcular CUIL 12345678"</span>
+            </div>
+        </div>
+        <div class="chat-input">
+            <input type="text" id="chatInput" placeholder="Escribe tu consulta..." onkeypress="if(event.key==='Enter') enviarChat()">
+            <button onclick="enviarChat()">➤</button>
+        </div>
+    </div>
+</div>
+
     </main>
 
     <script src="script.js"></script>
