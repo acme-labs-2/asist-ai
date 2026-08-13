@@ -1466,3 +1466,375 @@ document.addEventListener('keydown', function(e) {
         }
     }
 });
+
+// ============================================================
+// CHAT FLOTANTE - ASISTENTE INTELIGENTE
+// ============================================================
+
+// ============================================================
+// BASE DE DATOS DE LÍNEAS ENTRANTES
+// ============================================================
+
+const LINEAS_ENTRANTES = [
+    '1152633965',
+    '1152639134',
+    '1170780169',
+    '1152637012',
+    '1152630447',
+    '1152633093'
+];
+
+// ============================================================
+// BASE DE CONOCIMIENTO
+// ============================================================
+
+const conocimientosIA = {
+    saludos: ['hola', 'buenas', 'que tal', 'hey', 'hello', 'buen día', 'buenas tardes', 'buenas noches', 'holi', 'holis', 'que onda', 'alo'],
+    despedidas: ['chau', 'adiós', 'hasta luego', 'nos vemos', 'bye', 'gracias', 'muchas gracias', 'gracias!', 'chao', 'me voy'],
+    ayuda: ['ayuda', 'help', 'como se usa', 'que podes hacer', 'funciones', 'comandos', 'que sabes hacer', 'que haces', 'servicios'],
+    presentacion: ['quien sos', 'quien eres', 'que sos', 'presentate', 'presentación'],
+    lineas: ['lineas entrantes', 'líneas entrantes', 'cuales son las lineas', 'cuales son las líneas', 'que lineas', 'listado de lineas', 'lista de lineas', 'mostrar lineas', 'ver lineas', 'entrantes', 'lineas disponibles', 'líneas disponibles']
+};
+
+// ============================================================
+// RESPUESTAS
+// ============================================================
+
+const respuestasIA = {
+    saludo: [
+        '¡Hola! 👋 Soy tu asistente.<br><br>📌 <strong>¿Qué puedo hacer?</strong><br>• Mostrar líneas entrantes<br>• Generar CUIL con DNI<br><br>💡 <span style="font-size:12px;color:#8a7ea0;">Escribí "ayuda" para ver los comandos.</span>',
+        '¡Buenas! 🤖 ¿En qué te ayudo?<br><br>✅ <strong>Funciones:</strong><br>• Ver líneas entrantes<br>• Generar CUIL<br><br>🔢 <span style="font-size:12px;color:#8a7ea0;">Probá con "líneas entrantes" o un DNI.</span>',
+        '¡Hey! 😊 Listo para ayudar.<br><br>📋 <strong>Podés:</strong><br>• Ver el listado de líneas entrantes<br>• Calcular tu CUIL<br><br>💡 <span style="font-size:12px;color:#8a7ea0;">Ejemplo: "líneas entrantes" o "12345678"</span>'
+    ],
+    despedida: [
+        '¡Hasta luego! 👋 Volvé cuando necesites algo.',
+        '¡Chau! 😊 ¡Qué tengas lindo día!',
+        '¡Gracias a vos! 🙌 ¡Nos vemos!'
+    ],
+    ayuda: [
+        '🤖 <strong>Comandos disponibles:</strong><br><br>' +
+        '📞 <strong>Líneas entrantes</strong><br>' +
+        '• "líneas entrantes" → Muestra todas<br>' +
+        '• "entrantes" → Muestra todas<br><br>' +
+        '🪪 <strong>Generar CUIL</strong><br>' +
+        '• Escribí tu DNI (6-9 dígitos)<br>' +
+        '• Agregá "F" si sos mujer<br><br>' +
+        '💡 <span style="font-size:12px;color:#8a7ea0;">Ejemplos: "líneas entrantes" o "12345678 F"</span>'
+    ],
+    presentacion: [
+        '🤖 Soy tu <strong>Asistente</strong>.<br><br>' +
+        '✅ <strong>Lo que sé hacer:</strong><br>' +
+        '• Mostrar líneas entrantes<br>' +
+        '• Generar CUIL con DNI<br><br>' +
+        '🚀 <span style="font-size:12px;color:#8a7ea0;">Probá con "ayuda" para ver cómo usar.</span>'
+    ],
+    default: [
+        '🤔 No entendí bien...<br><br>📌 <strong>Probá con:</strong><br>• "líneas entrantes" para ver el listado<br>• Un DNI para generar CUIL<br>• "Ayuda" para ver comandos<br><br>💡 <span style="font-size:12px;color:#8a7ea0;">Ejemplo: "líneas entrantes" o "12345678"</span>',
+        '📋 ¿Podés ser más específico?<br><br>✅ <strong>Lo que sé:</strong><br>• Mostrar líneas entrantes<br>• Generar CUIL<br><br>🎯 <span style="font-size:12px;color:#8a7ea0;">Probá con "líneas entrantes" o un DNI.</span>'
+    ],
+    error: [
+        '❌ Ese DNI no parece válido.<br><br>📌 Debe tener entre <strong>6 y 9 dígitos</strong>.<br><br>💡 Ejemplo: "12345678"',
+        '❌ Revisá ese DNI...<br><br>📌 Debe ser un número de <strong>6 a 9 dígitos</strong>.',
+        '❌ No reconozco ese DNI.<br><br>📌 Asegurate que tenga entre <strong>6 y 9 dígitos</strong>.'
+    ]
+};
+
+// ============================================================
+// MEMORIA
+// ============================================================
+
+let memoriaChat = {
+    ultimoDNI: null,
+    ultimoGenero: null,
+    generoPreferido: null,
+    mensajes: [],
+    conversaciones: 0
+};
+
+// ============================================================
+// FUNCIONES DEL CHAT
+// ============================================================
+
+function toggleChat() {
+    const window = document.getElementById('chatWindow');
+    const toggle = document.getElementById('chatToggle');
+    if (window.style.display === 'none') {
+        window.style.display = 'flex';
+        toggle.textContent = '✕';
+        setTimeout(() => document.getElementById('chatInput').focus(), 300);
+    } else {
+        window.style.display = 'none';
+        toggle.textContent = '💬';
+    }
+}
+
+function agregarMensaje(texto, tipo) {
+    const container = document.getElementById('chatMessages');
+    const div = document.createElement('div');
+    div.className = `chat-message ${tipo}`;
+    div.innerHTML = texto;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+    
+    if (tipo === 'user') {
+        memoriaChat.mensajes.push({ rol: 'usuario', contenido: texto });
+        memoriaChat.conversaciones++;
+    } else {
+        memoriaChat.mensajes.push({ rol: 'asistente', contenido: texto });
+    }
+}
+
+function obtenerRespuestaAleatoria(lista) {
+    return lista[Math.floor(Math.random() * lista.length)];
+}
+
+// ============================================================
+// FUNCIÓN: MOSTRAR LÍNEAS ENTRANTES
+// ============================================================
+
+function mostrarLineasEntrantes() {
+    let respuesta = `📞 <strong>LÍNEAS ENTRANTES</strong><br><br>`;
+    respuesta += `📋 <strong>Total:</strong> ${LINEAS_ENTRANTES.length} líneas<br><br>`;
+    respuesta += `<div style="background:#1a1a2e;border-radius:8px;padding:12px;">`;
+    
+    LINEAS_ENTRANTES.forEach((linea, index) => {
+        respuesta += `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #2d2d4a;">`;
+        respuesta += `<span style="color:#a78bfa;">${index + 1}.</span>`;
+        respuesta += `<span style="color:#fbbf24;font-weight:bold;">${linea}</span>`;
+        respuesta += `<span style="color:#34d399;font-size:12px;">✅ Activa</span>`;
+        respuesta += `</div>`;
+    });
+    
+    respuesta += `</div>`;
+    respuesta += `<br><span style="font-size:11px;color:#8a7ea0;">💡 ¿Querés generar un CUIL? Decime tu DNI.</span>`;
+    
+    return respuesta;
+}
+
+// ============================================================
+// FUNCIÓN: GENERAR CUIL
+// ============================================================
+
+function calcularCUIL(dni, sexo) {
+    const dniStr = String(dni).replace(/\D/g, '');
+    if (dniStr.length < 6 || dniStr.length > 9) return null;
+    
+    const dniCompleto = dniStr.padStart(8, '0');
+    const genero = sexo && sexo.toUpperCase() === 'F' ? 'F' : 'M';
+    const prefijo = genero === 'F' ? '27' : '20';
+    const base = prefijo + dniCompleto;
+    
+    const coeficientes = [5, 4, 3, 2, 7, 6, 5, 4, 3, 2];
+    let suma = 0;
+    for (let i = 0; i < 10; i++) {
+        suma += parseInt(base.charAt(i)) * coeficientes[i];
+    }
+    
+    const resto = suma % 11;
+    let digito;
+    if (resto === 0) {
+        digito = 0;
+    } else if (resto === 1) {
+        if (genero === 'F') {
+            return '23' + dniCompleto + '4';
+        } else {
+            return '23' + dniCompleto + '9';
+        }
+    } else {
+        digito = 11 - resto;
+    }
+    return base + digito;
+}
+
+function formatearCUIL(cuil) {
+    if (!cuil) return 'Error';
+    const cuilStr = String(cuil).replace(/\D/g, '');
+    if (cuilStr.length !== 11) return cuilStr;
+    return cuilStr.substring(0, 2) + '-' + cuilStr.substring(2, 10) + '-' + cuilStr.substring(10);
+}
+
+// ============================================================
+// EXTRACCIÓN DE DATOS
+// ============================================================
+
+function extraerDNI(texto) {
+    const match = texto.match(/\b\d{6,9}\b/);
+    return match ? match[0] : null;
+}
+
+function extraerSexo(texto) {
+    const textoLower = texto.toLowerCase();
+    if (textoLower.includes('femenino') || textoLower.includes(' mujer') || /\bf\b/.test(textoLower) || textoLower.includes(' femenino')) {
+        return 'F';
+    }
+    if (textoLower.includes('masculino') || textoLower.includes(' hombre') || /\bm\b/.test(textoLower) || textoLower.includes(' masculino')) {
+        return 'M';
+    }
+    return null;
+}
+
+// ============================================================
+// PROCESAMIENTO DEL CHAT
+// ============================================================
+
+function procesarChat(mensaje) {
+    const texto = mensaje.toLowerCase().trim();
+    const dni = extraerDNI(mensaje);
+    const sexo = extraerSexo(mensaje);
+    
+    // 1. PRESENTACIÓN
+    if (conocimientosIA.presentacion.some(p => texto.includes(p))) {
+        return obtenerRespuestaAleatoria(respuestasIA.presentacion);
+    }
+    
+    // 2. SALUDO
+    if (conocimientosIA.saludos.some(p => texto.includes(p))) {
+        const saludo = obtenerRespuestaAleatoria(respuestasIA.saludo);
+        if (memoriaChat.ultimoDNI) {
+            return saludo + `<br><br>📝 Recuerdo tu último DNI: <strong>${memoriaChat.ultimoDNI}</strong>. ¿Queres generar otro CUIL o ver las líneas entrantes?`;
+        }
+        return saludo;
+    }
+    
+    // 3. DESPEDIDA
+    if (conocimientosIA.despedidas.some(p => texto.includes(p))) {
+        return obtenerRespuestaAleatoria(respuestasIA.despedida);
+    }
+    
+    // 4. AYUDA
+    if (conocimientosIA.ayuda.some(p => texto.includes(p))) {
+        return obtenerRespuestaAleatoria(respuestasIA.ayuda);
+    }
+    
+    // 5. MOSTRAR LÍNEAS ENTRANTES
+    if (conocimientosIA.lineas.some(p => texto.includes(p))) {
+        return mostrarLineasEntrantes();
+    }
+    
+    // 6. RECORDAR GÉNERO (sin DNI)
+    if (sexo && !dni) {
+        memoriaChat.generoPreferido = sexo;
+        const generoTexto = sexo === 'F' ? 'femenino' : 'masculino';
+        return `✅ ¡Entendido! Usaré género <strong>${generoTexto}</strong> para futuros CUIL. 😊<br><br>📌 Ahora decime un DNI (6-9 dígitos) para generar tu CUIL.`;
+    }
+    
+    // 7. GENERAR CUIL (si hay DNI)
+    if (dni) {
+        let sexoFinal = sexo || memoriaChat.generoPreferido || 'M';
+        const cuil = calcularCUIL(dni, sexoFinal);
+        
+        if (!cuil) {
+            return obtenerRespuestaAleatoria(respuestasIA.error);
+        }
+        
+        memoriaChat.ultimoDNI = dni;
+        memoriaChat.ultimoGenero = sexoFinal;
+        if (!memoriaChat.generoPreferido) {
+            memoriaChat.generoPreferido = sexoFinal;
+        }
+        
+        const cuilFormateado = formatearCUIL(cuil);
+        const generoTexto = sexoFinal === 'F' ? 'femenino' : 'masculino';
+        const prefijo = sexoFinal === 'F' ? '27' : '20';
+        
+        const intro = [
+            '✅ ¡Listo! Acá tenés tu CUIL:',
+            '🔢 Ya lo tengo. Tu CUIL es:',
+            '📋 ¡Calculado! Este es tu CUIL:',
+            '🎯 ¡Perfecto! Tu CUIL es:'
+        ];
+        
+        let respuesta = `${obtenerRespuestaAleatoria(intro)}<br>`;
+        respuesta += `<span class="cuil-result">${cuilFormateado}</span><br><br>`;
+        respuesta += `📊 <strong>Detalle:</strong><br>`;
+        respuesta += `• DNI: <span class="dni-number">${dni}</span><br>`;
+        respuesta += `• Prefijo: ${prefijo}<br>`;
+        respuesta += `• Género: ${generoTexto}`;
+        respuesta += `<br><br>💡 <span style="font-size:11px;color:#8a7ea0;">¿Necesitas otro CUIL? Decime otro DNI.</span>`;
+        respuesta += `<br><span style="font-size:11px;color:#8a7ea0;">📞 Escribí "líneas entrantes" para ver el listado.</span>`;
+        
+        return respuesta;
+    }
+    
+    // 8. RESPUESTA POR DEFECTO
+    return obtenerRespuestaAleatoria(respuestasIA.default);
+}
+
+// ============================================================
+// ENVIAR MENSAJE
+// ============================================================
+
+function enviarChat() {
+    const input = document.getElementById('chatInput');
+    const mensaje = input.value.trim();
+    
+    if (!mensaje) return;
+    
+    agregarMensaje(mensaje, 'user');
+    input.value = '';
+    
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'chat-message bot';
+    typingDiv.id = 'typingIndicator';
+    typingDiv.innerHTML = '🤔 <span style="opacity:0.6;">Procesando...</span>';
+    document.getElementById('chatMessages').appendChild(typingDiv);
+    document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
+    
+    const respuesta = procesarChat(mensaje);
+    
+    setTimeout(() => {
+        document.getElementById('typingIndicator').remove();
+        agregarMensaje(respuesta, 'bot');
+        document.getElementById('chatInput').focus();
+    }, 400 + Math.random() * 600);
+}
+
+// ============================================================
+// ENVIAR CON ENTER
+// ============================================================
+
+document.addEventListener('DOMContentLoaded', function() {
+    iniciarChat();
+    
+    const input = document.getElementById('chatInput');
+    input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            enviarChat();
+        }
+    });
+});
+
+// ============================================================
+// INICIALIZAR CHAT
+// ============================================================
+
+function iniciarChat() {
+    const messages = document.getElementById('chatMessages');
+    
+    messages.innerHTML = '';
+    
+    const mensajeBienvenida = `🎯 <strong>¡Bienvenido al Asistente!</strong><br><br>` +
+        `📌 <strong>¿Qué puedo hacer?</strong><br>` +
+        `📞 <strong>Ver líneas entrantes</strong><br>` +
+        `• Escribí "líneas entrantes"<br>` +
+        `• Te muestro todas las líneas<br><br>` +
+        `🪪 <strong>Generar CUIL</strong><br>` +
+        `• Escribí tu DNI (6-9 dígitos)<br>` +
+        `• Agregá "F" si sos mujer<br><br>` +
+        `💡 <span style="font-size:12px;color:#8a7ea0;">Ejemplos: "líneas entrantes" o "12345678 F"</span><br>` +
+        `📋 <span style="font-size:11px;color:#6b5b8a;">Escribí "ayuda" para ver los comandos.</span>`;
+    
+    const div = document.createElement('div');
+    div.className = 'chat-message bot';
+    div.innerHTML = mensajeBienvenida;
+    messages.appendChild(div);
+    
+    memoriaChat = {
+        ultimoDNI: null,
+        ultimoGenero: null,
+        generoPreferido: null,
+        mensajes: [],
+        conversaciones: 0
+    };
+}
