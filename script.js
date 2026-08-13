@@ -227,7 +227,7 @@ function mostrarEmpresas(resultado) {
     const btnCopiar = document.getElementById('btnCopiar');
     
     btnCopiar.classList.add('visible');
-    cambiarFondo('f10.png');
+    cambiarFondo('f15.png');
     
     if (resultado.error) {
         resultDiv.innerHTML = `
