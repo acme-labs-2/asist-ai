@@ -1843,3 +1843,37 @@ document.addEventListener('keydown', function(e) {
         }
     }
 });
+
+// Abrir modal
+function abrirModal() {
+    document.getElementById('modalInfo').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+// Cerrar modal
+function cerrarModal() {
+    document.getElementById('modalInfo').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+// Cerrar con ESC
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        cerrarModal();
+    }
+});
+
+// Cerrar haciendo click fuera
+document.getElementById('modalInfo').addEventListener('click', function(e) {
+    if (e.target === this) {
+        cerrarModal();
+    }
+});
+
+// Agregar el evento al botón
+document.addEventListener('DOMContentLoaded', function() {
+    const btn = document.getElementById('btnInfo');
+    if (btn) {
+        btn.addEventListener('click', abrirModal);
+    }
+});
