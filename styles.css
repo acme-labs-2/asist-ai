@@ -397,7 +397,6 @@ main {
     }
 }
 
-
 /* ===== CHAT FLOTANTE ===== */
 .chat-float {
     position: fixed;
@@ -585,5 +584,36 @@ main {
     .chat-float {
         bottom: 20px;
         right: 20px;
+    }
+}
+
+.estadisticas-busqueda {
+    margin-top: 15px;
+    padding: 12px 16px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(79,70,229,0.15);
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 12px;
+    color: #8a7ea0;
+    animation: fadeInUp 0.3s ease;
+}
+
+.estadisticas-busqueda strong {
+    color: var(--violet-soft);
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
