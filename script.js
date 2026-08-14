@@ -1825,6 +1825,92 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
+// ============================================================
+// FUNCIONES DEL MODAL
+// ============================================================
+
+function abrirModal() {
+    const modal = document.getElementById('modalInfo');
+    if (modal) {
+        modal.style.display = 'flex';
+        modal.classList.add('visible');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function cerrarModal() {
+    const modal = document.getElementById('modalInfo');
+    if (modal) {
+        modal.style.display = 'none';
+        modal.classList.remove('visible');
+        document.body.style.overflow = 'auto';
+    }
+}
+
+// ============================================================
+// EVENT LISTENERS - UNIFICADOS EN UN SOLO DOMContentLoaded
+// ============================================================
+
+document.addEventListener('DOMContentLoaded', async function() {
+    // ===== LOGIN =====
+    const logged = await verificarSesion();
+    if (!logged) {
+        document.getElementById('loginOverlay').style.display = 'flex';
+        document.getElementById('loginUser').focus();
+    } else {
+        setTimeout(() => {
+            iniciarApp();
+        }, 500);
+    }
+    
+    // ===== CHAT =====
+    iniciarChat();
+    
+    const chatInput = document.getElementById('chatInput');
+    if (chatInput) {
+        chatInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                enviarChat();
+            }
+        });
+    }
+    
+    // ===== MODAL - Cerrar con ESC =====
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            cerrarModal();
+        }
+    });
+    
+    // ===== MODAL - Cerrar click fuera =====
+    const modal = document.getElementById('modalInfo');
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                cerrarModal();
+            }
+        });
+    }
+    
+    // ===== BOTÓN MODAL =====
+    const btnInfo = document.getElementById('btnInfo');
+    if (btnInfo) {
+        btnInfo.addEventListener('click', abrirModal);
+    }
+});
+
+// ===== ENTER PARA BUSCAR =====
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+        const input = document.getElementById('dniInput');
+        if (input && document.activeElement === input) {
+            buscarDNI();
+        }
+    }
+});
+
+// ===== PREVENIR F5 =====
 document.addEventListener('keydown', function(e) {
     if (e.key === 'F5' || (e.ctrlKey && e.key === 'r')) {
         e.preventDefault();
@@ -1841,39 +1927,5 @@ document.addEventListener('keydown', function(e) {
         if (btnCopiar) {
             btnCopiar.classList.remove('visible');
         }
-    }
-});
-
-// Abrir modal
-function abrirModal() {
-    document.getElementById('modalInfo').style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-}
-
-// Cerrar modal
-function cerrarModal() {
-    document.getElementById('modalInfo').style.display = 'none';
-    document.body.style.overflow = 'auto';
-}
-
-// Cerrar con ESC
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        cerrarModal();
-    }
-});
-
-// Cerrar haciendo click fuera
-document.getElementById('modalInfo').addEventListener('click', function(e) {
-    if (e.target === this) {
-        cerrarModal();
-    }
-});
-
-// Agregar el evento al botón
-document.addEventListener('DOMContentLoaded', function() {
-    const btn = document.getElementById('btnInfo');
-    if (btn) {
-        btn.addEventListener('click', abrirModal);
     }
 });
