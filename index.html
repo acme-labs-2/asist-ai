@@ -123,10 +123,169 @@
         #mainContent {
             display: none;
         }
+
+        /* MODAL - FUERA DEL PANEL */
+        #modalInfo {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 999999;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(8px);
+        }
+        #modalInfo.visible {
+            display: flex;
+        }
+        .modal-content {
+            background: linear-gradient(145deg, #1a1a2e, #0f0f1a);
+            border: 1px solid rgba(160,68,255,0.2);
+            border-radius: 16px;
+            max-width: 600px;
+            width: 90%;
+            padding: 30px;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-close {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            background: none;
+            border: none;
+            color: #6b5b8a;
+            font-size: 24px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            font-family: 'Lucida Console', Monaco, monospace;
+        }
+        .modal-close:hover {
+            color: #ff6b6b;
+            transform: rotate(90deg);
+        }
+        .modal-title {
+            font-family: 'Lucida Console', Monaco, monospace;
+            font-size: 16px;
+            color: #f0ecf5;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(160,68,255,0.1);
+            padding-bottom: 12px;
+        }
+        .modal-body {
+            font-family: 'Lucida Console', Monaco, monospace;
+            font-size: 12px;
+            color: #b8a8d0;
+            line-height: 1.8;
+        }
+        .modal-body .gratis {
+            color: #34d399;
+            font-weight: bold;
+        }
+        .modal-body .stats {
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            padding: 14px 16px;
+            margin: 12px 0;
+            border-left: 3px solid var(--violet);
+        }
+        .modal-body .stats-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #8a7ea0;
+        }
+        .modal-body .stats-item+.stats-item {
+            margin-top: 4px;
+        }
+        .modal-body .stats-item .value {
+            color: #fbbf24;
+            font-weight: bold;
+        }
+        .modal-body .stats-item .value.green {
+            color: #34d399;
+        }
+        .modal-body .stats-item .value.purple {
+            color: #a78bfa;
+        }
+        .modal-body .alert {
+            margin: 16px 0;
+            padding: 12px 16px;
+            background: rgba(255,107,107,0.05);
+            border-radius: 8px;
+            border: 1px solid rgba(255,107,107,0.1);
+        }
+        .modal-body .alert-title {
+            color: #ff6b6b;
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+        .modal-body .features {
+            background: rgba(160,68,255,0.05);
+            border: 1px solid rgba(160,68,255,0.1);
+            border-radius: 8px;
+            padding: 14px 16px;
+            margin: 12px 0;
+        }
+        .modal-body .features-title {
+            color: #a78bfa;
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+        .modal-body .footer-note {
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(160,68,255,0.1);
+            font-size: 11px;
+            color: #6b5b8a;
+            text-align: center;
+        }
+        .modal-btn-close {
+            margin-top: 20px;
+            width: 100%;
+            padding: 10px;
+            background: var(--violet);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-family: 'Lucida Console', Monaco, monospace;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        .modal-btn-close:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(79,70,229,0.4);
+        }
+        .btn-info {
+            background: none;
+            border: 1px solid rgba(160,68,255,0.2);
+            color: #8a7ea0;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Lucida Console', Monaco, monospace;
+        }
+        .btn-info:hover {
+            border-color: var(--violet-soft);
+            color: var(--violet-soft);
+        }
     </style>
 </head>
 <body>
 
+    <!-- ===== LOGIN OVERLAY ===== -->
     <div class="login-overlay" id="loginOverlay">
         <div class="login-box">
             <div class="logo">🤖</div>
@@ -156,6 +315,99 @@
         </div>
     </div>
 
+<!-- ===== MODAL INFO (FUERA DEL MAIN) ===== -->
+<div id="modalInfo">
+    <div class="modal-content">
+        <button class="modal-close" onclick="cerrarModal()">✕</button>
+        <div class="modal-body">
+            
+            <div style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 12px 14px; margin-bottom: 12px; border-left: 3px solid #ff6b6b;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px;">
+                    <span style="color: #ff6b6b; font-size: 11px; font-weight: bold;">🌐 UBICACIÓN DEL SERVIDOR (VPS)</span>
+                </div>
+                
+                <div style="border-radius: 6px; overflow: hidden; margin: 6px 0; border: 1px solid rgba(255,107,107,0.1);">
+                    <iframe 
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d20954.58003281446!2d8.165179855615662!3d48.96638499454921!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4796fda2a05d34dd%3A0x40a5fb99a3952b0!2s67630%20Lauterbourg%2C%20France!5e0!3m2!1sen!2sar!4v1786715678334!5m2!1sen!2sar" 
+                        width="100%" 
+                        height="150" 
+                        style="border:0; display: block;" 
+                        allowfullscreen="" 
+                        loading="lazy" 
+                        referrerpolicy="strict-origin-when-cross-origin">
+                    </iframe>
+                </div>
+
+                <div style="font-size: 10px; color: #8a7ea0; margin-top: 4px; line-height: 1.8;">
+                    <div>• Ubicación: <strong style="color: #ff6b6b;">Lauterbourg, Francia</strong></div>
+                    <div>• Aloja: <strong style="color: #fbbf24;">Bases, scripts PHP</strong></div>
+                </div>
+            </div>
+
+            <div style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 12px 14px; margin: 10px 0; border-left: 3px solid #fbbf24;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px;">
+                    <span style="color: #fbbf24; font-size: 11px; font-weight: bold;">🌐 UBICACIÓN DE LA PÁGINA (GitHub Pages)</span>
+                </div>
+
+                <div style="border-radius: 6px; overflow: hidden; margin: 6px 0; border: 1px solid rgba(251,191,36,0.1);">
+                    <iframe 
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d12519.12660395663!2d-87.46160173181255!3d38.33088688198816!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x886e1926520a6dc7%3A0x29e666f7ea1c1daf!2sFrancisco%2C%20IN%2047649%2C%20USA!5e0!3m2!1sen!2sar!4v1786716579934!5m2!1sen!2sar" 
+                        width="100%" 
+                        height="150" 
+                        style="border:0; display: block;" 
+                        allowfullscreen="" 
+                        loading="lazy" 
+                        referrerpolicy="strict-origin-when-cross-origin">
+                    </iframe>
+                </div>
+
+                <div style="font-size: 10px; color: #8a7ea0; margin-top: 4px; line-height: 1.8;">
+                    <div>• Ubicación: <strong style="color: #a78bfa;">Francisco, Indiana, EE.UU.</strong></div>
+                    <div>• Aloja: <strong style="color: #34d399;">Archivos HTML, CSS, JS</strong></div>
+                </div>
+            </div>
+
+<!-- INFRAESTRUCTURA -->
+<div style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 12px 14px; margin: 10px 0; border-left: 3px solid #a78bfa;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px;">
+        <span style="color: #a78bfa; font-size: 11px; font-weight: bold;">🖥️ INFRAESTRUCTURA COMPARTIDA</span>
+        <a href="https://carover0.github.io/pagina/" target="_blank" style="
+            color: #fbbf24;
+            font-size: 10px;
+            text-decoration: none;
+            background: rgba(0,0,0,0.3);
+            padding: 2px 10px;
+            border-radius: 12px;
+            border: 1px solid rgba(251,191,36,0.2);
+            transition: all 0.3s;
+        " onmouseover="this.style.background='rgba(251,191,36,0.2)'" 
+        onmouseout="this.style.background='rgba(0,0,0,0.3)'">
+            🔗 Ver estado completo →
+        </a>
+    </div>
+    <div style="font-size: 10px; color: #b8a8d0; margin-top: 6px; line-height: 1.8;">
+        Esta herramienta comparte recursos de servidor con nodos de las criptomonedas 
+        <span style="color: #fbbf24; font-weight: bold;">Zcash</span>, 
+        <span style="color: #ff6b6b; font-weight: bold;">Firo</span>, 
+        <span style="color: #a78bfa; font-weight: bold;">PIVX</span> y 
+        <span style="color: #f97316; font-weight: bold;">Ycash</span>.
+        <br>
+        Aloja herramientas para cada una de las redes como exploradores de bloques, consolas y monitores de nodo. 
+        También es servidor de billeteras para las redes 
+        <span style="color: #fbbf24; font-weight: bold;">Zcash</span> y 
+        <span style="color: #ff6b6b; font-weight: bold;">FIRO</span>.
+    </div>
+</div>
+
+        </div>
+
+        <button class="modal-btn-close" onclick="cerrarModal()">
+            ✕ ENTENDIDO
+        </button>
+    </div>
+</div>
+
+    <!-- ===== MAIN CONTENT ===== -->
     <main id="mainContent">
         <section class="panel">
             <div class="panel-inner">
@@ -167,23 +419,22 @@
 
                     <div style="display:flex;align-items:center;gap:12px;">
                         <span style="font-size:11px;color:#8a7ea0;" id="userDisplay">👤 usuario</span>
-                    
-                    <button onclick="soporteTelegram()" style="
-                        background:#CE0E60;
-                        color:#ffffff;
-                        border:none;
-                        border-radius:8px;
-                        padding:4px 12px;
-                        cursor:pointer;
-                        font-size:11px;
-                        font-family:'Lucida Console',Monaco,monospace;
-                        transition:all 0.3s;
-                    " onmouseover="this.style.background='#a00b4d'" 
-                    onmouseout="this.style.background='#CE0E60'">
-                        🗯 Soporte
-                    </button>
-
                         
+                        <button onclick="soporteTelegram()" style="
+                            background:#CE0E60;
+                            color:#ffffff;
+                            border:none;
+                            border-radius:8px;
+                            padding:4px 12px;
+                            cursor:pointer;
+                            font-size:11px;
+                            font-family:'Lucida Console',Monaco,monospace;
+                            transition:all 0.3s;
+                        " onmouseover="this.style.background='#a00b4d'" 
+                        onmouseout="this.style.background='#CE0E60'">
+                            🗯 Soporte
+                        </button>
+
                         <button onclick="logout()" style="
                             background:#2952FD;
                             color:#ffffff;
@@ -198,12 +449,18 @@
                         onmouseout="this.style.background='#2952FD'">
                             🚪 Salir
                         </button>
+
+                        <!-- Botón Info -->
+                        <button class="btn-info" onclick="abrirModal()">
+                            ⓘ ¿te parece lento?
+                        </button>
                     </div>
                 </div>
 
                 <div class="console" id="consoleOutput">
                     <span id="typewriter"></span><span class="cursor" id="cursor"></span>
                 </div>
+
                 <div class="search-container" id="searchContainer">
                     <label for="dniInput">📌 Ingresa un DNI, el nombre de una entidad o descargas</label>
                     <div class="input-row">
@@ -216,35 +473,36 @@
                         </div>
                     </div>
                 </div>
+
                 <div class="result" id="resultContent">
                     <div id="resultText" class="result-moderno"></div>
                 </div>
             </div>
         </section>
+
         <!-- ===== CHAT FLOTANTE ===== -->
-<div id="chatFloat" class="chat-float">
-    <button id="chatToggle" class="chat-toggle" onclick="toggleChat()">
-        💬
-    </button>
-    <div id="chatWindow" class="chat-window" style="display:none;">
-        <div class="chat-header">
-            <span>🤖 AssistAI Chat</span>
-            <button onclick="toggleChat()" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;">✕</button>
-        </div>
-        <div id="chatMessages" class="chat-messages">
-            <div class="chat-message bot">
-                Hola! Soy AssistAI 🤖<br>
-                Puedo calcular tu CUIL a partir de un DNI.<br>
-                <span style="font-size:12px;color:#8a7ea0;">Ejemplo: "DNI 12345678" o "calcular CUIL 12345678"</span>
+        <div id="chatFloat" class="chat-float">
+            <button id="chatToggle" class="chat-toggle" onclick="toggleChat()">
+                💬
+            </button>
+            <div id="chatWindow" class="chat-window" style="display:none;">
+                <div class="chat-header">
+                    <span>🤖 AssistAI Chat</span>
+                    <button onclick="toggleChat()" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;">✕</button>
+                </div>
+                <div id="chatMessages" class="chat-messages">
+                    <div class="chat-message bot">
+                        Hola! Soy AssistAI 🤖<br>
+                        Puedo calcular tu CUIL a partir de un DNI.<br>
+                        <span style="font-size:12px;color:#8a7ea0;">Ejemplo: "DNI 12345678" o "calcular CUIL 12345678"</span>
+                    </div>
+                </div>
+                <div class="chat-input">
+                    <input type="text" id="chatInput" placeholder="Escribe tu consulta..." onkeypress="if(event.key==='Enter') enviarChat()">
+                    <button onclick="enviarChat()">➤</button>
+                </div>
             </div>
         </div>
-        <div class="chat-input">
-            <input type="text" id="chatInput" placeholder="Escribe tu consulta..." onkeypress="if(event.key==='Enter') enviarChat()">
-            <button onclick="enviarChat()">➤</button>
-        </div>
-    </div>
-</div>
-
     </main>
 
     <script src="script.js"></script>
