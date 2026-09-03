@@ -1083,6 +1083,9 @@ function mostrarPoliticasConEstadisticas(resultados, termino, tiempo, total) {
     ultimoResultado = texto;
 }
 
+
+
+
 // ============================================================
 // FUNCIÓN PARA MOSTRAR PLANES DE PAGO (MACRO)
 // ============================================================
@@ -1091,7 +1094,9 @@ async function buscarMacro(dni) {
     const btnCopiar = document.getElementById('btnCopiar');
     
     btnCopiar.classList.remove('visible');
-    cambiarFondo('f14.png');
+    
+    // === AGREGAR CAMBIO DE FONDO ===
+    cambiarFondo('f15.png'); 
     
     try {
         const response = await fetch(`${MACRO_API_URL}?dni=${encodeURIComponent(dni)}`);
@@ -1133,7 +1138,6 @@ async function buscarMacro(dni) {
         ultimoResultado = `❌ Error al consultar los planes de pago: ${e.message}`;
     }
 }
-
 
 
 
