@@ -1135,8 +1135,14 @@ async function buscarMacro(dni) {
 }
 
 
+
+
+
+
+
+
 // ============================================================
-// MOSTRAR PLANES DE PAGO
+// MOSTRAR PLANES DE PAGO (VERSIÓN CONSOLIDADA - SIMPLIFICADA)
 // ============================================================
 function mostrarPlanesPago(data) {
     const resultDiv = document.getElementById('resultText');
@@ -1146,18 +1152,51 @@ function mostrarPlanesPago(data) {
         return '$' + Number(valor).toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
     };
     
+    // Calcular consolidados
+    const totalRegistros = data.total_registros || 0;
     const totalMinimo = data.total_minimo_cancelatorio || 0;
     const totalSaldo = data.total_saldo_exigible || 0;
-    const totalRegistros = data.total_registros || 0;
+    
+    // Calcular promedios de planes de pago
+    const planesKeys = ['3_CUOTAS', '6_CUOTAS', '9_CUOTAS', '12_CUOTAS', '18_CUOTAS', '24_CUOTAS'];
+    const planesPromedio = {};
+    
+    planesKeys.forEach(key => {
+        let valores = [];
+        data.resultados.forEach(row => {
+            const val = parseFloat(row[key] || 0);
+            if (val > 0) valores.push(val);
+        });
+        
+        if (valores.length > 0) {
+            const sum = valores.reduce((a, b) => a + b, 0);
+            planesPromedio[key] = sum / valores.length;
+        } else {
+            planesPromedio[key] = 0;
+        }
+    });
+    
+    // Encontrar el mejor plan (el de MENOS cuotas con valor > 0)
+    let mejorPlan = null;
+    // Recorrer en orden de menos a más cuotas
+    const planesOrdenados = ['3_CUOTAS', '6_CUOTAS', '9_CUOTAS', '12_CUOTAS', '18_CUOTAS', '24_CUOTAS'];
+    for (let key of planesOrdenados) {
+        if (planesPromedio[key] > 0) {
+            const cuotas = parseInt(key.replace('_CUOTAS', ''));
+            mejorPlan = { cuotas, monto: planesPromedio[key] };
+            break; // El primero que encuentre es el de menos cuotas
+        }
+    }
     
     let html = `
         <div class="header-card">
             <div class="dni-number">📊 PLANES DE PAGO</div>
             <div class="badge" style="background:rgba(79,70,229,0.2);border:1px solid var(--violet);padding:4px 14px;border-radius:20px;font-size:11px;color:var(--violet-soft);text-transform:uppercase;letter-spacing:1px;">
-                ${totalRegistros} deuda${totalRegistros > 1 ? 's' : ''}
+                ${totalRegistros} deudas
             </div>
         </div>
         
+        <!-- Datos del cliente -->
         <div class="seccion" style="border-left: 3px solid var(--violet);">
             <div class="seccion-titulo">
                 <span class="icon">👤</span> 
@@ -1165,17 +1204,19 @@ function mostrarPlanesPago(data) {
                 <span style="font-size:12px;color:#8a7ea0;font-weight:normal;margin-left:10px;">DNI: ${data.dni}</span>
             </div>
             
+            <!-- Totales -->
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;">
                 <div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:10px;text-align:center;border:1px solid rgba(79,70,229,0.15);">
-                    <div style="font-size:10px;color:#8a7ea0;">Mínimo Cancelatorio</div>
+                    <div style="font-size:10px;color:#8a7ea0;">💰 Total Mínimo Cancelatorio</div>
                     <div style="font-size:18px;font-weight:bold;color:#fbbf24;">${formatearMonto(totalMinimo)}</div>
                 </div>
                 <div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:10px;text-align:center;border:1px solid rgba(79,70,229,0.15);">
-                    <div style="font-size:10px;color:#8a7ea0;">Saldo Exigible</div>
+                    <div style="font-size:10px;color:#8a7ea0;">💰 Total Saldo Exigible</div>
                     <div style="font-size:18px;font-weight:bold;color:#a78bfa;">${formatearMonto(totalSaldo)}</div>
                 </div>
             </div>
             
+            <!-- Distribución por producto -->
             ${Object.keys(data.productos).length > 0 ? `
             <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;">
                 ${Object.entries(data.productos).map(([tipo, cantidad]) => `
@@ -1185,10 +1226,53 @@ function mostrarPlanesPago(data) {
                 `).join('')}
             </div>` : ''}
         </div>
-    `;
+        
+        <!-- PLANES DE PAGO PROMEDIO -->
+        <div class="seccion" style="border-left: 3px solid #fbbf24;margin-top:10px;">
+            <div class="seccion-titulo">
+                <span class="icon">📊</span> 
+                PLANES DE PAGO - PROMEDIOS
+                <span style="font-size:10px;color:#8a7ea0;font-weight:normal;margin-left:10px;">(promedio de todas las deudas)</span>
+            </div>
+            
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px;">
+                ${planesKeys.map(key => {
+                    const cuotas = parseInt(key.replace('_CUOTAS', ''));
+                    const promedio = planesPromedio[key];
+                    if (promedio > 0) {
+                        return `
+                            <div style="background:rgba(0,0,0,0.3);border-radius:6px;padding:8px;text-align:center;border:1px solid rgba(251,191,36,0.2);">
+                                <div style="color:#8a7ea0;font-size:9px;">${cuotas} cuotas</div>
+                                <div style="color:#fbbf24;font-weight:bold;font-size:14px;">${formatearMonto(promedio)}</div>
+                            </div>
+                        `;
+                    }
+                    return '';
+                }).filter(Boolean).join('')}
+            </div>
+            
+            ${mejorPlan ? `
+            <div style="margin-top:10px;padding:8px 12px;background:rgba(251,191,36,0.1);border-radius:6px;border:1px solid rgba(251,191,36,0.3);text-align:center;">
+                <span style="color:#8a7ea0;font-size:12px;">🏆 Mejor plan promedio:</span>
+                <span style="color:#fbbf24;font-weight:bold;font-size:16px;">${mejorPlan.cuotas} cuotas - ${formatearMonto(mejorPlan.monto)}</span>
+                <span style="color:#8a7ea0;font-size:10px;margin-left:8px;">(el más corto)</span>
+            </div>
+            ` : `
+            <div style="margin-top:10px;padding:8px 12px;background:rgba(255,0,0,0.05);border-radius:6px;border:1px solid rgba(255,0,0,0.1);text-align:center;">
+                <span style="color:#8a7ea0;font-size:12px;">⚠️ No hay planes de pago disponibles</span>
+            </div>
+            `}
+        </div>`;
     
-    // Mostrar detalle de cada deuda con los planes de pago
-    html += `<div style="margin-top:10px;">`;
+    // DETALLE DE CADA DEUDA
+    html += `
+        <div style="margin-top:10px;">
+            <div class="seccion-titulo" style="font-size:13px;margin-bottom:8px;padding:0 4px;">
+                <span class="icon">📋</span> 
+                DETALLE POR DEUDA
+                <span style="font-size:11px;color:#8a7ea0;font-weight:normal;margin-left:10px;">${totalRegistros} registros</span>
+            </div>
+    `;
     
     data.resultados.forEach((row, index) => {
         const minimo = parseFloat(row.MINIMO_CANCELATORIO || 0);
@@ -1197,71 +1281,51 @@ function mostrarPlanesPago(data) {
         const tipo = row.TIPO_PROD || 'Otros';
         const codProd = row.COD_PROD || '-';
         
-        // Obtener los valores de los planes de pago
-        const planes = [
-            { cuotas: 3, valor: row['3_CUOTAS'] },
-            { cuotas: 6, valor: row['6_CUOTAS'] },
-            { cuotas: 9, valor: row['9_CUOTAS'] },
-            { cuotas: 12, valor: row['12_CUOTAS'] },
-            { cuotas: 18, valor: row['18_CUOTAS'] },
-            { cuotas: 24, valor: row['24_CUOTAS'] }
-        ];
-        
-        // Filtrar planes que tienen valor > 0
-        const planesDisponibles = planes.filter(p => p.valor && parseFloat(p.valor) > 0);
+        // Planes de esta deuda (solo los que tienen valor > 0)
+        const planesDeuda = planesKeys.map(key => ({
+            cuotas: parseInt(key.replace('_CUOTAS', '')),
+            valor: parseFloat(row[key] || 0)
+        })).filter(p => p.valor > 0);
         
         html += `
-            <div class="seccion" style="border-left: 3px solid ${index % 2 === 0 ? 'var(--violet)' : 'var(--green)'};margin-top:8px;">
-                <div class="seccion-titulo" style="font-size:12px;">
-                    <span class="icon">📄</span> 
-                    Deuda #${index + 1}
-                    <span style="font-size:10px;color:#8a7ea0;font-weight:normal;margin-left:8px;">${tipo}</span>
+            <div class="seccion" style="border-left: 3px solid ${index % 2 === 0 ? 'var(--violet)' : 'var(--green)'};margin-top:6px;padding:10px 12px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;">
+                    <div style="font-size:12px;font-weight:bold;color:#f0ecf5;">
+                        <span class="icon">📄</span> Deuda #${index + 1}
+                        <span style="font-size:10px;color:#8a7ea0;font-weight:normal;margin-left:8px;">${tipo}</span>
+                    </div>
+                    <div style="font-size:10px;color:#8a7ea0;">Código: ${codProd}</div>
                 </div>
                 
-                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-size:12px;margin-bottom:8px;">
-                    <div>
-                        <span style="color:#8a7ea0;">Código:</span>
-                        <span style="color:#f0ecf5;">${codProd}</span>
-                    </div>
-                    <div>
-                        <span style="color:#8a7ea0;">Fecha Mora:</span>
-                        <span style="color:#f0ecf5;">${fecha}</span>
-                    </div>
-                    <div>
-                        <span style="color:#8a7ea0;">Mínimo:</span>
-                        <span style="color:#fbbf24;">${formatearMonto(minimo)}</span>
-                    </div>
-                    <div>
-                        <span style="color:#8a7ea0;">Saldo Exigible:</span>
-                        <span style="color:#a78bfa;">${formatearMonto(saldo)}</span>
-                    </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;font-size:11px;margin-top:4px;">
+                    <div><span style="color:#8a7ea0;">Fecha Mora:</span> <span style="color:#f0ecf5;">${fecha}</span></div>
+                    <div><span style="color:#8a7ea0;">Mínimo:</span> <span style="color:#fbbf24;">${formatearMonto(minimo)}</span></div>
+                    <div><span style="color:#8a7ea0;">Saldo:</span> <span style="color:#a78bfa;">${formatearMonto(saldo)}</span></div>
                 </div>
                 
-                <!-- Planes de pago -->
-                <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(160,68,255,0.1);">
-                    <div style="font-size:11px;color:#8a7ea0;margin-bottom:6px;">📋 Planes de pago disponibles</div>
-                    ${planesDisponibles.length > 0 ? `
-                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;font-size:12px;">
-                        ${planesDisponibles.map(p => `
-                            <div style="background:rgba(0,0,0,0.3);border-radius:6px;padding:6px 8px;text-align:center;border:1px solid rgba(79,70,229,0.15);">
-                                <div style="color:#8a7ea0;font-size:9px;">${p.cuotas} cuotas</div>
-                                <div style="color:#fbbf24;font-weight:bold;font-size:13px;">${formatearMonto(p.valor)}</div>
+                ${planesDeuda.length > 0 ? `
+                <div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(160,68,255,0.08);">
+                    <div style="display:grid;grid-template-columns:repeat(${Math.min(planesDeuda.length, 6)},1fr);gap:4px;font-size:10px;">
+                        ${planesDeuda.map(p => `
+                            <div style="background:rgba(0,0,0,0.2);border-radius:4px;padding:3px 4px;text-align:center;">
+                                <div style="color:#8a7ea0;">${p.cuotas}c</div>
+                                <div style="color:#fbbf24;font-weight:bold;font-size:11px;">${formatearMonto(p.valor)}</div>
                             </div>
                         `).join('')}
                     </div>
-                    ` : `
-                    <div style="font-size:11px;color:#8a7ea0;text-align:center;padding:6px;">
-                        Sin planes de pago disponibles
-                    </div>
-                    `}
                 </div>
+                ` : `
+                <div style="margin-top:4px;font-size:10px;color:#8a7ea0;text-align:center;padding:4px;">
+                    Sin planes de pago disponibles
+                </div>
+                `}
             </div>
         `;
     });
     
     html += `</div>`;
     
-    // Estadísticas
+    // Estadísticas finales
     html += `
         <div style="
             margin-top: 15px;
@@ -1277,14 +1341,23 @@ function mostrarPlanesPago(data) {
             font-size: 12px;
             color: #8a7ea0;
         ">
-            <span>📊 <strong style="color:var(--violet-soft);">${data.total_registros}</strong> deudas</span>
-            <span>💳 <strong style="color:var(--violet-soft);">${Object.keys(data.productos).length}</strong> tipos de productos</span>
+            <span>📊 <strong style="color:var(--violet-soft);">${totalRegistros}</strong> deudas</span>
+            <span>💳 <strong style="color:var(--violet-soft);">${Object.keys(data.productos).length}</strong> tipos</span>
             <span>🔍 <strong style="color:var(--violet-soft);">${data.dni}</strong></span>
         </div>
     `;
     
     resultDiv.innerHTML = html;
 }
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1300,36 +1373,106 @@ function construirTextoMacro(data) {
         return '$' + Number(v).toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
     };
     
+    // Calcular promedios
+    const planesKeys = ['3_CUOTAS', '6_CUOTAS', '9_CUOTAS', '12_CUOTAS', '18_CUOTAS', '24_CUOTAS'];
+    const planesPromedio = {};
+    
+    planesKeys.forEach(key => {
+        let valores = [];
+        data.resultados.forEach(row => {
+            const val = parseFloat(row[key] || 0);
+            if (val > 0) valores.push(val);
+        });
+        
+        if (valores.length > 0) {
+            const sum = valores.reduce((a, b) => a + b, 0);
+            planesPromedio[key] = sum / valores.length;
+        } else {
+            planesPromedio[key] = 0;
+        }
+    });
+    
+    // Mejor plan (el de menos cuotas)
+    let mejorPlan = null;
+    const planesOrdenados = ['3_CUOTAS', '6_CUOTAS', '9_CUOTAS', '12_CUOTAS', '18_CUOTAS', '24_CUOTAS'];
+    for (let key of planesOrdenados) {
+        if (planesPromedio[key] > 0) {
+            const cuotas = parseInt(key.replace('_CUOTAS', ''));
+            mejorPlan = { cuotas, monto: planesPromedio[key] };
+            break;
+        }
+    }
+    
     let texto = `📊 PLANES DE PAGO\n`;
-    texto += `${'─'.repeat(45)}\n\n`;
+    texto += `${'─'.repeat(50)}\n\n`;
     texto += `👤 ${data.cliente.nombre || 'Sin nombre'}\n`;
     texto += `📌 DNI: ${data.dni}\n`;
     texto += `📊 Total de deudas: ${data.total_registros}\n`;
     texto += `💰 Mínimo Cancelatorio total: ${formatear(data.total_minimo_cancelatorio)}\n`;
     texto += `💰 Saldo Exigible total: ${formatear(data.total_saldo_exigible)}\n\n`;
-    texto += `${'─'.repeat(45)}\n\n`;
+    
+    // Productos
+    texto += `📦 PRODUCTOS:\n`;
+    Object.entries(data.productos).forEach(([tipo, cantidad]) => {
+        texto += `  ${tipo}: ${cantidad}\n`;
+    });
+    texto += `\n`;
+    
+    // Planes promedio
+    texto += `📊 PLANES DE PAGO - PROMEDIOS\n`;
+    planesKeys.forEach(key => {
+        const cuotas = parseInt(key.replace('_CUOTAS', ''));
+        if (planesPromedio[key] > 0) {
+            texto += `  ${cuotas} cuotas: ${formatear(planesPromedio[key])}\n`;
+        }
+    });
+    
+    if (mejorPlan) {
+        texto += `\n🏆 Mejor plan: ${mejorPlan.cuotas} cuotas - ${formatear(mejorPlan.monto)} (el más corto)\n`;
+    }
+    texto += `\n`;
+    
+    // Detalle por deuda
+    texto += `${'─'.repeat(50)}\n`;
+    texto += `📋 DETALLE POR DEUDA\n\n`;
     
     data.resultados.forEach((row, index) => {
         texto += `📄 DEUDA #${index + 1}\n`;
-        texto += `  Código: ${row.COD_PROD || '-'}\n`;
         texto += `  Tipo: ${row.TIPO_PROD || '-'}\n`;
+        texto += `  Código: ${row.COD_PROD || '-'}\n`;
         texto += `  Fecha Mora: ${row.FECHA_MORA || '-'}\n`;
-        texto += `  Mínimo Cancelatorio: ${formatear(row.MINIMO_CANCELATORIO)}\n`;
-        texto += `  Saldo Exigible: ${formatear(row.SALDO_EXIGIBLE)}\n`;
-        texto += `  Planes de pago:\n`;
+        texto += `  Mínimo: ${formatear(row.MINIMO_CANCELATORIO)}\n`;
+        texto += `  Saldo: ${formatear(row.SALDO_EXIGIBLE)}\n`;
         
-        ['3', '6', '9', '12', '18', '24'].forEach(cuotas => {
-            const key = `_${cuotas}_CUOTAS`;
-            const valor = row[key];
-            if (valor && parseFloat(valor) > 0) {
-                texto += `    ${cuotas} cuotas: ${formatear(valor)}\n`;
+        let tienePlan = false;
+        planesKeys.forEach(key => {
+            const cuotas = parseInt(key.replace('_CUOTAS', ''));
+            const val = parseFloat(row[key] || 0);
+            if (val > 0) {
+                if (!tienePlan) {
+                    texto += `  Planes:\n`;
+                    tienePlan = true;
+                }
+                texto += `    ${cuotas} cuotas: ${formatear(val)}\n`;
             }
         });
+        if (!tienePlan) {
+            texto += `  Planes: Sin planes disponibles\n`;
+        }
         texto += '\n';
     });
     
     return texto;
 }
+
+
+
+
+
+
+
+
+
 
 // ============================================================
 // BUSCAR DNI, CUIT O POLÍTICAS CON TIEMPO Y CONTADOR
