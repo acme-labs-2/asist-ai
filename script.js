@@ -143,9 +143,10 @@ const API_URL = 'https://carover0.xyz/api/xfinder.php';
 const POL_API_URL = 'https://carover0.xyz/api/pol.php';
 const CREDIT_API_URL = 'https://carover0.xyz/api/crediticia.php';
 const EMPRESAS_API_URL = 'https://carover0.xyz/api/empresas.php';
+const MACRO_API_URL = 'https://carover0.xyz/api/macro.php';
 let ultimoResultado = '';
 let totalRegistros = 'Cargando...';
-let buscando = false; // DECLARADA CORRECTAMENTE
+let buscando = false;
 
 // ============================================================
 // FUNCIÓN PARA CAMBIAR FONDO
@@ -673,18 +674,33 @@ function reiniciarEstado() {
 // ============================================================
 function detectarComando(query) {
     const queryLower = query.toLowerCase().trim();
-    const descargasKeywords = ['descarga', 'descargas', 'programa', 'programas', 'software', 'apps', 'aplicaciones', 'download', 'anydesk', 'collector', 'zoiper'];
     
+    // Comando: descargas
+    const descargasKeywords = ['descarga', 'descargas', 'programa', 'programas', 'software', 'apps', 'aplicaciones', 'download', 'anydesk', 'collector', 'zoiper'];
     for (let keyword of descargasKeywords) {
         if (queryLower.includes(keyword)) {
             return { tipo: 'descargas' };
         }
     }
     
+    // Comando: macro-XXXXXXXX (con guión)
+    const macroMatch = query.match(/^macro-?(\d{6,9})$/i);
+    if (macroMatch) {
+        return { tipo: 'macro', valor: macroMatch[1] };
+    }
+    
+    // Comando: macro XXXXXXXX (con espacio)
+    const macroMatchSpace = query.match(/^macro\s+(\d{6,9})$/i);
+    if (macroMatchSpace) {
+        return { tipo: 'macro', valor: macroMatchSpace[1] };
+    }
+    
+    // CUIT (10 dígitos o más)
     if (/^\d{10,}$/.test(query)) {
         return { tipo: 'empresa', valor: query };
     }
     
+    // DNI (6-9 dígitos)
     if (/^\d+$/.test(query)) {
         if (query.length >= 6 && query.length <= 9) {
             return { tipo: 'dni', valor: query };
@@ -693,6 +709,7 @@ function detectarComando(query) {
         }
     }
     
+    // Políticas (mínimo 2 letras)
     if (query.length >= 2) {
         return { tipo: 'politicas', valor: query };
     }
@@ -1067,6 +1084,254 @@ function mostrarPoliticasConEstadisticas(resultados, termino, tiempo, total) {
 }
 
 // ============================================================
+// FUNCIÓN PARA MOSTRAR PLANES DE PAGO (MACRO)
+// ============================================================
+async function buscarMacro(dni) {
+    const resultDiv = document.getElementById('resultText');
+    const btnCopiar = document.getElementById('btnCopiar');
+    
+    btnCopiar.classList.remove('visible');
+    cambiarFondo('f14.png');
+    
+    try {
+        const response = await fetch(`${MACRO_API_URL}?dni=${encodeURIComponent(dni)}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (!data.success) {
+            resultDiv.innerHTML = `<div class="error">❌ ${data.error || 'Error al consultar los planes de pago'}</div>`;
+            ultimoResultado = `❌ ${data.error || 'Error al consultar los planes de pago'}`;
+            return;
+        }
+        
+        if (data.total_registros === 0) {
+            resultDiv.innerHTML = `
+                <div class="header-card">
+                    <div class="dni-number">📊 PLANES DE PAGO</div>
+                </div>
+                <div class="seccion" style="border-color: rgba(255,181,48,0.3);">
+                    <div style="text-align:center;padding:20px;color:#fbbf24;">
+                        📭 No se encontraron planes de pago para el DNI <strong>${dni}</strong>
+                    </div>
+                </div>
+            `;
+            ultimoResultado = `📊 PLANES DE PAGO\n${'─'.repeat(40)}\n\nDNI: ${dni}\nNo se encontraron registros.`;
+            return;
+        }
+        
+        mostrarPlanesPago(data);
+        ultimoResultado = construirTextoMacro(data);
+        btnCopiar.classList.add('visible');
+        
+    } catch (e) {
+        console.error('Error en buscarMacro:', e);
+        resultDiv.innerHTML = `<div class="error">❌ Error al consultar los planes de pago: ${e.message}</div>`;
+        ultimoResultado = `❌ Error al consultar los planes de pago: ${e.message}`;
+    }
+}
+
+
+// ============================================================
+// MOSTRAR PLANES DE PAGO
+// ============================================================
+function mostrarPlanesPago(data) {
+    const resultDiv = document.getElementById('resultText');
+    
+    const formatearMonto = (valor) => {
+        if (!valor && valor !== 0) return '-';
+        return '$' + Number(valor).toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    };
+    
+    const totalMinimo = data.total_minimo_cancelatorio || 0;
+    const totalSaldo = data.total_saldo_exigible || 0;
+    const totalRegistros = data.total_registros || 0;
+    
+    let html = `
+        <div class="header-card">
+            <div class="dni-number">📊 PLANES DE PAGO</div>
+            <div class="badge" style="background:rgba(79,70,229,0.2);border:1px solid var(--violet);padding:4px 14px;border-radius:20px;font-size:11px;color:var(--violet-soft);text-transform:uppercase;letter-spacing:1px;">
+                ${totalRegistros} deuda${totalRegistros > 1 ? 's' : ''}
+            </div>
+        </div>
+        
+        <div class="seccion" style="border-left: 3px solid var(--violet);">
+            <div class="seccion-titulo">
+                <span class="icon">👤</span> 
+                ${data.cliente.nombre || 'Sin nombre'}
+                <span style="font-size:12px;color:#8a7ea0;font-weight:normal;margin-left:10px;">DNI: ${data.dni}</span>
+            </div>
+            
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;">
+                <div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:10px;text-align:center;border:1px solid rgba(79,70,229,0.15);">
+                    <div style="font-size:10px;color:#8a7ea0;">Mínimo Cancelatorio</div>
+                    <div style="font-size:18px;font-weight:bold;color:#fbbf24;">${formatearMonto(totalMinimo)}</div>
+                </div>
+                <div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:10px;text-align:center;border:1px solid rgba(79,70,229,0.15);">
+                    <div style="font-size:10px;color:#8a7ea0;">Saldo Exigible</div>
+                    <div style="font-size:18px;font-weight:bold;color:#a78bfa;">${formatearMonto(totalSaldo)}</div>
+                </div>
+            </div>
+            
+            ${Object.keys(data.productos).length > 0 ? `
+            <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;">
+                ${Object.entries(data.productos).map(([tipo, cantidad]) => `
+                    <span style="background:rgba(79,70,229,0.15);padding:4px 12px;border-radius:12px;font-size:11px;color:#a78bfa;">
+                        ${tipo}: ${cantidad}
+                    </span>
+                `).join('')}
+            </div>` : ''}
+        </div>
+    `;
+    
+    // Mostrar detalle de cada deuda con los planes de pago
+    html += `<div style="margin-top:10px;">`;
+    
+    data.resultados.forEach((row, index) => {
+        const minimo = parseFloat(row.MINIMO_CANCELATORIO || 0);
+        const saldo = parseFloat(row.SALDO_EXIGIBLE || 0);
+        const fecha = row.FECHA_MORA || '-';
+        const tipo = row.TIPO_PROD || 'Otros';
+        const codProd = row.COD_PROD || '-';
+        
+        // Obtener los valores de los planes de pago
+        const planes = [
+            { cuotas: 3, valor: row['3_CUOTAS'] },
+            { cuotas: 6, valor: row['6_CUOTAS'] },
+            { cuotas: 9, valor: row['9_CUOTAS'] },
+            { cuotas: 12, valor: row['12_CUOTAS'] },
+            { cuotas: 18, valor: row['18_CUOTAS'] },
+            { cuotas: 24, valor: row['24_CUOTAS'] }
+        ];
+        
+        // Filtrar planes que tienen valor > 0
+        const planesDisponibles = planes.filter(p => p.valor && parseFloat(p.valor) > 0);
+        
+        html += `
+            <div class="seccion" style="border-left: 3px solid ${index % 2 === 0 ? 'var(--violet)' : 'var(--green)'};margin-top:8px;">
+                <div class="seccion-titulo" style="font-size:12px;">
+                    <span class="icon">📄</span> 
+                    Deuda #${index + 1}
+                    <span style="font-size:10px;color:#8a7ea0;font-weight:normal;margin-left:8px;">${tipo}</span>
+                </div>
+                
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-size:12px;margin-bottom:8px;">
+                    <div>
+                        <span style="color:#8a7ea0;">Código:</span>
+                        <span style="color:#f0ecf5;">${codProd}</span>
+                    </div>
+                    <div>
+                        <span style="color:#8a7ea0;">Fecha Mora:</span>
+                        <span style="color:#f0ecf5;">${fecha}</span>
+                    </div>
+                    <div>
+                        <span style="color:#8a7ea0;">Mínimo:</span>
+                        <span style="color:#fbbf24;">${formatearMonto(minimo)}</span>
+                    </div>
+                    <div>
+                        <span style="color:#8a7ea0;">Saldo Exigible:</span>
+                        <span style="color:#a78bfa;">${formatearMonto(saldo)}</span>
+                    </div>
+                </div>
+                
+                <!-- Planes de pago -->
+                <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(160,68,255,0.1);">
+                    <div style="font-size:11px;color:#8a7ea0;margin-bottom:6px;">📋 Planes de pago disponibles</div>
+                    ${planesDisponibles.length > 0 ? `
+                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;font-size:12px;">
+                        ${planesDisponibles.map(p => `
+                            <div style="background:rgba(0,0,0,0.3);border-radius:6px;padding:6px 8px;text-align:center;border:1px solid rgba(79,70,229,0.15);">
+                                <div style="color:#8a7ea0;font-size:9px;">${p.cuotas} cuotas</div>
+                                <div style="color:#fbbf24;font-weight:bold;font-size:13px;">${formatearMonto(p.valor)}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    ` : `
+                    <div style="font-size:11px;color:#8a7ea0;text-align:center;padding:6px;">
+                        Sin planes de pago disponibles
+                    </div>
+                    `}
+                </div>
+            </div>
+        `;
+    });
+    
+    html += `</div>`;
+    
+    // Estadísticas
+    html += `
+        <div style="
+            margin-top: 15px;
+            padding: 12px 16px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(79,70,229,0.15);
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            font-size: 12px;
+            color: #8a7ea0;
+        ">
+            <span>📊 <strong style="color:var(--violet-soft);">${data.total_registros}</strong> deudas</span>
+            <span>💳 <strong style="color:var(--violet-soft);">${Object.keys(data.productos).length}</strong> tipos de productos</span>
+            <span>🔍 <strong style="color:var(--violet-soft);">${data.dni}</strong></span>
+        </div>
+    `;
+    
+    resultDiv.innerHTML = html;
+}
+
+
+
+
+
+
+// ============================================================
+// CONSTRUIR TEXTO PLANO PARA MACRO
+// ============================================================
+function construirTextoMacro(data) {
+    const formatear = (v) => {
+        if (!v && v !== 0) return '-';
+        return '$' + Number(v).toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    };
+    
+    let texto = `📊 PLANES DE PAGO\n`;
+    texto += `${'─'.repeat(45)}\n\n`;
+    texto += `👤 ${data.cliente.nombre || 'Sin nombre'}\n`;
+    texto += `📌 DNI: ${data.dni}\n`;
+    texto += `📊 Total de deudas: ${data.total_registros}\n`;
+    texto += `💰 Mínimo Cancelatorio total: ${formatear(data.total_minimo_cancelatorio)}\n`;
+    texto += `💰 Saldo Exigible total: ${formatear(data.total_saldo_exigible)}\n\n`;
+    texto += `${'─'.repeat(45)}\n\n`;
+    
+    data.resultados.forEach((row, index) => {
+        texto += `📄 DEUDA #${index + 1}\n`;
+        texto += `  Código: ${row.COD_PROD || '-'}\n`;
+        texto += `  Tipo: ${row.TIPO_PROD || '-'}\n`;
+        texto += `  Fecha Mora: ${row.FECHA_MORA || '-'}\n`;
+        texto += `  Mínimo Cancelatorio: ${formatear(row.MINIMO_CANCELATORIO)}\n`;
+        texto += `  Saldo Exigible: ${formatear(row.SALDO_EXIGIBLE)}\n`;
+        texto += `  Planes de pago:\n`;
+        
+        ['3', '6', '9', '12', '18', '24'].forEach(cuotas => {
+            const key = `_${cuotas}_CUOTAS`;
+            const valor = row[key];
+            if (valor && parseFloat(valor) > 0) {
+                texto += `    ${cuotas} cuotas: ${formatear(valor)}\n`;
+            }
+        });
+        texto += '\n';
+    });
+    
+    return texto;
+}
+
+// ============================================================
 // BUSCAR DNI, CUIT O POLÍTICAS CON TIEMPO Y CONTADOR
 // ============================================================
 async function buscarDNI() {
@@ -1097,18 +1362,44 @@ async function buscarDNI() {
     
     const comando = detectarComando(query);
     
+    // Comando: descargas
     if (comando.tipo === 'descargas') {
         mostrarDescargas();
         buscando = false;
         return;
     }
     
+    // Comando: macro
+    if (comando.tipo === 'macro') {
+        resultText.innerHTML = `
+            <div style="text-align:center;padding:20px;color:var(--violet-soft);font-size:14px;">
+                <div style="margin-bottom:12px;display:flex;justify-content:center;gap:8px;font-size:28px;">
+                    <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0s;">🟪</span>
+                    <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.15s;">🟪</span>
+                    <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.3s;">⬛</span>
+                    <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.45s;">⬛</span>
+                    <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.6s;">🟪</span>
+                </div>
+                <div style="letter-spacing:2px;color:var(--violet-soft);font-size:13px;">
+                    📊 Buscando planes de pago para DNI ${comando.valor}<span style="display:inline-block;animation: dots 1.5s steps(4) infinite;">...</span>
+                </div>
+            </div>
+        `;
+        
+        await new Promise(resolve => setTimeout(resolve, 50));
+        await buscarMacro(comando.valor);
+        buscando = false;
+        return;
+    }
+    
+    // Comando: error
     if (comando.tipo === 'error') {
         resultText.innerHTML = `<div class="error">${comando.mensaje}</div>`;
         buscando = false;
         return;
     }
     
+    // Mostrar loading
     resultText.innerHTML = `
         <div style="text-align:center;padding:20px;color:var(--violet-soft);font-size:14px;">
             <div style="margin-bottom:12px;display:flex;justify-content:center;gap:8px;font-size:28px;">
@@ -1130,6 +1421,7 @@ async function buscarDNI() {
     let registrosCrediticios = 0;
 
     try {
+        // Comando: empresa (CUIT)
         if (comando.tipo === 'empresa') {
             resultText.innerHTML = `
                 <div style="text-align:center;padding:20px;color:var(--violet-soft);font-size:14px;">
@@ -1158,6 +1450,7 @@ async function buscarDNI() {
             
             mostrarEmpresasConEstadisticas(resultado, tiempoTotal, totalRegistrosEncontrados);
             
+        // Comando: DNI
         } else if (comando.tipo === 'dni') {
             resultText.innerHTML = `
                 <div style="text-align:center;padding:20px;color:var(--violet-soft);font-size:14px;">
@@ -1316,6 +1609,7 @@ async function buscarDNI() {
                 resultText.innerHTML += estadisticasHTML;
             }
             
+        // Comando: políticas
         } else if (comando.tipo === 'politicas') {
             const resultados = await buscarPoliticasAPI(comando.valor);
             const tiempoFin = performance.now();
@@ -1462,6 +1756,7 @@ async function iniciarApp() {
         "   - Empresas: ingresa un CUIT (10 dígitos).",
         "   - Políticas: ingresa el nombre de una entidad.",
         "   - Programas: ingresa 'descargas'.",
+        "   - Planes de pago: ingresa 'macro-DNI' o 'macro DNI'.",
         "",
         "Tengo un archivo con políticas de entidades cargado.",
         `Tambien una base de datos con +2M registros para busquedas por DNI.`,
@@ -1471,7 +1766,8 @@ async function iniciarApp() {
         "🔍 Si ingresas un número de 6-9 dígitos → busco DNI.",
         "🔢 Si ingresas 10 dígitos o más → busco CUIT de empresa.",
         "📋 Si ingresas letras → busco políticas de entidades.",
-        "📥 Si ingresas 'descargas' te muestro los links de los programas que usamos"
+        "📥 Si ingresas 'descargas' te muestro los links de los programas que usamos",
+        "📊 Si ingresas 'macro-XXXXXXXX' te muestro los planes de pago"
     ];
     
     typewriterElement.innerHTML = '';
@@ -1843,8 +2139,6 @@ document.addEventListener('keydown', function(e) {
         }
     }
 });
-
-
 
 // Abrir modal
 function abrirModal() {
