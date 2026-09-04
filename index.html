@@ -3,507 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ACME Labs · Assist-AI</title>
+    <title>ACME Labs · AssistAI</title>
     <link rel="stylesheet" href="styles.css">
-    <style>
-        .login-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            z-index: 99999;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(8px);
-        }
-        .login-box {
-            background: rgba(18, 6, 31, 0.97);
-            border: 2px solid var(--violet);
-            border-radius: 16px;
-            padding: 40px 35px;
-            max-width: 400px;
-            width: 90%;
-            box-shadow: 0 0 60px rgba(160, 68, 255, 0.3);
-            animation: slideUp 0.3s ease;
-        }
-        .login-box .logo {
-            text-align: center;
-            font-size: 48px;
-            margin-bottom: 10px;
-        }
-        .login-box h2 {
-            color: var(--violet-soft);
-            text-align: center;
-            margin-bottom: 5px;
-            font-size: 22px;
-            font-family: 'Lucida Console', Monaco, monospace;
-        }
-        .login-box .subtitle {
-            color: #4a5270;
-            text-align: center;
-            font-size: 12px;
-            margin-bottom: 25px;
-            font-family: 'Lucida Console', Monaco, monospace;
-        }
-        .login-box .input-group {
-            margin-bottom: 15px;
-        }
-        .login-box .input-group label {
-            display: block;
-            color: #8a7ea0;
-            font-size: 12px;
-            margin-bottom: 5px;
-            font-family: 'Lucida Console', Monaco, monospace;
-        }
-        .login-box input {
-            width: 100%;
-            padding: 12px 16px;
-            background: rgba(0, 0, 0, 0.4);
-            border: 2px solid rgba(160, 68, 255, 0.2);
-            border-radius: 10px;
-            color: #fff;
-            font-size: 14px;
-            font-family: 'Lucida Console', Monaco, monospace;
-            outline: none;
-            transition: all 0.3s;
-            box-sizing: border-box;
-        }
-        .login-box input:focus {
-            border-color: var(--violet);
-            box-shadow: 0 0 0 3px rgba(160, 68, 255, 0.1);
-        }
-        .login-box input::placeholder {
-            color: #4a5270;
-        }
-        .login-box button {
-            width: 100%;
-            padding: 13px;
-            background: var(--violet);
-            border: none;
-            border-radius: 10px;
-            color: #fff;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-family: 'Lucida Console', Monaco, monospace;
-            margin-top: 5px;
-        }
-        .login-box button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(160, 68, 255, 0.3);
-        }
-        .login-box .error-msg {
-            color: #ff6b6b;
-            font-size: 13px;
-            text-align: center;
-            margin-top: 12px;
-            display: none;
-            font-family: 'Lucida Console', Monaco, monospace;
-        }
-        .login-box .hint {
-            color: #4a5270;
-            font-size: 11px;
-            text-align: center;
-            margin-top: 15px;
-            font-family: 'Lucida Console', Monaco, monospace;
-            border-top: 1px solid rgba(160, 68, 255, 0.1);
-            padding-top: 15px;
-        }
-        .login-box .hint span {
-            color: var(--violet-soft);
-        }
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(30px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        #mainContent {
-            display: none;
-        }
-
-        /* MODAL - FUERA DEL PANEL */
-        #modalInfo {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.85);
-            z-index: 999999;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(8px);
-        }
-        #modalInfo.visible {
-            display: flex;
-        }
-        .modal-content {
-            background: linear-gradient(145deg, #1a1a2e, #0f0f1a);
-            border: 1px solid rgba(160,68,255,0.2);
-            border-radius: 16px;
-            max-width: 600px;
-            width: 90%;
-            padding: 30px;
-            position: relative;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        .modal-close {
-            position: absolute;
-            top: 12px;
-            right: 16px;
-            background: none;
-            border: none;
-            color: #6b5b8a;
-            font-size: 24px;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-            font-family: 'Lucida Console', Monaco, monospace;
-        }
-        .modal-close:hover {
-            color: #ff6b6b;
-            transform: rotate(90deg);
-        }
-        .modal-title {
-            font-family: 'Lucida Console', Monaco, monospace;
-            font-size: 16px;
-            color: #f0ecf5;
-            margin-bottom: 20px;
-            border-bottom: 1px solid rgba(160,68,255,0.1);
-            padding-bottom: 12px;
-        }
-        .modal-body {
-            font-family: 'Lucida Console', Monaco, monospace;
-            font-size: 12px;
-            color: #b8a8d0;
-            line-height: 1.8;
-        }
-        .modal-body .gratis {
-            color: #34d399;
-            font-weight: bold;
-        }
-        .modal-body .stats {
-            background: rgba(0,0,0,0.3);
-            border-radius: 8px;
-            padding: 14px 16px;
-            margin: 12px 0;
-            border-left: 3px solid var(--violet);
-        }
-        .modal-body .stats-item {
-            display: flex;
-            justify-content: space-between;
-            font-size: 11px;
-            color: #8a7ea0;
-        }
-        .modal-body .stats-item+.stats-item {
-            margin-top: 4px;
-        }
-        .modal-body .stats-item .value {
-            color: #fbbf24;
-            font-weight: bold;
-        }
-        .modal-body .stats-item .value.green {
-            color: #34d399;
-        }
-        .modal-body .stats-item .value.purple {
-            color: #a78bfa;
-        }
-        .modal-body .alert {
-            margin: 16px 0;
-            padding: 12px 16px;
-            background: rgba(255,107,107,0.05);
-            border-radius: 8px;
-            border: 1px solid rgba(255,107,107,0.1);
-        }
-        .modal-body .alert-title {
-            color: #ff6b6b;
-            font-size: 11px;
-            font-weight: bold;
-            margin-bottom: 6px;
-        }
-        .modal-body .features {
-            background: rgba(160,68,255,0.05);
-            border: 1px solid rgba(160,68,255,0.1);
-            border-radius: 8px;
-            padding: 14px 16px;
-            margin: 12px 0;
-        }
-        .modal-body .features-title {
-            color: #a78bfa;
-            font-size: 11px;
-            font-weight: bold;
-            margin-bottom: 6px;
-        }
-        .modal-body .footer-note {
-            margin-top: 16px;
-            padding-top: 12px;
-            border-top: 1px solid rgba(160,68,255,0.1);
-            font-size: 11px;
-            color: #6b5b8a;
-            text-align: center;
-        }
-        .modal-btn-close {
-            margin-top: 20px;
-            width: 100%;
-            padding: 10px;
-            background: var(--violet);
-            border: none;
-            border-radius: 8px;
-            color: white;
-            font-family: 'Lucida Console', Monaco, monospace;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: bold;
-            letter-spacing: 1px;
-        }
-        .modal-btn-close:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(79,70,229,0.4);
-        }
-        .btn-info {
-            background: none;
-            border: 1px solid rgba(160,68,255,0.2);
-            color: #8a7ea0;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 11px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: 'Lucida Console', Monaco, monospace;
-        }
-        .btn-info:hover {
-            border-color: var(--violet-soft);
-            color: var(--violet-soft);
-        }
-    </style>
 </head>
 <body>
-
     <!-- ===== LOGIN OVERLAY ===== -->
-    <div class="login-overlay" id="loginOverlay">
+    <div id="loginOverlay" class="login-overlay">
         <div class="login-box">
-            <div class="logo">🤖</div>
-            <h2>asistAI</h2>
-            <div class="subtitle">Acceso restringido · Personal autorizado</div>
-            
-            <div class="input-group">
-                <label>👤 Usuario</label>
-                <input type="text" id="loginUser" placeholder="Ej: juan.perez" 
-                       onkeydown="if(event.key==='Enter') loginSubmit()" autofocus>
+            <div class="login-header">
+                <span class="login-icon">🤖</span>
+                <span class="login-title">asistAI</span>
+                <span class="login-version">v2.0</span>
             </div>
-            
-            <div class="input-group">
-                <label>🔑 Contraseña</label>
-                <input type="password" id="loginPass" placeholder="••••••••" 
-                       onkeydown="if(event.key==='Enter') loginSubmit()">
-            </div>
-            
+            <div class="login-subtitle">Acceso al sistema</div>
+            <div class="login-error" id="loginError">❌ Credenciales incorrectas</div>
+            <input type="text" id="loginUser" placeholder="Usuario" autocomplete="username">
+            <input type="password" id="loginPass" placeholder="Contraseña" autocomplete="current-password" onkeydown="if(event.key==='Enter') loginSubmit()">
             <button onclick="loginSubmit()">🔓 INGRESAR</button>
-            
-            <div class="error-msg" id="loginError">❌ Usuario o contraseña incorrectos</div>
-            
-            <div class="hint">
-                🔒 Sistema para uso exclusivo del equipo<br>
-                Contacta con <span>Soporte</span> si tenes problemas
+            <div class="login-footer">
+                <span onclick="soporteTelegram()" style="cursor:pointer;color:var(--violet-soft);text-decoration:underline;">📱 ¿Problemas? Contactá soporte</span>
             </div>
         </div>
     </div>
-
-<!-- ===== MODAL INFO (FUERA DEL MAIN) ===== -->
-<div id="modalInfo">
-    <div class="modal-content">
-        <button class="modal-close" onclick="cerrarModal()">✕</button>
-        <div class="modal-body">
-            
-            <div style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 12px 14px; margin-bottom: 12px; border-left: 3px solid #ff6b6b;">
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px;">
-                    <span style="color: #ff6b6b; font-size: 11px; font-weight: bold;">🌐 UBICACIÓN DEL SERVIDOR (VPS)</span>
-                </div>
-                
-                <div style="border-radius: 6px; overflow: hidden; margin: 6px 0; border: 1px solid rgba(255,107,107,0.1);">
-                    <iframe 
-                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d20954.58003281446!2d8.165179855615662!3d48.96638499454921!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4796fda2a05d34dd%3A0x40a5fb99a3952b0!2s67630%20Lauterbourg%2C%20France!5e0!3m2!1sen!2sar!4v1786715678334!5m2!1sen!2sar" 
-                        width="100%" 
-                        height="150" 
-                        style="border:0; display: block;" 
-                        allowfullscreen="" 
-                        loading="lazy" 
-                        referrerpolicy="strict-origin-when-cross-origin">
-                    </iframe>
-                </div>
-
-                <div style="font-size: 10px; color: #8a7ea0; margin-top: 4px; line-height: 1.8;">
-                    <div>• Ubicación: <strong style="color: #ff6b6b;">Lauterbourg, Francia</strong></div>
-                    <div>• Aloja: <strong style="color: #fbbf24;">Bases, scripts PHP</strong></div>
-                </div>
-            </div>
-
-            <div style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 12px 14px; margin: 10px 0; border-left: 3px solid #fbbf24;">
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px;">
-                    <span style="color: #fbbf24; font-size: 11px; font-weight: bold;">🌐 UBICACIÓN DE LA PÁGINA (GitHub Pages)</span>
-                </div>
-
-                <div style="border-radius: 6px; overflow: hidden; margin: 6px 0; border: 1px solid rgba(251,191,36,0.1);">
-                    <iframe 
-                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d12519.12660395663!2d-87.46160173181255!3d38.33088688198816!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x886e1926520a6dc7%3A0x29e666f7ea1c1daf!2sFrancisco%2C%20IN%2047649%2C%20USA!5e0!3m2!1sen!2sar!4v1786716579934!5m2!1sen!2sar" 
-                        width="100%" 
-                        height="150" 
-                        style="border:0; display: block;" 
-                        allowfullscreen="" 
-                        loading="lazy" 
-                        referrerpolicy="strict-origin-when-cross-origin">
-                    </iframe>
-                </div>
-
-                <div style="font-size: 10px; color: #8a7ea0; margin-top: 4px; line-height: 1.8;">
-                    <div>• Ubicación: <strong style="color: #a78bfa;">Francisco, Indiana, EE.UU.</strong></div>
-                    <div>• Aloja: <strong style="color: #34d399;">Archivos HTML, CSS, JS</strong></div>
-                </div>
-            </div>
-
-<!-- INFRAESTRUCTURA -->
-<div style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 12px 14px; margin: 10px 0; border-left: 3px solid #a78bfa;">
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px;">
-        <span style="color: #a78bfa; font-size: 11px; font-weight: bold;">🖥️ INFRAESTRUCTURA COMPARTIDA</span>
-        <a href="https://carover0.github.io/pagina/" target="_blank" style="
-            color: #fbbf24;
-            font-size: 10px;
-            text-decoration: none;
-            background: rgba(0,0,0,0.3);
-            padding: 2px 10px;
-            border-radius: 12px;
-            border: 1px solid rgba(251,191,36,0.2);
-            transition: all 0.3s;
-        " onmouseover="this.style.background='rgba(251,191,36,0.2)'" 
-        onmouseout="this.style.background='rgba(0,0,0,0.3)'">
-            🔗 Ver estado completo →
-        </a>
-    </div>
-    <div style="font-size: 10px; color: #b8a8d0; margin-top: 6px; line-height: 1.8;">
-        Esta herramienta comparte recursos de servidor con nodos de las criptomonedas 
-        <span style="color: #fbbf24; font-weight: bold;">Zcash</span>, 
-        <span style="color: #ff6b6b; font-weight: bold;">Firo</span>, 
-        <span style="color: #a78bfa; font-weight: bold;">PIVX</span> y 
-        <span style="color: #f97316; font-weight: bold;">Ycash</span>.
-        <br>
-        Aloja herramientas para cada una de las redes como exploradores de bloques, consolas y monitores de nodo. 
-        También es servidor de billeteras para las redes 
-        <span style="color: #fbbf24; font-weight: bold;">Zcash</span> y 
-        <span style="color: #ff6b6b; font-weight: bold;">FIRO</span>.
-    </div>
-</div>
-
-        </div>
-
-        <button class="modal-btn-close" onclick="cerrarModal()">
-            ✕ ENTENDIDO
-        </button>
-    </div>
-</div>
 
     <!-- ===== MAIN CONTENT ===== -->
-    <main id="mainContent">
-        <section class="panel">
-            <div class="panel-inner">
-                <div style="display:flex;align-items:center;padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid rgba(160,68,255,0.15);gap:20px;flex-wrap:wrap;">
-                    <div style="display:flex;align-items:center;gap:10px;">
-                        <span style="font-size:18px;font-weight:bold;color:var(--violet-soft);">asistAI</span>
-                        <span style="font-size:11px;color:#4a5270;background:rgba(79,70,229,0.15);padding:2px 10px;border-radius:10px;">🔒</span>
-                    </div>
+    <div id="mainContent" style="display:none;width:100%;min-height:100vh;">
+        <!-- TOP BAR -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <span class="logo-icon">🔒</span>
+                <span class="logo-text">asistAI</span>
+                <span class="logo-version">v2.0</span>
+            </div>
+            <div class="topbar-right">
+                <span id="userDisplay" class="user-badge">👤 usuario</span>
+                <button class="btn-logout" onclick="logout()" title="Cerrar sesión">⏻</button>
+            </div>
+        </header>
 
-                    <div style="display:flex;align-items:center;gap:12px;">
-                        <span style="font-size:11px;color:#8a7ea0;" id="userDisplay">👤 usuario</span>
-                        
-                        <button onclick="soporteTelegram()" style="
-                            background:#CE0E60;
-                            color:#ffffff;
-                            border:none;
-                            border-radius:8px;
-                            padding:4px 12px;
-                            cursor:pointer;
-                            font-size:11px;
-                            font-family:'Lucida Console',Monaco,monospace;
-                            transition:all 0.3s;
-                        " onmouseover="this.style.background='#a00b4d'" 
-                        onmouseout="this.style.background='#CE0E60'">
-                            🗯 Soporte
-                        </button>
-
-                        <button onclick="logout()" style="
-                            background:#2952FD;
-                            color:#ffffff;
-                            border:none;
-                            border-radius:8px;
-                            padding:4px 12px;
-                            cursor:pointer;
-                            font-size:11px;
-                            font-family:'Lucida Console',Monaco,monospace;
-                            transition:all 0.3s;
-                        " onmouseover="this.style.background='#1a3fd4'" 
-                        onmouseout="this.style.background='#2952FD'">
-                            🚪 Salir
-                        </button>
-
-                        <!-- Botón Info -->
-                        <button class="btn-info" onclick="abrirModal()">
-                            ⓘ ¿te parece lento?
-                        </button>
+        <!-- MAIN WRAPPER -->
+        <div class="app-wrapper">
+            <!-- CONSOLE CARD -->
+            <section class="console-section">
+                <div class="card console-card">
+                    <div class="console" id="consoleOutput">
+                        <span id="typewriter"></span><span class="cursor" id="cursor"></span>
                     </div>
                 </div>
+            </section>
 
-                <div class="console" id="consoleOutput">
-                    <span id="typewriter"></span><span class="cursor" id="cursor"></span>
-                </div>
-
-                <div class="search-container" id="searchContainer">
-                    <label for="dniInput">📌 Ingresa un DNI, el nombre de una entidad o descargas</label>
+            <!-- SEARCH CARD -->
+            <section class="search-section" id="searchContainer">
+                <div class="card search-card">
+                    <label for="dniInput">📌 Ingresa un DNI, nombre de entidad o comando</label>
                     <div class="input-row">
-                        <input type="text" id="dniInput" placeholder="Ej: 34340714 o Creditia" maxlength="50" onkeydown="if(event.key==='Enter') buscarDNI()">
+                        <input type="text" id="dniInput" placeholder="Ej: 34340714 · Creditia · descargas · macro-12345678" maxlength="50">
                         <div class="button-group">
-                            <button onclick="buscarDNI()">🔍 CONSULTAR</button>
-                            <button class="btn-copiar-busqueda" id="btnCopiar" onclick="copiarResultado()">
-                                📋 COPIAR
-                            </button>
+                            <button onclick="buscarDNI()" id="btnBuscar">🔍 CONSULTAR</button>
+                            <button class="btn-copiar-busqueda" id="btnCopiar" onclick="copiarResultado()">📋 COPIAR</button>
                         </div>
                     </div>
                 </div>
+            </section>
 
-                <div class="result" id="resultContent">
-                    <div id="resultText" class="result-moderno"></div>
-                </div>
+            <!-- RESULTS -->
+            <section class="results-section" id="resultContent">
+                <div id="resultText" class="result-moderno"></div>
+            </section>
+        </div>
+    </div>
+
+    <!-- ===== CHAT FLOTANTE ===== -->
+    <div class="chat-float" id="chatFloat">
+        <div class="chat-window" id="chatWindow">
+            <div class="chat-header">
+                <span>💬 Asistente</span>
+                <span onclick="toggleChat()" style="cursor:pointer;font-size:18px;">✕</span>
             </div>
-        </section>
-
-        <!-- ===== CHAT FLOTANTE ===== -->
-        <div id="chatFloat" class="chat-float">
-            <button id="chatToggle" class="chat-toggle" onclick="toggleChat()">
-                💬
-            </button>
-            <div id="chatWindow" class="chat-window" style="display:none;">
-                <div class="chat-header">
-                    <span>🤖 AssistAI Chat</span>
-                    <button onclick="toggleChat()" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;">✕</button>
-                </div>
-                <div id="chatMessages" class="chat-messages">
-                    <div class="chat-message bot">
-                        Hola! Soy AssistAI 🤖<br>
-                        Puedo calcular tu CUIL a partir de un DNI.<br>
-                        <span style="font-size:12px;color:#8a7ea0;">Ejemplo: "DNI 12345678" o "calcular CUIL 12345678"</span>
-                    </div>
-                </div>
-                <div class="chat-input">
-                    <input type="text" id="chatInput" placeholder="Escribe tu consulta..." onkeypress="if(event.key==='Enter') enviarChat()">
-                    <button onclick="enviarChat()">➤</button>
-                </div>
+            <div class="chat-messages" id="chatMessages"></div>
+            <div class="chat-input">
+                <input type="text" id="chatInput" placeholder="Escribí tu mensaje..." onkeydown="if(event.key==='Enter') enviarChat()">
+                <button onclick="enviarChat()">➤</button>
             </div>
         </div>
-    </main>
+        <button class="chat-toggle" id="chatToggle" onclick="toggleChat()">💬</button>
+    </div>
 
     <script src="script.js"></script>
 </body>
