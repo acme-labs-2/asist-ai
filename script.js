@@ -148,15 +148,10 @@ let ultimoResultado = '';
 let totalRegistros = 'Cargando...';
 let buscando = false;
 
-// ============================================================
-// FUNCIÓN PARA CAMBIAR FONDO
-// ============================================================
-function cambiarFondo(imagen) {
-    document.body.style.backgroundImage = `url('assets/${imagen}')`;
-    document.body.style.backgroundSize = "cover";
-    document.body.style.backgroundPosition = "center";
-    document.body.style.backgroundAttachment = "fixed";
-}
+// ===== ELEMENTOS GLOBALES =====
+const typewriterElement = document.getElementById('typewriter');
+const cursorElement = document.getElementById('cursor');
+const consoleElement = document.getElementById('consoleOutput');
 
 // ============================================================
 // OBTENER TOTAL DE REGISTROS DESDE LA API (CON CACHE)
@@ -405,7 +400,7 @@ function mostrarDescargas() {
     const btnCopiar = document.getElementById('btnCopiar');
     
     btnCopiar.classList.add('visible');
-    cambiarFondo('f10.png');
+    // Ya no cambiamos fondo
     
     const programas = [
         { 
@@ -437,7 +432,7 @@ function mostrarDescargas() {
     let html = `
         <div class="header-card">
             <div class="dni-number">📥 DESCARGAS</div>
-            <div class="badge" style="background:rgba(79,70,229,0.2);border:1px solid var(--violet);padding:4px 14px;border-radius:20px;font-size:11px;color:var(--violet-soft);text-transform:uppercase;letter-spacing:1px;">
+            <div class="badge">
                 ${programas.length} aplicaciones
             </div>
         </div>
@@ -489,8 +484,8 @@ function mostrarDescargas() {
     
     html += `
         <div style="
-            background:rgba(0,0,0,0.4);
-            border:1px solid rgba(79,70,229,0.2);
+            background:rgba(0,0,0,0.2);
+            border:1px solid rgba(79,70,229,0.15);
             border-radius:12px;
             padding:14px 18px;
             margin-top:5px;
@@ -642,9 +637,13 @@ function copiarResultado() {
 function prepararBusqueda() {
     const consoleElement = document.getElementById('consoleOutput');
     consoleElement.classList.add('oculto');
+    const consoleSection = document.querySelector('.console-section');
+    if (consoleSection) {
+        consoleSection.style.display = 'none';
+    }
     const searchContainer = document.getElementById('searchContainer');
     searchContainer.classList.add('arriba');
-    document.body.classList.add('fondo-busqueda');
+
 }
 
 // ============================================================
@@ -659,9 +658,14 @@ function reiniciarEstado() {
     const resultText = document.getElementById('resultText');
     const btnCopiar = document.getElementById('btnCopiar');
     const dniInput = document.getElementById('dniInput');
+    // === MOSTRAR LA CONSOLA DE NUEVO ===
+    const consoleSection = document.querySelector('.console-section');
+    if (consoleSection) {
+        consoleSection.classList.remove('oculto');
+    }
     
     dniInput.value = '';
-    resultContent.className = 'result';
+    resultContent.className = 'results-section';
     resultText.innerHTML = '';
     btnCopiar.classList.remove('visible');
     btnCopiar.textContent = '📋 COPIAR';
@@ -717,15 +721,15 @@ function detectarComando(query) {
     return { tipo: 'error', mensaje: '⚠️ Ingrese un DNI (6-9 dígitos), CUIT (10 dígitos) o nombre de entidad (mínimo 2 letras).' };
 }
 
+
 // ============================================================
-// MOSTRAR XFINDER CON ESTADÍSTICAS
+// MOSTRAR XFINDER CON ESTADÍSTICAS (AGREGA CONTENIDO)
 // ============================================================
 function mostrarResultadoXfinder(data) {
     const resultDiv = document.getElementById('resultText');
     const btnCopiar = document.getElementById('btnCopiar');
     
     btnCopiar.classList.add('visible');
-    cambiarFondo('f12.png');
     
     function whatsappLink(numero) {
         if (!numero || numero === '-' || numero === '---') return '';
@@ -757,48 +761,23 @@ function mostrarResultadoXfinder(data) {
             <span class="label">${label}</span>
             <span class="valor">
                 ${valor}
-                <a href="${waLink}" target="_blank" style="display:inline-block;margin-left:8px;text-decoration:none;vertical-align:middle;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'" title="WhatsApp">
-                    <img src="assets/w.png" alt="WhatsApp" style="width:20px;height:20px;display:inline-block;vertical-align:middle;border-radius:4px;">
+                <a href="${waLink}" target="_blank" style="display:inline-block;margin-left:6px;text-decoration:none;vertical-align:middle;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'" title="WhatsApp">
+                    <img src="assets/w.png" alt="WhatsApp" style="width:18px;height:18px;display:inline-block;vertical-align:middle;border-radius:4px;">
                 </a>
-                <a href="${tgLink}" target="_blank" style="display:inline-block;margin-left:6px;text-decoration:none;vertical-align:middle;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'" title="Telegram">
-                    <img src="assets/t.png" alt="Telegram" style="width:20px;height:20px;display:inline-block;vertical-align:middle;border-radius:4px;">
+                <a href="${tgLink}" target="_blank" style="display:inline-block;margin-left:4px;text-decoration:none;vertical-align:middle;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'" title="Telegram">
+                    <img src="assets/t.png" alt="Telegram" style="width:18px;height:18px;display:inline-block;vertical-align:middle;border-radius:4px;">
                 </a>
             </span>
         </div>`;
     }
 
-    let html = '';
-
-    if (data.fallecido) {
-        html = `
-            <div class="header-card">
-                <div class="dni-number">⚠️ ${data.dni || '---'}</div>
-                <div class="badge fallecido">✝ FALLECIDO</div>
-            </div>
-            <div class="seccion">
-                <div class="seccion-titulo"><span class="icon">👤</span> DATOS PERSONALES</div>
-                <div class="campo"><span class="label">Nombre</span><span class="valor">${data.nombre || '---'}</span></div>
-                <div class="campo"><span class="label">DNI</span><span class="valor">${data.dni || '---'}</span></div>
-                <div class="campo"><span class="label">Domicilio</span><span class="valor">${data.domicilio || 'Sin domicilio en padrón'}</span></div>
-                <div class="campo"><span class="label">Localidad</span><span class="valor">${data.localidad || '-'}</span></div>
-                <div class="campo"><span class="label">Provincia</span><span class="valor">${data.provincia || '-'}</span></div>
-            </div>
-            <div class="seccion" style="border-color: rgba(255,117,111,0.3);">
-                <div class="seccion-titulo"><span class="icon">⚠️</span> ESTA PERSONA SE ENCUENTRA FALLECIDA</div>
-            </div>
-        `;
-        
-        resultDiv.innerHTML = html;
-        return;
-    }
-
     const emails = [data.email, data.email2, data.email3].filter(Boolean).join(', ') || '-';
 
-    html = `
-        <div class="header-card">
-            <div class="dni-number">🔍 ${data.dni || '---'}</div>
-        </div>
+    // CONSTRUIR HTML - SIN HEADER CARD
+    let html = '';
 
+    // ===== DATOS PERSONALES =====
+    html += `
         <div class="seccion">
             <div class="seccion-titulo"><span class="icon">👤</span> DATOS PERSONALES</div>
             <div class="campo"><span class="label">Nombre</span><span class="valor">${data.nombre || '---'}</span></div>
@@ -807,26 +786,38 @@ function mostrarResultadoXfinder(data) {
             <div class="campo"><span class="label">Localidad</span><span class="valor">${data.localidad || '-'}</span></div>
             <div class="campo"><span class="label">Provincia</span><span class="valor">${data.provincia || '-'}</span></div>
         </div>
+    `;
 
+    // ===== DATOS LABORALES =====
+    html += `
         <div class="seccion">
             <div class="seccion-titulo"><span class="icon">💼</span> DATOS LABORALES</div>
             <div class="campo"><span class="label">Empleador</span><span class="valor">${data.empleador || 'Sin empleo conocido'}</span></div>
             <div class="campo"><span class="label">CUIT</span><span class="valor">${data.cuit || '-'}</span></div>
             <div class="campo"><span class="label">Empleados</span><span class="valor">${data.empleados || '-'}</span></div>
         </div>
+    `;
 
+    // ===== CONTACTO =====
+    html += `
         <div class="seccion">
             <div class="seccion-titulo"><span class="icon">📱</span> CONTACTO</div>
             ${campoContacto('Celular 1', data.celular1)}
             ${campoContacto('Celular 2', data.celular2)}
             <div class="campo"><span class="label">Fijo 1</span><span class="valor">${data.fijo1 || '-'}</span></div>
             <div class="campo"><span class="label">Fijo 2</span><span class="valor">${data.fijo2 || '-'}</span></div>
-            <div class="campo"><span class="label">Email</span><span class="valor" style="font-size:12px;">${emails}</span></div>
+            <div class="campo"><span class="label">Email</span><span class="valor" style="font-size:11px;">${emails}</span></div>
         </div>
     `;
 
-    resultDiv.innerHTML = html;
+    // AGREGAR al final del contenido existente (no reemplazar)
+    resultDiv.insertAdjacentHTML('beforeend', html);
 }
+
+
+
+
+
 
 // ============================================================
 // MOSTRAR EMPRESAS CON ESTADÍSTICAS
@@ -836,7 +827,7 @@ function mostrarEmpresasConEstadisticas(resultado, tiempo, total) {
     const btnCopiar = document.getElementById('btnCopiar');
     
     btnCopiar.classList.add('visible');
-    cambiarFondo('f15.png');
+    // Ya no cambiamos fondo
     
     if (resultado.error) {
         resultDiv.innerHTML = `<div class="error">❌ ${resultado.error}</div>`;
@@ -853,7 +844,7 @@ function mostrarEmpresasConEstadisticas(resultado, tiempo, total) {
     let html = `
         <div class="header-card">
             <div class="dni-number">🏢 EMPRESAS</div>
-            <div class="badge" style="background:rgba(79,70,229,0.2);border:1px solid var(--violet);padding:4px 14px;border-radius:20px;font-size:11px;color:var(--violet-soft);text-transform:uppercase;letter-spacing:1px;">
+            <div class="badge">
                 ${resultado.total} resultado${resultado.total > 1 ? 's' : ''}
             </div>
         </div>
@@ -939,23 +930,10 @@ function mostrarEmpresasConEstadisticas(resultado, tiempo, total) {
     });
     
     html += `
-        <div style="
-            margin-top: 15px;
-            padding: 12px 16px;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid rgba(79,70,229,0.15);
-            border-radius: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
-            font-size: 12px;
-            color: #8a7ea0;
-        ">
-            <span>⏱️ <strong style="color:var(--violet-soft);">${tiempo}s</strong></span>
-            <span>🏢 <strong style="color:var(--violet-soft);">${total}</strong> empresas encontradas</span>
-            <span>🔍 <strong style="color:var(--violet-soft);">${resultado.cuit_buscado}</strong></span>
+        <div class="estadisticas-busqueda">
+            <span>⏱️ <strong>${tiempo}s</strong></span>
+            <span>🏢 <strong>${total}</strong> empresas encontradas</span>
+            <span>🔍 <strong>${resultado.cuit_buscado}</strong></span>
         </div>
     `;
     
@@ -1011,7 +989,7 @@ function mostrarPoliticasConEstadisticas(resultados, termino, tiempo, total) {
     const btnCopiar = document.getElementById('btnCopiar');
     
     btnCopiar.classList.add('visible');
-    cambiarFondo('f12.png');
+    // Ya no cambiamos fondo
     
     if (!resultados || resultados.length === 0) {
         resultDiv.innerHTML = `<div class="error">❌ No se encontraron políticas para "${termino}"</div>`;
@@ -1022,7 +1000,7 @@ function mostrarPoliticasConEstadisticas(resultados, termino, tiempo, total) {
     let html = `
         <div class="header-card">
             <div class="dni-number">📋 POLÍTICAS: ${termino.toUpperCase()}</div>
-            <div class="badge" style="background:rgba(79,70,229,0.2);border:1px solid var(--violet);padding:4px 14px;border-radius:20px;font-size:11px;color:var(--violet-soft);text-transform:uppercase;letter-spacing:1px;">
+            <div class="badge">
                 ${resultados.length} entidad${resultados.length > 1 ? 'es' : ''}
             </div>
         </div>
@@ -1043,23 +1021,10 @@ function mostrarPoliticasConEstadisticas(resultados, termino, tiempo, total) {
     });
     
     html += `
-        <div style="
-            margin-top: 15px;
-            padding: 12px 16px;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid rgba(79,70,229,0.15);
-            border-radius: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
-            font-size: 12px;
-            color: #8a7ea0;
-        ">
-            <span>⏱️ <strong style="color:var(--violet-soft);">${tiempo}s</strong></span>
-            <span>📋 <strong style="color:var(--violet-soft);">${total}</strong> políticas encontradas</span>
-            <span>🔍 <strong style="color:var(--violet-soft);">${termino}</strong></span>
+        <div class="estadisticas-busqueda">
+            <span>⏱️ <strong>${tiempo}s</strong></span>
+            <span>📋 <strong>${total}</strong> políticas encontradas</span>
+            <span>🔍 <strong>${termino}</strong></span>
         </div>
     `;
     
@@ -1083,9 +1048,6 @@ function mostrarPoliticasConEstadisticas(resultados, termino, tiempo, total) {
     ultimoResultado = texto;
 }
 
-
-
-
 // ============================================================
 // FUNCIÓN PARA MOSTRAR PLANES DE PAGO (MACRO)
 // ============================================================
@@ -1094,9 +1056,7 @@ async function buscarMacro(dni) {
     const btnCopiar = document.getElementById('btnCopiar');
     
     btnCopiar.classList.remove('visible');
-    
-    // === AGREGAR CAMBIO DE FONDO ===
-    cambiarFondo('f15.png'); 
+    // Ya no cambiamos fondo
     
     try {
         const response = await fetch(`${MACRO_API_URL}?dni=${encodeURIComponent(dni)}`);
@@ -1139,12 +1099,6 @@ async function buscarMacro(dni) {
     }
 }
 
-
-
-
-
-
-
 // ============================================================
 // MOSTRAR PLANES DE PAGO (VERSIÓN CONSOLIDADA - SIMPLIFICADA)
 // ============================================================
@@ -1182,20 +1136,19 @@ function mostrarPlanesPago(data) {
     
     // Encontrar el mejor plan (el de MENOS cuotas con valor > 0)
     let mejorPlan = null;
-    // Recorrer en orden de menos a más cuotas
     const planesOrdenados = ['3_CUOTAS', '6_CUOTAS', '9_CUOTAS', '12_CUOTAS', '18_CUOTAS', '24_CUOTAS'];
     for (let key of planesOrdenados) {
         if (planesPromedio[key] > 0) {
             const cuotas = parseInt(key.replace('_CUOTAS', ''));
             mejorPlan = { cuotas, monto: planesPromedio[key] };
-            break; // El primero que encuentre es el de menos cuotas
+            break;
         }
     }
     
     let html = `
         <div class="header-card">
             <div class="dni-number">📊 PLANES DE PAGO</div>
-            <div class="badge" style="background:rgba(79,70,229,0.2);border:1px solid var(--violet);padding:4px 14px;border-radius:20px;font-size:11px;color:var(--violet-soft);text-transform:uppercase;letter-spacing:1px;">
+            <div class="badge">
                 ${totalRegistros} deudas
             </div>
         </div>
@@ -1210,11 +1163,11 @@ function mostrarPlanesPago(data) {
             
             <!-- Totales -->
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;">
-                <div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:10px;text-align:center;border:1px solid rgba(79,70,229,0.15);">
+                <div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:10px;text-align:center;border:1px solid rgba(79,70,229,0.1);">
                     <div style="font-size:10px;color:#8a7ea0;">💰 Total Mínimo Cancelatorio</div>
                     <div style="font-size:18px;font-weight:bold;color:#fbbf24;">${formatearMonto(totalMinimo)}</div>
                 </div>
-                <div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:10px;text-align:center;border:1px solid rgba(79,70,229,0.15);">
+                <div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:10px;text-align:center;border:1px solid rgba(79,70,229,0.1);">
                     <div style="font-size:10px;color:#8a7ea0;">💰 Total Saldo Exigible</div>
                     <div style="font-size:18px;font-weight:bold;color:#a78bfa;">${formatearMonto(totalSaldo)}</div>
                 </div>
@@ -1224,7 +1177,7 @@ function mostrarPlanesPago(data) {
             ${Object.keys(data.productos).length > 0 ? `
             <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;">
                 ${Object.entries(data.productos).map(([tipo, cantidad]) => `
-                    <span style="background:rgba(79,70,229,0.15);padding:4px 12px;border-radius:12px;font-size:11px;color:#a78bfa;">
+                    <span style="background:rgba(79,70,229,0.1);padding:4px 12px;border-radius:12px;font-size:11px;color:#a78bfa;">
                         ${tipo}: ${cantidad}
                     </span>
                 `).join('')}
@@ -1245,7 +1198,7 @@ function mostrarPlanesPago(data) {
                     const promedio = planesPromedio[key];
                     if (promedio > 0) {
                         return `
-                            <div style="background:rgba(0,0,0,0.3);border-radius:6px;padding:8px;text-align:center;border:1px solid rgba(251,191,36,0.2);">
+                            <div style="background:rgba(0,0,0,0.2);border-radius:6px;padding:8px;text-align:center;border:1px solid rgba(251,191,36,0.15);">
                                 <div style="color:#8a7ea0;font-size:9px;">${cuotas} cuotas</div>
                                 <div style="color:#fbbf24;font-weight:bold;font-size:14px;">${formatearMonto(promedio)}</div>
                             </div>
@@ -1256,13 +1209,13 @@ function mostrarPlanesPago(data) {
             </div>
             
             ${mejorPlan ? `
-            <div style="margin-top:10px;padding:8px 12px;background:rgba(251,191,36,0.1);border-radius:6px;border:1px solid rgba(251,191,36,0.3);text-align:center;">
+            <div style="margin-top:10px;padding:8px 12px;background:rgba(251,191,36,0.08);border-radius:6px;border:1px solid rgba(251,191,36,0.2);text-align:center;">
                 <span style="color:#8a7ea0;font-size:12px;">🏆 Mejor plan promedio:</span>
                 <span style="color:#fbbf24;font-weight:bold;font-size:16px;">${mejorPlan.cuotas} cuotas - ${formatearMonto(mejorPlan.monto)}</span>
                 <span style="color:#8a7ea0;font-size:10px;margin-left:8px;">(el más corto)</span>
             </div>
             ` : `
-            <div style="margin-top:10px;padding:8px 12px;background:rgba(255,0,0,0.05);border-radius:6px;border:1px solid rgba(255,0,0,0.1);text-align:center;">
+            <div style="margin-top:10px;padding:8px 12px;background:rgba(255,0,0,0.04);border-radius:6px;border:1px solid rgba(255,0,0,0.08);text-align:center;">
                 <span style="color:#8a7ea0;font-size:12px;">⚠️ No hay planes de pago disponibles</span>
             </div>
             `}
@@ -1311,7 +1264,7 @@ function mostrarPlanesPago(data) {
                 <div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(160,68,255,0.08);">
                     <div style="display:grid;grid-template-columns:repeat(${Math.min(planesDeuda.length, 6)},1fr);gap:4px;font-size:10px;">
                         ${planesDeuda.map(p => `
-                            <div style="background:rgba(0,0,0,0.2);border-radius:4px;padding:3px 4px;text-align:center;">
+                            <div style="background:rgba(0,0,0,0.15);border-radius:4px;padding:3px 4px;text-align:center;">
                                 <div style="color:#8a7ea0;">${p.cuotas}c</div>
                                 <div style="color:#fbbf24;font-weight:bold;font-size:11px;">${formatearMonto(p.valor)}</div>
                             </div>
@@ -1331,42 +1284,15 @@ function mostrarPlanesPago(data) {
     
     // Estadísticas finales
     html += `
-        <div style="
-            margin-top: 15px;
-            padding: 12px 16px;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid rgba(79,70,229,0.15);
-            border-radius: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
-            font-size: 12px;
-            color: #8a7ea0;
-        ">
-            <span>📊 <strong style="color:var(--violet-soft);">${totalRegistros}</strong> deudas</span>
-            <span>💳 <strong style="color:var(--violet-soft);">${Object.keys(data.productos).length}</strong> tipos</span>
-            <span>🔍 <strong style="color:var(--violet-soft);">${data.dni}</strong></span>
+        <div class="estadisticas-busqueda">
+            <span>📊 <strong>${totalRegistros}</strong> deudas</span>
+            <span>💳 <strong>${Object.keys(data.productos).length}</strong> tipos</span>
+            <span>🔍 <strong>${data.dni}</strong></span>
         </div>
     `;
     
     resultDiv.innerHTML = html;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // ============================================================
 // CONSTRUIR TEXTO PLANO PARA MACRO
@@ -1472,12 +1398,6 @@ function construirTextoMacro(data) {
 
 
 
-
-
-
-
-
-
 // ============================================================
 // BUSCAR DNI, CUIT O POLÍTICAS CON TIEMPO Y CONTADOR
 // ============================================================
@@ -1494,7 +1414,7 @@ async function buscarDNI() {
     const query = input.value.trim();
 
     if (!query || query.length < 2) {
-        resultContent.className = 'result visible';
+        resultContent.className = 'results-section visible';
         btnCopiar.classList.remove('visible');
         resultText.innerHTML = `<div class="error">⚠️ Ingrese un DNI (6-9 dígitos), CUIT (10 dígitos) o nombre de entidad (mínimo 2 letras).</div>`;
         return;
@@ -1504,7 +1424,7 @@ async function buscarDNI() {
     const tiempoInicio = performance.now();
 
     prepararBusqueda();
-    resultContent.className = 'result visible';
+    resultContent.className = 'results-section visible';
     btnCopiar.classList.remove('visible');
     
     const comando = detectarComando(query);
@@ -1519,15 +1439,15 @@ async function buscarDNI() {
     // Comando: macro
     if (comando.tipo === 'macro') {
         resultText.innerHTML = `
-            <div style="text-align:center;padding:20px;color:var(--violet-soft);font-size:14px;">
-                <div style="margin-bottom:12px;display:flex;justify-content:center;gap:8px;font-size:28px;">
+            <div style="text-align:center;padding:20px;color:var(--violet-soft);font-size:13px;">
+                <div style="margin-bottom:12px;display:flex;justify-content:center;gap:8px;font-size:24px;">
                     <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0s;">🟪</span>
                     <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.15s;">🟪</span>
                     <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.3s;">⬛</span>
                     <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.45s;">⬛</span>
                     <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.6s;">🟪</span>
                 </div>
-                <div style="letter-spacing:2px;color:var(--violet-soft);font-size:13px;">
+                <div style="letter-spacing:2px;color:var(--violet-soft);font-size:12px;">
                     📊 Buscando planes de pago para DNI ${comando.valor}<span style="display:inline-block;animation: dots 1.5s steps(4) infinite;">...</span>
                 </div>
             </div>
@@ -1548,15 +1468,15 @@ async function buscarDNI() {
     
     // Mostrar loading
     resultText.innerHTML = `
-        <div style="text-align:center;padding:20px;color:var(--violet-soft);font-size:14px;">
-            <div style="margin-bottom:12px;display:flex;justify-content:center;gap:8px;font-size:28px;">
+        <div style="text-align:center;padding:20px;color:var(--violet-soft);font-size:13px;">
+            <div style="margin-bottom:12px;display:flex;justify-content:center;gap:8px;font-size:24px;">
                 <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0s;">🟪</span>
                 <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.15s;">🟪</span>
                 <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.3s;">⬛</span>
                 <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.45s;">⬛</span>
                 <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.6s;">🟪</span>
             </div>
-            <div style="letter-spacing:2px;color:var(--violet-soft);font-size:13px;">
+            <div style="letter-spacing:2px;color:var(--violet-soft);font-size:12px;">
                 Buscando en base de datos<span style="display:inline-block;animation: dots 1.5s steps(4) infinite;">...</span>
             </div>
         </div>
@@ -1571,15 +1491,15 @@ async function buscarDNI() {
         // Comando: empresa (CUIT)
         if (comando.tipo === 'empresa') {
             resultText.innerHTML = `
-                <div style="text-align:center;padding:20px;color:var(--violet-soft);font-size:14px;">
-                    <div style="margin-bottom:12px;display:flex;justify-content:center;gap:8px;font-size:28px;">
+                <div style="text-align:center;padding:20px;color:var(--violet-soft);font-size:13px;">
+                    <div style="margin-bottom:12px;display:flex;justify-content:center;gap:8px;font-size:24px;">
                         <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0s;">🟪</span>
                         <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.15s;">🟪</span>
                         <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.3s;">⬛</span>
                         <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.45s;">⬛</span>
                         <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.6s;">🟪</span>
                     </div>
-                    <div style="letter-spacing:2px;color:var(--violet-soft);font-size:13px;">
+                    <div style="letter-spacing:2px;color:var(--violet-soft);font-size:12px;">
                         🏢 Buscando empresas por CUIT<span style="display:inline-block;animation: dots 1.5s steps(4) infinite;">...</span>
                     </div>
                 </div>
@@ -1599,16 +1519,17 @@ async function buscarDNI() {
             
         // Comando: DNI
         } else if (comando.tipo === 'dni') {
+            // Mostrar loading
             resultText.innerHTML = `
-                <div style="text-align:center;padding:20px;color:var(--violet-soft);font-size:14px;">
-                    <div style="margin-bottom:12px;display:flex;justify-content:center;gap:8px;font-size:28px;">
+                <div style="text-align:center;padding:20px;color:var(--violet-soft);font-size:13px;">
+                    <div style="margin-bottom:12px;display:flex;justify-content:center;gap:8px;font-size:24px;">
                         <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0s;">🟪</span>
                         <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.15s;">🟪</span>
                         <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.3s;">⬛</span>
                         <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.45s;">⬛</span>
                         <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.6s;">🟪</span>
                     </div>
-                    <div style="letter-spacing:2px;color:var(--violet-soft);font-size:13px;">
+                    <div style="letter-spacing:2px;color:var(--violet-soft);font-size:12px;">
                         📋 Buscando datos personales<span style="display:inline-block;animation: dots 1.5s steps(4) infinite;">...</span>
                     </div>
                 </div>
@@ -1629,26 +1550,43 @@ async function buscarDNI() {
             
             totalRegistrosEncontrados = 1;
             
+            // ===== LIMPIAR Y CONSTRUIR DESDE CERO =====
+            resultText.innerHTML = '';
+            
+            // ===== HEADER CARD (SOLO UNA VEZ) =====
+            const headerHTML = `
+                <div class="header-card">
+                    <div class="dni-number">🔍 ${data.dni || '---'}</div>
+                    <div class="badge">${data.origen || 'xFinder'}</div>
+                </div>
+            `;
+            resultText.innerHTML = headerHTML;
+            
+            // ===== AGREGAR DATOS PERSONALES, LABORALES Y CONTACTO =====
             mostrarResultadoXfinder(data);
             
+            // Si no está fallecido, buscar historial crediticio
             if (!data.fallecido) {
+                // Eliminar contenedor viejo si existe
                 const oldContainer = document.getElementById('creditContainer');
                 if (oldContainer) {
                     oldContainer.remove();
                 }
                 
+                // Crear contenedor de crédito
                 const creditContainer = document.createElement('div');
                 creditContainer.id = 'creditContainer';
+                creditContainer.style.marginTop = '10px';
                 creditContainer.innerHTML = `
-                    <div style="text-align:center;padding:20px;color:var(--violet-soft);font-size:14px;border:1px solid rgba(160,68,255,0.1);border-radius:12px;margin-top:10px;">
-                        <div style="margin-bottom:12px;display:flex;justify-content:center;gap:8px;font-size:28px;">
+                    <div style="text-align:center;padding:16px;color:var(--violet-soft);font-size:12px;border:1px solid rgba(160,68,255,0.06);border-radius:12px;background:var(--bg-card);">
+                        <div style="margin-bottom:10px;display:flex;justify-content:center;gap:6px;font-size:22px;">
                             <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0s;">🟪</span>
                             <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.15s;">🟪</span>
                             <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.3s;">⬛</span>
                             <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.45s;">⬛</span>
                             <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.6s;">🟪</span>
                         </div>
-                        <div style="letter-spacing:2px;color:var(--violet-soft);font-size:13px;">
+                        <div style="letter-spacing:1.5px;color:var(--violet-soft);font-size:11px;">
                             💳 Buscando historial crediticio<span style="display:inline-block;animation: dots 1.5s steps(4) infinite;">...</span>
                         </div>
                     </div>
@@ -1676,44 +1614,39 @@ async function buscarDNI() {
                             ultimoResultado = construirTextoPlano(data, creditData);
                         } else {
                             if (container) {
-                                container.remove();
+                                container.outerHTML = `
+                                    <div style="text-align:center;padding:12px;color:#8a7ea0;font-size:12px;border:1px solid rgba(160,68,255,0.06);border-radius:12px;background:var(--bg-card);margin-top:10px;">
+                                        📭 Sin historial crediticio registrado
+                                    </div>
+                                `;
                             }
-                            const sinDatosHTML = `
-                                <div style="text-align:center;padding:12px;color:#8a7ea0;font-size:13px;border:1px solid rgba(160,68,255,0.1);border-radius:12px;margin-top:10px;">
-                                    📭 Sin historial crediticio registrado
-                                </div>
-                            `;
-                            resultText.innerHTML += sinDatosHTML;
                             ultimoResultado = construirTextoPlano(data, null);
                         }
                     } else {
                         const container = document.getElementById('creditContainer');
                         if (container) {
-                            container.remove();
+                            container.outerHTML = `
+                                <div style="text-align:center;padding:12px;color:#ff6b6b;font-size:12px;border:1px solid rgba(255,107,107,0.08);border-radius:12px;background:var(--bg-card);margin-top:10px;">
+                                    ⚠️ No se pudo consultar el historial crediticio
+                                </div>
+                            `;
                         }
-                        const errorHTML = `
-                            <div style="text-align:center;padding:12px;color:#ff6b6b;font-size:13px;border:1px solid rgba(255,107,107,0.2);border-radius:12px;margin-top:10px;">
-                                ⚠️ No se pudo consultar el historial crediticio
-                            </div>
-                        `;
-                        resultText.innerHTML += errorHTML;
                         ultimoResultado = construirTextoPlano(data, null);
                     }
                 } catch (e) {
                     console.warn('Error al obtener datos crediticios:', e);
                     const container = document.getElementById('creditContainer');
                     if (container) {
-                        container.remove();
+                        container.outerHTML = `
+                            <div style="text-align:center;padding:12px;color:#ff6b6b;font-size:12px;border:1px solid rgba(255,107,107,0.08);border-radius:12px;background:var(--bg-card);margin-top:10px;">
+                                ⚠️ Error al consultar historial crediticio
+                            </div>
+                        `;
                     }
-                    const errorHTML = `
-                        <div style="text-align:center;padding:12px;color:#ff6b6b;font-size:13px;border:1px solid rgba(255,107,107,0.2);border-radius:12px;margin-top:10px;">
-                            ⚠️ Error al consultar historial crediticio
-                        </div>
-                    `;
-                    resultText.innerHTML += errorHTML;
                     ultimoResultado = construirTextoPlano(data, null);
                 }
             } else {
+                // Si está fallecido, mostrar origen
                 const origenHTML = `
                     <div class="origen">
                         <span>📌 Fuente: ${data.origen || '---'}</span>
@@ -1728,24 +1661,11 @@ async function buscarDNI() {
             const tiempoTotal = ((tiempoFin - tiempoInicio) / 1000).toFixed(2);
             
             const estadisticasHTML = `
-                <div style="
-                    margin-top: 15px;
-                    padding: 12px 16px;
-                    background: rgba(0,0,0,0.3);
-                    border: 1px solid rgba(79,70,229,0.15);
-                    border-radius: 10px;
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    flex-wrap: wrap;
-                    gap: 8px;
-                    font-size: 12px;
-                    color: #8a7ea0;
-                ">
-                    <span>⏱️ <strong style="color:var(--violet-soft);">${tiempoTotal}s</strong></span>
-                    <span>📊 <strong style="color:var(--violet-soft);">${totalRegistrosEncontrados}</strong> registros encontrados</span>
-                    ${registrosCrediticios > 0 ? `<span>💳 <strong style="color:var(--violet-soft);">${registrosCrediticios}</strong> deudas</span>` : ''}
-                    <span>🔍 <strong style="color:var(--violet-soft);">${comando.valor}</strong></span>
+                <div class="estadisticas-busqueda">
+                    <span>⏱️ <strong>${tiempoTotal}s</strong></span>
+                    <span>📊 <strong>${totalRegistrosEncontrados}</strong> registros encontrados</span>
+                    ${registrosCrediticios > 0 ? `<span>💳 <strong>${registrosCrediticios}</strong> deudas</span>` : ''}
+                    <span>🔍 <strong>${comando.valor}</strong></span>
                 </div>
             `;
             
@@ -1777,7 +1697,7 @@ async function buscarDNI() {
             <div class="error">
                 ❌ Error al consultar la base de datos
                 <br><br>
-                <span style="color:#8a7ea0;font-size:12px;">${e.message}</span>
+                <span style="color:#8a7ea0;font-size:11px;">${e.message}</span>
             </div>
         `;
     }
@@ -1785,55 +1705,150 @@ async function buscarDNI() {
     buscando = false;
 }
 
-// ============================================================
-// EFECTO DE ESCRITURA TIPO CONSOLA
-// ============================================================
-const typewriterElement = document.getElementById('typewriter');
-const cursorElement = document.getElementById('cursor');
-const consoleElement = document.getElementById('consoleOutput');
 
-async function iniciarEscritura(lines) {
-    let lineIndex = 0;
-    let charIndex = 0;
-    let botonAgregado = false;
 
-    function typeWriter() {
-        if (lineIndex < lines.length) {
-            const line = lines[lineIndex];
+
+
+// ============================================================
+// EFECTO REVELADO CON DESTELLO (NUEVO)
+// ============================================================
+function iniciarEfectoScan() {
+    
+    // Ocultar el cursor viejo
+    if (cursorElement) cursorElement.style.display = 'none';
+    
+    // El mismo texto que antes, pero con formato mejorado
+    const mensajes = [
+        { text: "asistAI v2.0", style: "font-size:20px;font-weight:bold;color:var(--violet-soft);display:block;margin-bottom:6px;letter-spacing:2px;" },
+        
+        { text: "🔍 Búsqueda inteligente", style: "display:block;margin-top:2px;font-size:13px;" },
+        { text: "   • DNI (6-9 dígitos)", style: "display:block;padding-left:6px;font-size:12.5px;color:var(--text-secondary);" },
+        { text: "   • CUIT (10 dígitos)", style: "display:block;padding-left:6px;font-size:12.5px;color:var(--text-secondary);" },
+        { text: "   • Políticas de entidades", style: "display:block;padding-left:6px;font-size:12.5px;color:var(--text-secondary);" },
+        { text: "   • Planes de pago (macro-DNI)", style: "display:block;padding-left:6px;font-size:12.5px;color:var(--text-secondary);" },
+        { text: "", style: "display:block;height:6px;" },
+        { text: "Sistema listo", style: "color:var(--green);display:block;margin-top:4px;font-size:13px;font-weight:bold;" }
+    ];
+    
+    let index = 0;
+    let currentElement = null;
+    
+    // Limpiar el contenido
+    typewriterElement.innerHTML = '';
+    
+    function showNextLine() {
+        if (index < mensajes.length) {
+            const msg = mensajes[index];
             
-            if (charIndex === 0 && lineIndex > 0) {
-                typewriterElement.innerHTML += '<br>';
-            }
-
-            if (charIndex < line.length) {
-                const char = line.charAt(charIndex);
-                if (char === ' ') {
-                    typewriterElement.innerHTML += '&nbsp;';
-                } else {
-                    typewriterElement.innerHTML += char;
-                }
-                charIndex++;
-                setTimeout(typeWriter, 5);
+            // Crear el elemento
+            const el = document.createElement('div');
+            el.innerHTML = msg.text;
+            el.style.cssText = msg.style;
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(8px)';
+            el.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+            
+            // Si es la primera línea (título), efecto especial
+            if (index === 0) {
+                // Efecto de destello en el título
+                typewriterElement.appendChild(el);
+                
+                // Forzar reflow
+                void el.offsetHeight;
+                
+                // Revelar con destello
+                el.style.opacity = '1';
+                el.style.transform = 'translateY(0)';
+                
+                // Efecto de brillo pulsante en el título
+                let glowCount = 0;
+                const glowInterval = setInterval(() => {
+                    if (glowCount < 3) {
+                        el.style.textShadow = glowCount % 2 === 0 
+                            ? '0 0 30px rgba(129, 140, 248, 0.6), 0 0 60px rgba(129, 140, 248, 0.3)' 
+                            : '0 0 10px rgba(129, 140, 248, 0.2)';
+                        glowCount++;
+                    } else {
+                        clearInterval(glowInterval);
+                        el.style.textShadow = '0 0 20px rgba(129, 140, 248, 0.2)';
+                    }
+                }, 300);
+                
+                setTimeout(() => {
+                    index++;
+                    setTimeout(showNextLine, 200);
+                }, 800);
+                
+            } else if (msg.text === '') {
+                // Línea vacía
+                typewriterElement.appendChild(el);
+                el.style.opacity = '1';
+                el.style.transform = 'translateY(0)';
+                index++;
+                setTimeout(showNextLine, 50);
+                
             } else {
-                lineIndex++;
-                charIndex = 0;
-                setTimeout(typeWriter, 200);
+                // Líneas normales - aparecen con fade y desplazamiento
+                typewriterElement.appendChild(el);
+                
+                // Forzar reflow
+                void el.offsetHeight;
+                
+                // Revelar con fade
+                el.style.opacity = '1';
+                el.style.transform = 'translateY(0)';
+                
+                // Si es la línea de "Sistema listo", agregar un efecto especial
+                if (msg.text.includes('✅ Sistema listo')) {
+                    // Efecto de pulso suave
+                    setTimeout(() => {
+                        el.style.transition = 'all 0.6s ease';
+                        let pulseCount = 0;
+                        const pulseInterval = setInterval(() => {
+                            if (pulseCount < 2) {
+                                el.style.color = pulseCount % 2 === 0 ? 'var(--gold)' : '#ffd700';
+                                pulseCount++;
+                            } else {
+                                clearInterval(pulseInterval);
+                                el.style.color = 'var(--gold)';
+                            }
+                        }, 400);
+                    }, 300);
+                }
+                
+                index++;
+                const delay = msg.text.includes('Base de datos') ? 400 : 
+                             msg.text.includes('Sistema listo') ? 500 : 150;
+                setTimeout(showNextLine, delay);
             }
         } else {
-            cursorElement.style.display = 'none';
+            // Terminar - mostrar cursor
+            const cursorSpan = document.createElement('span');
+            cursorSpan.className = 'cursor';
+            cursorSpan.id = 'cursor';
+            cursorSpan.style.display = 'inline-block';
+            typewriterElement.appendChild(cursorSpan);
+            
+            // Mostrar búsqueda
             const searchContainer = document.getElementById('searchContainer');
             searchContainer.classList.add('visible');
             document.getElementById('dniInput').focus();
             
-            if (!botonAgregado) {
-                botonAgregado = true;
-                agregarBotonChatMini();
-            }
+            agregarBotonChatMini();
         }
     }
-
-    typeWriter();
+    
+    // Iniciar con un pequeño delay
+    setTimeout(showNextLine, 300);
 }
+
+
+
+
+
+
+
+
 
 // ============================================================
 // AGREGAR BOTÓN CHAT MINI
@@ -1895,30 +1910,9 @@ async function iniciarApp() {
     typewriterElement.textContent = 'Cargando...';
     const total = await obtenerTotalRegistros();
     
-    const lines = [
-        "Bienvenido a asistAI 🤖                                           ",
-        "Tu asistente inteligente para búsqueda de datos.",
-        "💡 Puedo ayudarte a buscar:",
-        "   - Personas: ingresa un DNI (6-9 dígitos).",
-        "   - Empresas: ingresa un CUIT (10 dígitos).",
-        "   - Políticas: ingresa el nombre de una entidad.",
-        "   - Programas: ingresa 'descargas'.",
-        "   - Planes de pago: ingresa 'macro-DNI' o 'macro DNI'.",
-        "",
-        "Tengo un archivo con políticas de entidades cargado.",
-        `Tambien una base de datos con +2M registros para busquedas por DNI.`,
-        "Y un registro de empresas para búsquedas por CUIT.",
-        "",
-        "Mi búsqueda es inteligente.",
-        "🔍 Si ingresas un número de 6-9 dígitos → busco DNI.",
-        "🔢 Si ingresas 10 dígitos o más → busco CUIT de empresa.",
-        "📋 Si ingresas letras → busco políticas de entidades.",
-        "📥 Si ingresas 'descargas' te muestro los links de los programas que usamos",
-        "📊 Si ingresas 'macro-XXXXXXXX' te muestro los planes de pago"
-    ];
-    
+    // NUEVO EFECTO - Sin array de líneas
     typewriterElement.innerHTML = '';
-    iniciarEscritura(lines);
+    iniciarEfectoScan();
 }
 
 // ============================================================
@@ -2000,12 +1994,14 @@ let memoriaChat = {
 function toggleChat() {
     const window = document.getElementById('chatWindow');
     const toggle = document.getElementById('chatToggle');
-    if (window.style.display === 'none') {
+    if (window.style.display === 'none' || window.style.display === '') {
         window.style.display = 'flex';
+        window.classList.add('open');
         toggle.textContent = '✕';
         setTimeout(() => document.getElementById('chatInput').focus(), 300);
     } else {
         window.style.display = 'none';
+        window.classList.remove('open');
         toggle.textContent = '💬';
     }
 }
@@ -2033,10 +2029,10 @@ function obtenerRespuestaAleatoria(lista) {
 function mostrarLineasEntrantes() {
     let respuesta = `📞 <strong>LÍNEAS ENTRANTES</strong><br><br>`;
     respuesta += `📋 <strong>Total:</strong> ${LINEAS_ENTRANTES.length} líneas<br><br>`;
-    respuesta += `<div style="background:#1a1a2e;border-radius:8px;padding:12px;">`;
+    respuesta += `<div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:12px;">`;
     
     LINEAS_ENTRANTES.forEach((linea, index) => {
-        respuesta += `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #2d2d4a;">`;
+        respuesta += `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(160,68,255,0.05);">`;
         respuesta += `<span style="color:#a78bfa;">${index + 1}.</span>`;
         respuesta += `<span style="color:#fbbf24;font-weight:bold;">${linea}</span>`;
         respuesta += `<span style="color:#34d399;font-size:12px;">✅ Activa</span>`;
@@ -2250,6 +2246,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     iniciarChat();
     
+    // Inicializar el chat cerrado
+    document.getElementById('chatWindow').style.display = 'none';
+    
     const input = document.getElementById('chatInput');
     input.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
@@ -2284,39 +2283,5 @@ document.addEventListener('keydown', function(e) {
         if (btnCopiar) {
             btnCopiar.classList.remove('visible');
         }
-    }
-});
-
-// Abrir modal
-function abrirModal() {
-    document.getElementById('modalInfo').style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-}
-
-// Cerrar modal
-function cerrarModal() {
-    document.getElementById('modalInfo').style.display = 'none';
-    document.body.style.overflow = 'auto';
-}
-
-// Cerrar con ESC
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        cerrarModal();
-    }
-});
-
-// Cerrar haciendo click fuera
-document.getElementById('modalInfo').addEventListener('click', function(e) {
-    if (e.target === this) {
-        cerrarModal();
-    }
-});
-
-// Agregar el evento al botón
-document.addEventListener('DOMContentLoaded', function() {
-    const btn = document.getElementById('btnInfo');
-    if (btn) {
-        btn.addEventListener('click', abrirModal);
     }
 });
