@@ -3,52 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ACME Labs · Assis-AI</title>
+    <title>ACME Labs · AssistAI</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <main>
-        <section class="panel">
-            <div class="panel-inner">
-                <div style="
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    padding-bottom: 12px;
-                    margin-bottom: 15px;
-                    border-bottom: 2px solid rgba(160, 68, 255, 0.2);
-                ">
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                        <span style="font-size: 22px;">🤖</span>
-                        <div>
-                            <span style="font-size: 18px; font-weight: bold; color: var(--violet-soft);">asistAI</span>
-                            <span style="font-size: 11px; color: #4a5270; background: rgba(79,70,229,0.15); padding: 2px 10px; border-radius: 10px; margin-left: 8px;">v2.0</span>
-                        </div>
-                    </div>
-                </div>
-                <!-- ===== FIN TÍTULO ===== -->
-
-                <div class="console" id="consoleOutput">
-                    <span id="typewriter"></span><span class="cursor" id="cursor"></span>
-                </div>
-                <div class="search-container" id="searchContainer">
-                    <label for="dniInput">📌 Ingresa un DNI, el nombre de una entidad o descargas</label>
-                    <div class="input-row">
-                        <input type="text" id="dniInput" placeholder="Ej: 34340714 o Creditia" maxlength="50" onkeydown="if(event.key==='Enter') buscarDNI()">
-                        <div class="button-group">
-                            <button onclick="buscarDNI()">🔍 CONSULTAR</button>
-                            <button class="btn-copiar-busqueda" id="btnCopiar" onclick="copiarResultado()">
-                                📋 COPIAR
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div class="result" id="resultContent">
-                    <div id="resultText" class="result-moderno"></div>
-                </div>
+    <!-- ===== LOGIN OVERLAY ===== -->
+    <div id="loginOverlay" class="login-overlay">
+        <div class="login-box">
+            <div class="login-header">
+                <span class="login-icon">🤖</span>
+                <span class="login-title">asistAI</span>
+                <span class="login-version">v2.0</span>
             </div>
-        </section>
-    </main>
+            <div class="login-subtitle">Acceso al sistema</div>
+            <div class="login-error" id="loginError">❌ Credenciales incorrectas</div>
+            <input type="text" id="loginUser" placeholder="Usuario" autocomplete="username">
+            <input type="password" id="loginPass" placeholder="Contraseña" autocomplete="current-password" onkeydown="if(event.key==='Enter') loginSubmit()">
+            <button onclick="loginSubmit()">🔓 INGRESAR</button>
+            <div class="login-footer">
+                <span onclick="soporteTelegram()" style="cursor:pointer;color:var(--violet-soft);text-decoration:underline;">📱 ¿Problemas? Contactá soporte</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <div id="mainContent" style="display:none;width:100%;min-height:100vh;">
+        <!-- TOP BAR -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <span class="logo-icon">🔒</span>
+                <span class="logo-text">asistAI</span>
+                <span class="logo-version">v2.0</span>
+            </div>
+            <div class="topbar-right">
+                <span id="userDisplay" class="user-badge">👤 usuario</span>
+                <button class="btn-logout" onclick="logout()" title="Cerrar sesión">⏻</button>
+            </div>
+        </header>
+
+        <!-- MAIN WRAPPER -->
+        <div class="app-wrapper">
+            <!-- CONSOLE CARD -->
+            <section class="console-section">
+                <div class="card console-card">
+                    <div class="console" id="consoleOutput">
+                        <span id="typewriter"></span><span class="cursor" id="cursor"></span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SEARCH CARD -->
+            <section class="search-section" id="searchContainer">
+                <div class="card search-card">
+                    <label for="dniInput">📌 Ingresa un DNI, nombre de entidad o comando</label>
+                    <div class="input-row">
+                        <input type="text" id="dniInput" placeholder="Ej: 34340714 · Creditia · descargas · macro-12345678" maxlength="50">
+                        <div class="button-group">
+                            <button onclick="buscarDNI()" id="btnBuscar">🔍 CONSULTAR</button>
+                            <button class="btn-copiar-busqueda" id="btnCopiar" onclick="copiarResultado()">📋 COPIAR</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- RESULTS -->
+            <section class="results-section" id="resultContent">
+                <div id="resultText" class="result-moderno"></div>
+            </section>
+        </div>
+    </div>
+
+    <!-- ===== CHAT FLOTANTE ===== -->
+    <div class="chat-float" id="chatFloat">
+        <div class="chat-window" id="chatWindow">
+            <div class="chat-header">
+                <span>💬 Asistente</span>
+                <span onclick="toggleChat()" style="cursor:pointer;font-size:18px;">✕</span>
+            </div>
+            <div class="chat-messages" id="chatMessages"></div>
+            <div class="chat-input">
+                <input type="text" id="chatInput" placeholder="Escribí tu mensaje..." onkeydown="if(event.key==='Enter') enviarChat()">
+                <button onclick="enviarChat()">➤</button>
+            </div>
+        </div>
+        <button class="chat-toggle" id="chatToggle" onclick="toggleChat()">💬</button>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
