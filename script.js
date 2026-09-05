@@ -1076,7 +1076,7 @@ async function buscarMacro(dni) {
         if (data.total_registros === 0) {
             resultDiv.innerHTML = `
                 <div class="header-card">
-                    <div class="dni-number">📊 PLANES DE PAGO</div>
+                    <div class="dni-number">🍀 PLANES DE PAGO</div>
                 </div>
                 <div class="seccion" style="border-color: rgba(255,181,48,0.3);">
                     <div style="text-align:center;padding:20px;color:#fbbf24;">
@@ -1084,7 +1084,7 @@ async function buscarMacro(dni) {
                     </div>
                 </div>
             `;
-            ultimoResultado = `📊 PLANES DE PAGO\n${'─'.repeat(40)}\n\nDNI: ${dni}\nNo se encontraron registros.`;
+            ultimoResultado = `🍀 PLANES DE PAGO\n${'─'.repeat(40)}\n\nDNI: ${dni}\nNo se encontraron registros.`;
             return;
         }
         
@@ -1147,7 +1147,7 @@ function mostrarPlanesPago(data) {
     
     let html = `
         <div class="header-card">
-            <div class="dni-number">📊 PLANES DE PAGO</div>
+            <div class="dni-number">🍀 PLANES DE PAGO</div>
             <div class="badge">
                 ${totalRegistros} deudas
             </div>
@@ -1187,7 +1187,7 @@ function mostrarPlanesPago(data) {
         <!-- PLANES DE PAGO PROMEDIO -->
         <div class="seccion" style="border-left: 3px solid #fbbf24;margin-top:10px;">
             <div class="seccion-titulo">
-                <span class="icon">📊</span> 
+                <span class="icon">🍀</span> 
                 PLANES DE PAGO - PROMEDIOS
                 <span style="font-size:10px;color:#8a7ea0;font-weight:normal;margin-left:10px;">(promedio de todas las deudas)</span>
             </div>
@@ -1333,7 +1333,7 @@ function construirTextoMacro(data) {
         }
     }
     
-    let texto = `📊 PLANES DE PAGO\n`;
+    let texto = `🍀 PLANES DE PAGO\n`;
     texto += `${'─'.repeat(50)}\n\n`;
     texto += `👤 ${data.cliente.nombre || 'Sin nombre'}\n`;
     texto += `📌 DNI: ${data.dni}\n`;
@@ -1349,7 +1349,7 @@ function construirTextoMacro(data) {
     texto += `\n`;
     
     // Planes promedio
-    texto += `📊 PLANES DE PAGO - PROMEDIOS\n`;
+    texto += `🍀 PLANES DE PAGO - PROMEDIOS\n`;
     planesKeys.forEach(key => {
         const cuotas = parseInt(key.replace('_CUOTAS', ''));
         if (planesPromedio[key] > 0) {
@@ -1448,7 +1448,7 @@ async function buscarDNI() {
                     <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.6s;">🟪</span>
                 </div>
                 <div style="letter-spacing:2px;color:var(--violet-soft);font-size:12px;">
-                    📊 Buscando planes de pago para DNI ${comando.valor}<span style="display:inline-block;animation: dots 1.5s steps(4) infinite;">...</span>
+                    🍀 Buscando planes de pago para DNI ${comando.valor}<span style="display:inline-block;animation: dots 1.5s steps(4) infinite;">...</span>
                 </div>
             </div>
         `;
@@ -1725,7 +1725,7 @@ function iniciarEfectoScan() {
         { text: "   • DNI (6-9 dígitos)", style: "display:block;padding-left:6px;font-size:12.5px;color:var(--text-secondary);" },
         { text: "   • CUIT (10 dígitos)", style: "display:block;padding-left:6px;font-size:12.5px;color:var(--text-secondary);" },
         { text: "   • Políticas de entidades", style: "display:block;padding-left:6px;font-size:12.5px;color:var(--text-secondary);" },
-        { text: "   • Planes de pago (macro-DNI)", style: "display:block;padding-left:6px;font-size:12.5px;color:var(--text-secondary);" },
+        { text: "   • Calculador Macro (macro-DNI - macro DNI)", style: "display:block;padding-left:6px;font-size:12.5px;color:var(--text-secondary);" },
         { text: "", style: "display:block;height:6px;" },
         { text: "Sistema listo", style: "color:var(--green);display:block;margin-top:4px;font-size:13px;font-weight:bold;" }
     ];
