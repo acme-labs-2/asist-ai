@@ -400,7 +400,6 @@ function mostrarDescargas() {
     const btnCopiar = document.getElementById('btnCopiar');
     
     btnCopiar.classList.add('visible');
-    // Ya no cambiamos fondo
     
     const programas = [
         { 
@@ -643,7 +642,6 @@ function prepararBusqueda() {
     }
     const searchContainer = document.getElementById('searchContainer');
     searchContainer.classList.add('arriba');
-
 }
 
 // ============================================================
@@ -658,7 +656,6 @@ function reiniciarEstado() {
     const resultText = document.getElementById('resultText');
     const btnCopiar = document.getElementById('btnCopiar');
     const dniInput = document.getElementById('dniInput');
-    // === MOSTRAR LA CONSOLA DE NUEVO ===
     const consoleSection = document.querySelector('.console-section');
     if (consoleSection) {
         consoleSection.classList.remove('oculto');
@@ -721,7 +718,6 @@ function detectarComando(query) {
     return { tipo: 'error', mensaje: '⚠️ Ingrese un DNI (6-9 dígitos), CUIT (10 dígitos) o nombre de entidad (mínimo 2 letras).' };
 }
 
-
 // ============================================================
 // MOSTRAR XFINDER CON ESTADÍSTICAS (AGREGA CONTENIDO)
 // ============================================================
@@ -773,10 +769,8 @@ function mostrarResultadoXfinder(data) {
 
     const emails = [data.email, data.email2, data.email3].filter(Boolean).join(', ') || '-';
 
-    // CONSTRUIR HTML - SIN HEADER CARD
     let html = '';
 
-    // ===== DATOS PERSONALES =====
     html += `
         <div class="seccion">
             <div class="seccion-titulo"><span class="icon">👤</span> DATOS PERSONALES</div>
@@ -788,7 +782,6 @@ function mostrarResultadoXfinder(data) {
         </div>
     `;
 
-    // ===== DATOS LABORALES =====
     html += `
         <div class="seccion">
             <div class="seccion-titulo"><span class="icon">💼</span> DATOS LABORALES</div>
@@ -798,7 +791,6 @@ function mostrarResultadoXfinder(data) {
         </div>
     `;
 
-    // ===== CONTACTO =====
     html += `
         <div class="seccion">
             <div class="seccion-titulo"><span class="icon">📱</span> CONTACTO</div>
@@ -810,14 +802,8 @@ function mostrarResultadoXfinder(data) {
         </div>
     `;
 
-    // AGREGAR al final del contenido existente (no reemplazar)
     resultDiv.insertAdjacentHTML('beforeend', html);
 }
-
-
-
-
-
 
 // ============================================================
 // MOSTRAR EMPRESAS CON ESTADÍSTICAS
@@ -827,7 +813,6 @@ function mostrarEmpresasConEstadisticas(resultado, tiempo, total) {
     const btnCopiar = document.getElementById('btnCopiar');
     
     btnCopiar.classList.add('visible');
-    // Ya no cambiamos fondo
     
     if (resultado.error) {
         resultDiv.innerHTML = `<div class="error">❌ ${resultado.error}</div>`;
@@ -989,7 +974,6 @@ function mostrarPoliticasConEstadisticas(resultados, termino, tiempo, total) {
     const btnCopiar = document.getElementById('btnCopiar');
     
     btnCopiar.classList.add('visible');
-    // Ya no cambiamos fondo
     
     if (!resultados || resultados.length === 0) {
         resultDiv.innerHTML = `<div class="error">❌ No se encontraron políticas para "${termino}"</div>`;
@@ -1056,7 +1040,6 @@ async function buscarMacro(dni) {
     const btnCopiar = document.getElementById('btnCopiar');
     
     btnCopiar.classList.remove('visible');
-    // Ya no cambiamos fondo
     
     try {
         const response = await fetch(`${MACRO_API_URL}?dni=${encodeURIComponent(dni)}`);
@@ -1110,12 +1093,10 @@ function mostrarPlanesPago(data) {
         return '$' + Number(valor).toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
     };
     
-    // Calcular consolidados
     const totalRegistros = data.total_registros || 0;
     const totalMinimo = data.total_minimo_cancelatorio || 0;
     const totalSaldo = data.total_saldo_exigible || 0;
     
-    // Calcular promedios de planes de pago
     const planesKeys = ['3_CUOTAS', '6_CUOTAS', '9_CUOTAS', '12_CUOTAS', '18_CUOTAS', '24_CUOTAS'];
     const planesPromedio = {};
     
@@ -1134,7 +1115,6 @@ function mostrarPlanesPago(data) {
         }
     });
     
-    // Encontrar el mejor plan (el de MENOS cuotas con valor > 0)
     let mejorPlan = null;
     const planesOrdenados = ['3_CUOTAS', '6_CUOTAS', '9_CUOTAS', '12_CUOTAS', '18_CUOTAS', '24_CUOTAS'];
     for (let key of planesOrdenados) {
@@ -1153,7 +1133,6 @@ function mostrarPlanesPago(data) {
             </div>
         </div>
         
-        <!-- Datos del cliente -->
         <div class="seccion" style="border-left: 3px solid var(--violet);">
             <div class="seccion-titulo">
                 <span class="icon">👤</span> 
@@ -1161,7 +1140,6 @@ function mostrarPlanesPago(data) {
                 <span style="font-size:12px;color:#8a7ea0;font-weight:normal;margin-left:10px;">DNI: ${data.dni}</span>
             </div>
             
-            <!-- Totales -->
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;">
                 <div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:10px;text-align:center;border:1px solid rgba(79,70,229,0.1);">
                     <div style="font-size:10px;color:#8a7ea0;">💰 Total Mínimo Cancelatorio</div>
@@ -1173,7 +1151,6 @@ function mostrarPlanesPago(data) {
                 </div>
             </div>
             
-            <!-- Distribución por producto -->
             ${Object.keys(data.productos).length > 0 ? `
             <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;">
                 ${Object.entries(data.productos).map(([tipo, cantidad]) => `
@@ -1184,7 +1161,6 @@ function mostrarPlanesPago(data) {
             </div>` : ''}
         </div>
         
-        <!-- PLANES DE PAGO PROMEDIO -->
         <div class="seccion" style="border-left: 3px solid #fbbf24;margin-top:10px;">
             <div class="seccion-titulo">
                 <span class="icon">🍀</span> 
@@ -1221,10 +1197,9 @@ function mostrarPlanesPago(data) {
             `}
         </div>`;
     
-    // DETALLE DE CADA DEUDA
     html += `
         <div style="margin-top:10px;">
-            <div class="seccion-titulo" style="font-size:13px;margin-bottom:8px;padding:0 4px;">
+            <div class="seccion-titulo" style="font-size:13px;margin-bottom:8px;padding:0 4px;color:#27A17C;">
                 <span class="icon">📋</span> 
                 DETALLE POR DEUDA
                 <span style="font-size:11px;color:#8a7ea0;font-weight:normal;margin-left:10px;">${totalRegistros} registros</span>
@@ -1238,14 +1213,13 @@ function mostrarPlanesPago(data) {
         const tipo = row.TIPO_PROD || 'Otros';
         const codProd = row.COD_PROD || '-';
         
-        // Planes de esta deuda (solo los que tienen valor > 0)
         const planesDeuda = planesKeys.map(key => ({
             cuotas: parseInt(key.replace('_CUOTAS', '')),
             valor: parseFloat(row[key] || 0)
         })).filter(p => p.valor > 0);
         
         html += `
-            <div class="seccion" style="border-left: 3px solid ${index % 2 === 0 ? 'var(--violet)' : 'var(--green)'};margin-top:6px;padding:10px 12px;">
+            <div class="seccion" style="border-left: 3px solid #27A17C;margin-top:6px;padding:10px 12px;">
                 <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;">
                     <div style="font-size:12px;font-weight:bold;color:#f0ecf5;">
                         <span class="icon">📄</span> Deuda #${index + 1}
@@ -1261,18 +1235,18 @@ function mostrarPlanesPago(data) {
                 </div>
                 
                 ${planesDeuda.length > 0 ? `
-                <div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(160,68,255,0.08);">
+                <div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(39,161,124,0.15);">
                     <div style="display:grid;grid-template-columns:repeat(${Math.min(planesDeuda.length, 6)},1fr);gap:4px;font-size:10px;">
                         ${planesDeuda.map(p => `
-                            <div style="background:rgba(0,0,0,0.15);border-radius:4px;padding:3px 4px;text-align:center;">
+                            <div style="background:rgba(39,161,124,0.1);border-radius:4px;padding:3px 4px;text-align:center;border:1px solid rgba(39,161,124,0.1);">
                                 <div style="color:#8a7ea0;">${p.cuotas}c</div>
-                                <div style="color:#fbbf24;font-weight:bold;font-size:11px;">${formatearMonto(p.valor)}</div>
+                                <div style="color:#27A17C;font-weight:bold;font-size:11px;">${formatearMonto(p.valor)}</div>
                             </div>
                         `).join('')}
                     </div>
                 </div>
                 ` : `
-                <div style="margin-top:4px;font-size:10px;color:#8a7ea0;text-align:center;padding:4px;">
+                <div style="margin-top:4px;font-size:10px;color:#8a7ea0;text-align:center;padding:4px;border-top:1px solid rgba(39,161,124,0.1);">
                     Sin planes de pago disponibles
                 </div>
                 `}
@@ -1282,7 +1256,6 @@ function mostrarPlanesPago(data) {
     
     html += `</div>`;
     
-    // Estadísticas finales
     html += `
         <div class="estadisticas-busqueda">
             <span>📊 <strong>${totalRegistros}</strong> deudas</span>
@@ -1303,7 +1276,6 @@ function construirTextoMacro(data) {
         return '$' + Number(v).toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
     };
     
-    // Calcular promedios
     const planesKeys = ['3_CUOTAS', '6_CUOTAS', '9_CUOTAS', '12_CUOTAS', '18_CUOTAS', '24_CUOTAS'];
     const planesPromedio = {};
     
@@ -1322,7 +1294,6 @@ function construirTextoMacro(data) {
         }
     });
     
-    // Mejor plan (el de menos cuotas)
     let mejorPlan = null;
     const planesOrdenados = ['3_CUOTAS', '6_CUOTAS', '9_CUOTAS', '12_CUOTAS', '18_CUOTAS', '24_CUOTAS'];
     for (let key of planesOrdenados) {
@@ -1341,14 +1312,12 @@ function construirTextoMacro(data) {
     texto += `💰 Mínimo Cancelatorio total: ${formatear(data.total_minimo_cancelatorio)}\n`;
     texto += `💰 Saldo Exigible total: ${formatear(data.total_saldo_exigible)}\n\n`;
     
-    // Productos
     texto += `📦 PRODUCTOS:\n`;
     Object.entries(data.productos).forEach(([tipo, cantidad]) => {
         texto += `  ${tipo}: ${cantidad}\n`;
     });
     texto += `\n`;
     
-    // Planes promedio
     texto += `🍀 PLANES DE PAGO - PROMEDIOS\n`;
     planesKeys.forEach(key => {
         const cuotas = parseInt(key.replace('_CUOTAS', ''));
@@ -1362,7 +1331,6 @@ function construirTextoMacro(data) {
     }
     texto += `\n`;
     
-    // Detalle por deuda
     texto += `${'─'.repeat(50)}\n`;
     texto += `📋 DETALLE POR DEUDA\n\n`;
     
@@ -1395,8 +1363,154 @@ function construirTextoMacro(data) {
     return texto;
 }
 
-
-
+// ============================================================
+// LOADING CON FRUTAS (BARRA DE PROGRESO CON EMOJIS DE FRUTAS)
+// ============================================================
+function mostrarLoadingFrutas(mensajePersonalizado = null, dni = null) {
+    const frutas = ['🍋', '🍊', '🍎', '🍇', '🍉', '🍑', '🍒', '🍓'];
+    const etiquetas = [
+        '🍋 Limpiando...',
+        '🍊 Organizando...',
+        '🍎 Procesando...',
+        '🍇 Analizando...',
+        '🍉 Casi listo...',
+        '🍑 Ultimando...',
+        '🍒 Preparando...',
+        '🍓 ¡Casi!'
+    ];
+    
+    let frutaActual = 0;
+    let progreso = 0;
+    
+    let loadingDiv = document.getElementById('frutaLoading');
+    if (!loadingDiv) {
+        loadingDiv = document.createElement('div');
+        loadingDiv.id = 'frutaLoading';
+        loadingDiv.style.cssText = `
+            text-align: center;
+            padding: 30px 20px;
+            color: var(--violet-soft);
+            font-size: 13px;
+            border: 1px solid rgba(160,68,255,0.06);
+            border-radius: 16px;
+            background: var(--bg-card);
+            margin: 10px 0;
+            transition: all 0.3s ease;
+        `;
+        document.getElementById('resultText').innerHTML = '';
+        document.getElementById('resultText').appendChild(loadingDiv);
+    }
+    
+    const dniText = dni ? ` para DNI ${dni}` : '';
+    const titulo = mensajePersonalizado || `📋 Buscando${dniText}`;
+    
+    loadingDiv.innerHTML = `
+        <div style="margin-bottom:6px;font-size:13px;color:#8a7ea0;letter-spacing:1px;font-weight:300;">
+            ${titulo}
+        </div>
+        <div style="margin:12px 0 8px 0;display:flex;justify-content:center;align-items:center;font-size:48px;min-height:60px;">
+            <span id="frutaEmoji" style="display:inline-block;transition:all 0.6s ease;">🍋</span>
+        </div>
+        <div style="margin-top:12px;width:100%;height:4px;background:rgba(255,255,255,0.05);border-radius:3px;overflow:hidden;position:relative;">
+            <div id="barraFruta" style="width:0%;height:100%;background:linear-gradient(90deg, #fbbf24, #f97316, #ef4444, #8b5cf6, #22c55e, #f472b6, #ec4899, #ef4444);border-radius:3px;transition:width 0.8s ease;box-shadow:0 0 30px rgba(251,191,36,0.2);"></div>
+        </div>
+        <div style="margin-top:10px;font-size:10px;color:#6b5b8a;letter-spacing:1px;display:flex;justify-content:space-between;align-items:center;padding:0 4px;">
+            <span id="estadoFruta" style="color:#8a7ea0;">🍋 Limpiando...</span>
+            <span id="porcentajeFruta">0%</span>
+        </div>
+    `;
+    
+    const avanzarFruta = () => {
+        if (frutaActual < frutas.length - 1) {
+            frutaActual++;
+            const emojiSpan = document.getElementById('frutaEmoji');
+            if (emojiSpan) {
+                emojiSpan.style.transition = 'all 0.1s ease';
+                emojiSpan.style.transform = 'scale(1.4)';
+                emojiSpan.textContent = frutas[frutaActual];
+                setTimeout(() => {
+                    emojiSpan.style.transform = 'scale(1)';
+                }, 400);
+            }
+            const estadoSpan = document.getElementById('estadoFruta');
+            if (estadoSpan) {
+                estadoSpan.textContent = etiquetas[frutaActual] || '🍉 Cargando...';
+            }
+        }
+    };
+    
+    const intervalFrutas = setInterval(() => {
+        avanzarFruta();
+    }, 1800);
+    
+    const intervalBarra = setInterval(() => {
+        const incremento = Math.random() * 3 + 1.5;
+        progreso = Math.min(progreso + incremento, 98);
+        const barra = document.getElementById('barraFruta');
+        const porcentaje = document.getElementById('porcentajeFruta');
+        if (barra) barra.style.width = progreso + '%';
+        if (porcentaje) porcentaje.textContent = Math.round(progreso) + '%';
+    }, 400);
+    
+    loadingDiv._intervalFrutas = intervalFrutas;
+    loadingDiv._intervalBarra = intervalBarra;
+    loadingDiv._frutaActual = 0;
+    
+    return {
+        actualizarMensaje: (nuevoMensaje) => {
+            const tituloDiv = loadingDiv.querySelector('div:first-child');
+            if (tituloDiv) {
+                tituloDiv.textContent = nuevoMensaje;
+                tituloDiv.style.transition = 'opacity 0.3s ease';
+                tituloDiv.style.opacity = '0.5';
+                setTimeout(() => {
+                    tituloDiv.style.opacity = '1';
+                }, 200);
+            }
+        },
+        completar: () => {
+            const barra = document.getElementById('barraFruta');
+            const porcentaje = document.getElementById('porcentajeFruta');
+            const emojiSpan = document.getElementById('frutaEmoji');
+            const estadoSpan = document.getElementById('estadoFruta');
+            
+            if (barra) {
+                barra.style.width = '100%';
+                barra.style.background = 'linear-gradient(90deg, #22c55e, #22c55e)';
+            }
+            if (porcentaje) porcentaje.textContent = '100% ✅';
+            if (emojiSpan) {
+                emojiSpan.textContent = '✅';
+                emojiSpan.style.transition = 'all 0.6s ease';
+                emojiSpan.style.transform = 'scale(1.3)';
+                setTimeout(() => {
+                    emojiSpan.style.transform = 'scale(1)';
+                }, 400);
+            }
+            if (estadoSpan) {
+                estadoSpan.textContent = '✅ ¡Completado!';
+                estadoSpan.style.color = '#22c55e';
+            }
+            
+            clearInterval(loadingDiv._intervalFrutas);
+            clearInterval(loadingDiv._intervalBarra);
+            
+            setTimeout(() => {
+                const loading = document.getElementById('frutaLoading');
+                if (loading) {
+                    loading.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                    loading.style.opacity = '0';
+                    loading.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        if (loading.parentNode) {
+                            loading.remove();
+                        }
+                    }, 600);
+                }
+            }, 800);
+        }
+    };
+}
 
 // ============================================================
 // BUSCAR DNI, CUIT O POLÍTICAS CON TIEMPO Y CONTADOR
@@ -1429,83 +1543,44 @@ async function buscarDNI() {
     
     const comando = detectarComando(query);
     
-    // Comando: descargas
     if (comando.tipo === 'descargas') {
         mostrarDescargas();
         buscando = false;
         return;
     }
     
-    // Comando: macro
     if (comando.tipo === 'macro') {
-        resultText.innerHTML = `
-            <div style="text-align:center;padding:20px;color:var(--violet-soft);font-size:13px;">
-                <div style="margin-bottom:12px;display:flex;justify-content:center;gap:8px;font-size:24px;">
-                    <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0s;">🟪</span>
-                    <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.15s;">🟪</span>
-                    <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.3s;">⬛</span>
-                    <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.45s;">⬛</span>
-                    <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.6s;">🟪</span>
-                </div>
-                <div style="letter-spacing:2px;color:var(--violet-soft);font-size:12px;">
-                    🍀 Buscando planes de pago para DNI ${comando.valor}<span style="display:inline-block;animation: dots 1.5s steps(4) infinite;">...</span>
-                </div>
-            </div>
-        `;
+        const loading = mostrarLoadingFrutas('🍀 Buscando planes de pago', comando.valor);
         
-        await new Promise(resolve => setTimeout(resolve, 50));
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        loading.actualizarMensaje('📋 Consultando servidor de planes');
+        await new Promise(resolve => setTimeout(resolve, 1200));
+        loading.actualizarMensaje('📊 Procesando deudas');
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        loading.actualizarMensaje('🧮 Calculando promedios');
+        await new Promise(resolve => setTimeout(resolve, 800));
+        
         await buscarMacro(comando.valor);
+        loading.completar();
         buscando = false;
         return;
     }
     
-    // Comando: error
     if (comando.tipo === 'error') {
         resultText.innerHTML = `<div class="error">${comando.mensaje}</div>`;
         buscando = false;
         return;
     }
     
-    // Mostrar loading
-    resultText.innerHTML = `
-        <div style="text-align:center;padding:20px;color:var(--violet-soft);font-size:13px;">
-            <div style="margin-bottom:12px;display:flex;justify-content:center;gap:8px;font-size:24px;">
-                <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0s;">🟪</span>
-                <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.15s;">🟪</span>
-                <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.3s;">⬛</span>
-                <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.45s;">⬛</span>
-                <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.6s;">🟪</span>
-            </div>
-            <div style="letter-spacing:2px;color:var(--violet-soft);font-size:12px;">
-                Buscando en base de datos<span style="display:inline-block;animation: dots 1.5s steps(4) infinite;">...</span>
-            </div>
-        </div>
-    `;
-    
-    await new Promise(resolve => setTimeout(resolve, 50));
+    const loading = mostrarLoadingFrutas('🔍 Buscando en base de datos');
 
     let totalRegistrosEncontrados = 0;
     let registrosCrediticios = 0;
 
     try {
-        // Comando: empresa (CUIT)
         if (comando.tipo === 'empresa') {
-            resultText.innerHTML = `
-                <div style="text-align:center;padding:20px;color:var(--violet-soft);font-size:13px;">
-                    <div style="margin-bottom:12px;display:flex;justify-content:center;gap:8px;font-size:24px;">
-                        <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0s;">🟪</span>
-                        <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.15s;">🟪</span>
-                        <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.3s;">⬛</span>
-                        <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.45s;">⬛</span>
-                        <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.6s;">🟪</span>
-                    </div>
-                    <div style="letter-spacing:2px;color:var(--violet-soft);font-size:12px;">
-                        🏢 Buscando empresas por CUIT<span style="display:inline-block;animation: dots 1.5s steps(4) infinite;">...</span>
-                    </div>
-                </div>
-            `;
-            
-            await new Promise(resolve => setTimeout(resolve, 50));
+            loading.actualizarMensaje('🏢 Buscando empresas por CUIT');
+            await new Promise(resolve => setTimeout(resolve, 1200));
             
             const resultado = await buscarEmpresaPorCUIT(comando.valor);
             const tiempoFin = performance.now();
@@ -1515,27 +1590,13 @@ async function buscarDNI() {
                 totalRegistrosEncontrados = resultado.resultados.length;
             }
             
+            loading.completar();
+            await new Promise(resolve => setTimeout(resolve, 400));
             mostrarEmpresasConEstadisticas(resultado, tiempoTotal, totalRegistrosEncontrados);
             
-        // Comando: DNI
         } else if (comando.tipo === 'dni') {
-            // Mostrar loading
-            resultText.innerHTML = `
-                <div style="text-align:center;padding:20px;color:var(--violet-soft);font-size:13px;">
-                    <div style="margin-bottom:12px;display:flex;justify-content:center;gap:8px;font-size:24px;">
-                        <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0s;">🟪</span>
-                        <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.15s;">🟪</span>
-                        <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.3s;">⬛</span>
-                        <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.45s;">⬛</span>
-                        <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.6s;">🟪</span>
-                    </div>
-                    <div style="letter-spacing:2px;color:var(--violet-soft);font-size:12px;">
-                        📋 Buscando datos personales<span style="display:inline-block;animation: dots 1.5s steps(4) infinite;">...</span>
-                    </div>
-                </div>
-            `;
-            
-            await new Promise(resolve => setTimeout(resolve, 50));
+            loading.actualizarMensaje('📋 Buscando datos personales');
+            await new Promise(resolve => setTimeout(resolve, 1000));
             
             const response = await fetch(`${API_URL}?dni=${encodeURIComponent(comando.valor)}`);
             
@@ -1543,6 +1604,8 @@ async function buscarDNI() {
             const data = await response.json();
             
             if (data.error) {
+                loading.completar();
+                await new Promise(resolve => setTimeout(resolve, 400));
                 resultText.innerHTML = `<div class="error">❌ ${data.error}</div>`;
                 buscando = false;
                 return;
@@ -1550,10 +1613,8 @@ async function buscarDNI() {
             
             totalRegistrosEncontrados = 1;
             
-            // ===== LIMPIAR Y CONSTRUIR DESDE CERO =====
             resultText.innerHTML = '';
             
-            // ===== HEADER CARD (SOLO UNA VEZ) =====
             const headerHTML = `
                 <div class="header-card">
                     <div class="dni-number">🔍 ${data.dni || '---'}</div>
@@ -1562,38 +1623,82 @@ async function buscarDNI() {
             `;
             resultText.innerHTML = headerHTML;
             
-            // ===== AGREGAR DATOS PERSONALES, LABORALES Y CONTACTO =====
             mostrarResultadoXfinder(data);
             
-            // Si no está fallecido, buscar historial crediticio
             if (!data.fallecido) {
-                // Eliminar contenedor viejo si existe
                 const oldContainer = document.getElementById('creditContainer');
                 if (oldContainer) {
                     oldContainer.remove();
                 }
                 
-                // Crear contenedor de crédito
                 const creditContainer = document.createElement('div');
                 creditContainer.id = 'creditContainer';
                 creditContainer.style.marginTop = '10px';
+                
+                // CREDITICIO CON FRUTAS QUE AVANZAN
+                const frutasCredit = ['🍋', '🍊', '🍎', '🍇', '🍉', '🍑', '🍒', '🍓'];
+                const etiquetasCredit = [
+                    '🍋 Limpiando historial...',
+                    '🍊 Organizando deudas...',
+                    '🍎 Analizando registros...',
+                    '🍇 Verificando situaciones...',
+                    '🍉 Procesando montos...',
+                    '🍑 Ultimando detalles...',
+                    '🍒 Preparando informe...',
+                    '🍓 ¡Casi listo!'
+                ];
+                let frutaCreditActual = 0;
+                
                 creditContainer.innerHTML = `
-                    <div style="text-align:center;padding:16px;color:var(--violet-soft);font-size:12px;border:1px solid rgba(160,68,255,0.06);border-radius:12px;background:var(--bg-card);">
-                        <div style="margin-bottom:10px;display:flex;justify-content:center;gap:6px;font-size:22px;">
-                            <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0s;">🟪</span>
-                            <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.15s;">🟪</span>
-                            <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.3s;">⬛</span>
-                            <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.45s;">⬛</span>
-                            <span style="display:inline-block;animation: pulseBox 1s ease-in-out infinite;animation-delay:0.6s;">🟪</span>
+                    <div style="text-align:center;padding:20px;color:var(--violet-soft);font-size:13px;border:1px solid rgba(160,68,255,0.06);border-radius:16px;background:var(--bg-card);">
+                        <div style="margin-bottom:6px;font-size:13px;color:#8a7ea0;letter-spacing:1px;font-weight:300;">
+                            💳 Buscando historial crediticio
                         </div>
-                        <div style="letter-spacing:1.5px;color:var(--violet-soft);font-size:11px;">
-                            💳 Buscando historial crediticio<span style="display:inline-block;animation: dots 1.5s steps(4) infinite;">...</span>
+                        <div style="margin:12px 0 8px 0;display:flex;justify-content:center;align-items:center;font-size:48px;min-height:60px;">
+                            <span id="frutaCreditEmoji" style="display:inline-block;transition:all 0.6s ease;">🍋</span>
+                        </div>
+                        <div style="margin-top:12px;width:100%;height:4px;background:rgba(255,255,255,0.05);border-radius:3px;overflow:hidden;position:relative;">
+                            <div id="barraCredit" style="width:0%;height:100%;background:linear-gradient(90deg, #fbbf24, #f97316, #ef4444, #8b5cf6, #22c55e, #f472b6, #ec4899, #ef4444);border-radius:3px;transition:width 0.8s ease;box-shadow:0 0 30px rgba(251,191,36,0.2);"></div>
+                        </div>
+                        <div style="margin-top:10px;font-size:10px;color:#6b5b8a;letter-spacing:1px;display:flex;justify-content:space-between;align-items:center;padding:0 4px;">
+                            <span id="estadoCredit" style="color:#8a7ea0;">🍋 Limpiando historial...</span>
+                            <span id="porcentajeCrediticio">0%</span>
                         </div>
                     </div>
                 `;
                 resultText.appendChild(creditContainer);
                 
-                await new Promise(resolve => setTimeout(resolve, 50));
+                const intervalCreditFrutas = setInterval(() => {
+                    if (frutaCreditActual < frutasCredit.length - 1) {
+                        frutaCreditActual++;
+                        const emojiSpan = document.getElementById('frutaCreditEmoji');
+                        if (emojiSpan) {
+                            emojiSpan.style.transition = 'all 0.6s ease';
+                            emojiSpan.style.transform = 'scale(1.4)';
+                            emojiSpan.textContent = frutasCredit[frutaCreditActual];
+                            setTimeout(() => {
+                                emojiSpan.style.transform = 'scale(1)';
+                            }, 400);
+                        }
+                        const estadoSpan = document.getElementById('estadoCredit');
+                        if (estadoSpan) {
+                            estadoSpan.textContent = etiquetasCredit[frutaCreditActual] || '🍉 Procesando...';
+                        }
+                    }
+                }, 1800);
+                
+                let progresoCrediticio = 0;
+                const intervalCreditBarra = setInterval(() => {
+                    const incremento = Math.random() * 5 + 2;
+                    progresoCrediticio = Math.min(progresoCrediticio + incremento, 95);
+                    const barra = document.getElementById('barraCredit');
+                    const pct = document.getElementById('porcentajeCrediticio');
+                    if (barra) barra.style.width = progresoCrediticio + '%';
+                    if (pct) pct.textContent = Math.round(progresoCrediticio) + '%';
+                }, 400);
+                
+                loading.actualizarMensaje('💳 Buscando historial crediticio');
+                await new Promise(resolve => setTimeout(resolve, 1000));
                 
                 try {
                     const creditResponse = await fetch(`${CREDIT_API_URL}?dni=${encodeURIComponent(comando.valor)}`);
@@ -1601,6 +1706,31 @@ async function buscarDNI() {
                         const creditData = await creditResponse.json();
                         
                         const container = document.getElementById('creditContainer');
+                        
+                        clearInterval(intervalCreditFrutas);
+                        clearInterval(intervalCreditBarra);
+                        const barra = container ? document.getElementById('barraCredit') : null;
+                        const pct = container ? document.getElementById('porcentajeCrediticio') : null;
+                        const emojiSpan = container ? document.getElementById('frutaCreditEmoji') : null;
+                        const estadoSpan = container ? document.getElementById('estadoCredit') : null;
+                        
+                        if (barra) {
+                            barra.style.width = '100%';
+                            barra.style.background = 'linear-gradient(90deg, #22c55e, #22c55e)';
+                        }
+                        if (pct) pct.textContent = '100% ✅';
+                        if (emojiSpan) {
+                            emojiSpan.textContent = '✅';
+                            emojiSpan.style.transition = 'all 0.6s ease';
+                            emojiSpan.style.transform = 'scale(1.3)';
+                            setTimeout(() => {
+                                emojiSpan.style.transform = 'scale(1)';
+                            }, 400);
+                        }
+                        if (estadoSpan) {
+                            estadoSpan.textContent = '✅ ¡Completado!';
+                            estadoSpan.style.color = '#22c55e';
+                        }
                         
                         if (creditData && !creditData.error && creditData.length > 0) {
                             registrosCrediticios = creditData.length;
@@ -1623,6 +1753,8 @@ async function buscarDNI() {
                             ultimoResultado = construirTextoPlano(data, null);
                         }
                     } else {
+                        clearInterval(intervalCreditFrutas);
+                        clearInterval(intervalCreditBarra);
                         const container = document.getElementById('creditContainer');
                         if (container) {
                             container.outerHTML = `
@@ -1635,6 +1767,8 @@ async function buscarDNI() {
                     }
                 } catch (e) {
                     console.warn('Error al obtener datos crediticios:', e);
+                    clearInterval(intervalCreditFrutas);
+                    clearInterval(intervalCreditBarra);
                     const container = document.getElementById('creditContainer');
                     if (container) {
                         container.outerHTML = `
@@ -1646,7 +1780,6 @@ async function buscarDNI() {
                     ultimoResultado = construirTextoPlano(data, null);
                 }
             } else {
-                // Si está fallecido, mostrar origen
                 const origenHTML = `
                     <div class="origen">
                         <span>📌 Fuente: ${data.origen || '---'}</span>
@@ -1676,11 +1809,18 @@ async function buscarDNI() {
                 resultText.innerHTML += estadisticasHTML;
             }
             
-        // Comando: políticas
+            loading.completar();
+            
         } else if (comando.tipo === 'politicas') {
+            loading.actualizarMensaje('📋 Buscando políticas de entidades');
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
             const resultados = await buscarPoliticasAPI(comando.valor);
             const tiempoFin = performance.now();
             const tiempoTotal = ((tiempoFin - tiempoInicio) / 1000).toFixed(2);
+            
+            loading.completar();
+            await new Promise(resolve => setTimeout(resolve, 400));
             
             if (resultados.error) {
                 resultText.innerHTML = `<div class="error">❌ ${resultados.error}</div>`;
@@ -1693,6 +1833,8 @@ async function buscarDNI() {
         }
     } catch (e) {
         console.error('Error:', e);
+        loading.completar();
+        await new Promise(resolve => setTimeout(resolve, 400));
         resultText.innerHTML = `
             <div class="error">
                 ❌ Error al consultar la base de datos
@@ -1705,22 +1847,14 @@ async function buscarDNI() {
     buscando = false;
 }
 
-
-
-
-
 // ============================================================
-// EFECTO REVELADO CON DESTELLO (NUEVO)
+// EFECTO REVELADO CON DESTELLO
 // ============================================================
 function iniciarEfectoScan() {
-    
-    // Ocultar el cursor viejo
     if (cursorElement) cursorElement.style.display = 'none';
     
-    // El mismo texto que antes, pero con formato mejorado
     const mensajes = [
         { text: "asistAI v2.0", style: "font-size:20px;font-weight:bold;color:var(--violet-soft);display:block;margin-bottom:6px;letter-spacing:2px;" },
-        
         { text: "🔍 Búsqueda inteligente", style: "display:block;margin-top:2px;font-size:13px;" },
         { text: "   • DNI (6-9 dígitos)", style: "display:block;padding-left:6px;font-size:12.5px;color:var(--text-secondary);" },
         { text: "   • CUIT (10 dígitos)", style: "display:block;padding-left:6px;font-size:12.5px;color:var(--text-secondary);" },
@@ -1731,16 +1865,13 @@ function iniciarEfectoScan() {
     ];
     
     let index = 0;
-    let currentElement = null;
     
-    // Limpiar el contenido
     typewriterElement.innerHTML = '';
     
     function showNextLine() {
         if (index < mensajes.length) {
             const msg = mensajes[index];
             
-            // Crear el elemento
             const el = document.createElement('div');
             el.innerHTML = msg.text;
             el.style.cssText = msg.style;
@@ -1748,19 +1879,12 @@ function iniciarEfectoScan() {
             el.style.transform = 'translateY(8px)';
             el.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
             
-            // Si es la primera línea (título), efecto especial
             if (index === 0) {
-                // Efecto de destello en el título
                 typewriterElement.appendChild(el);
-                
-                // Forzar reflow
                 void el.offsetHeight;
-                
-                // Revelar con destello
                 el.style.opacity = '1';
                 el.style.transform = 'translateY(0)';
                 
-                // Efecto de brillo pulsante en el título
                 let glowCount = 0;
                 const glowInterval = setInterval(() => {
                     if (glowCount < 3) {
@@ -1778,39 +1902,29 @@ function iniciarEfectoScan() {
                     index++;
                     setTimeout(showNextLine, 200);
                 }, 800);
-                
             } else if (msg.text === '') {
-                // Línea vacía
                 typewriterElement.appendChild(el);
                 el.style.opacity = '1';
                 el.style.transform = 'translateY(0)';
                 index++;
                 setTimeout(showNextLine, 50);
-                
             } else {
-                // Líneas normales - aparecen con fade y desplazamiento
                 typewriterElement.appendChild(el);
-                
-                // Forzar reflow
                 void el.offsetHeight;
-                
-                // Revelar con fade
                 el.style.opacity = '1';
                 el.style.transform = 'translateY(0)';
                 
-                // Si es la línea de "Sistema listo", agregar un efecto especial
-                if (msg.text.includes('✅ Sistema listo')) {
-                    // Efecto de pulso suave
+                if (msg.text.includes('Sistema listo')) {
                     setTimeout(() => {
                         el.style.transition = 'all 0.6s ease';
                         let pulseCount = 0;
                         const pulseInterval = setInterval(() => {
                             if (pulseCount < 2) {
-                                el.style.color = pulseCount % 2 === 0 ? 'var(--gold)' : '#ffd700';
+                                el.style.color = pulseCount % 2 === 0 ? 'var(--green)' : 'var(--green)';
                                 pulseCount++;
                             } else {
                                 clearInterval(pulseInterval);
-                                el.style.color = 'var(--gold)';
+                                el.style.color = 'var(--green)';
                             }
                         }, 400);
                     }, 300);
@@ -1822,14 +1936,12 @@ function iniciarEfectoScan() {
                 setTimeout(showNextLine, delay);
             }
         } else {
-            // Terminar - mostrar cursor
             const cursorSpan = document.createElement('span');
             cursorSpan.className = 'cursor';
             cursorSpan.id = 'cursor';
             cursorSpan.style.display = 'inline-block';
             typewriterElement.appendChild(cursorSpan);
             
-            // Mostrar búsqueda
             const searchContainer = document.getElementById('searchContainer');
             searchContainer.classList.add('visible');
             document.getElementById('dniInput').focus();
@@ -1838,17 +1950,8 @@ function iniciarEfectoScan() {
         }
     }
     
-    // Iniciar con un pequeño delay
     setTimeout(showNextLine, 300);
 }
-
-
-
-
-
-
-
-
 
 // ============================================================
 // AGREGAR BOTÓN CHAT MINI
@@ -1910,7 +2013,6 @@ async function iniciarApp() {
     typewriterElement.textContent = 'Cargando...';
     const total = await obtenerTotalRegistros();
     
-    // NUEVO EFECTO - Sin array de líneas
     typewriterElement.innerHTML = '';
     iniciarEfectoScan();
 }
@@ -1919,7 +2021,6 @@ async function iniciarApp() {
 // CHAT FLOTANTE - ASISTENTE INTELIGENTE
 // ============================================================
 
-// BASE DE DATOS DE LÍNEAS ENTRANTES
 const LINEAS_ENTRANTES = [
     '1152633965',
     '1152639134',
@@ -1929,7 +2030,6 @@ const LINEAS_ENTRANTES = [
     '1152633093'
 ];
 
-// BASE DE CONOCIMIENTO
 const conocimientosIA = {
     saludos: ['hola', 'buenas', 'que tal', 'hey', 'hello', 'buen día', 'buenas tardes', 'buenas noches', 'holi', 'holis', 'que onda', 'alo'],
     despedidas: ['chau', 'adiós', 'hasta luego', 'nos vemos', 'bye', 'gracias', 'muchas gracias', 'gracias!', 'chao', 'me voy'],
@@ -1938,7 +2038,6 @@ const conocimientosIA = {
     lineas: ['lineas entrantes', 'líneas entrantes', 'cuales son las lineas', 'cuales son las líneas', 'que lineas', 'listado de lineas', 'lista de lineas', 'mostrar lineas', 'ver lineas', 'entrantes', 'lineas disponibles', 'líneas disponibles']
 };
 
-// RESPUESTAS
 const respuestasIA = {
     saludo: [
         '¡Hola! 👋 Soy tu asistente.<br><br>📌 <strong>¿Qué puedo hacer?</strong><br>• Mostrar líneas entrantes<br>• Generar CUIL con DNI<br><br>💡 <span style="font-size:12px;color:#8a7ea0;">Escribí "ayuda" para ver los comandos.</span>',
@@ -1978,7 +2077,6 @@ const respuestasIA = {
     ]
 };
 
-// MEMORIA
 let memoriaChat = {
     ultimoDNI: null,
     ultimoGenero: null,
@@ -1986,10 +2084,6 @@ let memoriaChat = {
     mensajes: [],
     conversaciones: 0
 };
-
-// ============================================================
-// FUNCIONES DEL CHAT
-// ============================================================
 
 function toggleChat() {
     const window = document.getElementById('chatWindow');
@@ -2246,7 +2340,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     iniciarChat();
     
-    // Inicializar el chat cerrado
     document.getElementById('chatWindow').style.display = 'none';
     
     const input = document.getElementById('chatInput');
