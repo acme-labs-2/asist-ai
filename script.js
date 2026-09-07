@@ -1412,7 +1412,7 @@ function mostrarLoadingFrutas(mensajePersonalizado = null, dni = null) {
             <span id="frutaEmoji" style="display:inline-block;transition:all 0.6s ease;">🍋</span>
         </div>
         <div style="margin-top:12px;width:100%;height:4px;background:rgba(255,255,255,0.05);border-radius:3px;overflow:hidden;position:relative;">
-            <div id="barraFruta" style="width:0%;height:100%;background:linear-gradient(90deg, #fbbf24, #f97316, #ef4444, #8b5cf6, #22c55e, #f472b6, #ec4899, #ef4444);border-radius:3px;transition:width 0.8s ease;box-shadow:0 0 30px rgba(251,191,36,0.2);"></div>
+            <div id="barraFruta" style="width:0%;height:100%;background: #FF0969;border-radius:3px;transition:width 0.8s ease;box-shadow:0 0 30px rgba(255,9,105,0.3);"></div>
         </div>
         <div style="margin-top:10px;font-size:10px;color:#6b5b8a;letter-spacing:1px;display:flex;justify-content:space-between;align-items:center;padding:0 4px;">
             <span id="estadoFruta" style="color:#8a7ea0;">🍋 Limpiando...</span>
@@ -1476,7 +1476,8 @@ function mostrarLoadingFrutas(mensajePersonalizado = null, dni = null) {
             
             if (barra) {
                 barra.style.width = '100%';
-                barra.style.background = 'linear-gradient(90deg, #22c55e, #22c55e)';
+                barra.style.background = '#FF0969';
+                barra.style.boxShadow = '0 0 30px rgba(255,9,105,0.5)';
             }
             if (porcentaje) porcentaje.textContent = '100% ✅';
             if (emojiSpan) {
@@ -1649,23 +1650,25 @@ async function buscarDNI() {
                 ];
                 let frutaCreditActual = 0;
                 
-                creditContainer.innerHTML = `
-                    <div style="text-align:center;padding:20px;color:var(--violet-soft);font-size:13px;border:1px solid rgba(160,68,255,0.06);border-radius:16px;background:var(--bg-card);">
-                        <div style="margin-bottom:6px;font-size:13px;color:#8a7ea0;letter-spacing:1px;font-weight:300;">
-                            💳 Buscando historial crediticio
-                        </div>
-                        <div style="margin:12px 0 8px 0;display:flex;justify-content:center;align-items:center;font-size:48px;min-height:60px;">
-                            <span id="frutaCreditEmoji" style="display:inline-block;transition:all 0.6s ease;">🍋</span>
-                        </div>
-                        <div style="margin-top:12px;width:100%;height:4px;background:rgba(255,255,255,0.05);border-radius:3px;overflow:hidden;position:relative;">
-                            <div id="barraCredit" style="width:0%;height:100%;background:linear-gradient(90deg, #fbbf24, #f97316, #ef4444, #8b5cf6, #22c55e, #f472b6, #ec4899, #ef4444);border-radius:3px;transition:width 0.8s ease;box-shadow:0 0 30px rgba(251,191,36,0.2);"></div>
-                        </div>
-                        <div style="margin-top:10px;font-size:10px;color:#6b5b8a;letter-spacing:1px;display:flex;justify-content:space-between;align-items:center;padding:0 4px;">
-                            <span id="estadoCredit" style="color:#8a7ea0;">🍋 Limpiando historial...</span>
-                            <span id="porcentajeCrediticio">0%</span>
-                        </div>
-                    </div>
-                `;
+                
+creditContainer.innerHTML = `
+    <div style="text-align:center;padding:20px;color:var(--violet-soft);font-size:13px;border:1px solid rgba(160,68,255,0.06);border-radius:16px;background:var(--bg-card);">
+        <div style="margin-bottom:6px;font-size:13px;color:#8a7ea0;letter-spacing:1px;font-weight:300;">
+            💳 Buscando historial crediticio
+        </div>
+        <div style="margin:12px 0 8px 0;display:flex;justify-content:center;align-items:center;font-size:48px;min-height:60px;">
+            <span id="frutaCreditEmoji" style="display:inline-block;transition:all 0.6s ease;">🍋</span>
+        </div>
+        <div style="margin-top:12px;width:100%;height:4px;background:rgba(255,255,255,0.05);border-radius:3px;overflow:hidden;position:relative;">
+            <div id="barraCredit" style="width:0%;height:100%;background:#FF0969;border-radius:3px;transition:width 0.8s ease;box-shadow:0 0 30px rgba(255,9,105,0.3);"></div>
+        </div>
+        <div style="margin-top:10px;font-size:10px;color:#6b5b8a;letter-spacing:1px;display:flex;justify-content:space-between;align-items:center;padding:0 4px;">
+            <span id="estadoCredit" style="color:#8a7ea0;">🍋 Limpiando historial...</span>
+            <span id="porcentajeCrediticio">0%</span>
+        </div>
+    </div>
+`;
+
                 resultText.appendChild(creditContainer);
                 
                 const intervalCreditFrutas = setInterval(() => {
