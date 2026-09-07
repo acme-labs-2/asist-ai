@@ -1367,16 +1367,16 @@ function construirTextoMacro(data) {
 // LOADING CON FRUTAS (BARRA DE PROGRESO CON EMOJIS DE FRUTAS)
 // ============================================================
 function mostrarLoadingFrutas(mensajePersonalizado = null, dni = null) {
-    const frutas = ['🍋', '🍊', '🍎', '🍇', '🍉', '🍑', '🍒', '🍓'];
+    const frutas = ['❤️', '❤️', '❤️', '❤️', '❤️', '❤️', '❤️', '❤️'];
     const etiquetas = [
-        '🍋 Limpiando...',
-        '🍊 Organizando...',
-        '🍎 Procesando...',
-        '🍇 Analizando...',
-        '🍉 Casi listo...',
-        '🍑 Ultimando...',
-        '🍒 Preparando...',
-        '🍓 ¡Casi!'
+        'Limpiando...',
+        'Organizando...',
+        'Procesando...',
+        'Analizando...',
+        'Casi listo...',
+        'Ultimando...',
+        'Preparando...',
+        '¡Casi!'
     ];
     
     let frutaActual = 0;
@@ -1409,13 +1409,13 @@ function mostrarLoadingFrutas(mensajePersonalizado = null, dni = null) {
             ${titulo}
         </div>
         <div style="margin:12px 0 8px 0;display:flex;justify-content:center;align-items:center;font-size:48px;min-height:60px;">
-            <span id="frutaEmoji" style="display:inline-block;transition:all 0.6s ease;">🍋</span>
+            <span id="frutaEmoji" style="display:inline-block;transition:all 0.1s ease;">❤️</span>
         </div>
         <div style="margin-top:12px;width:100%;height:4px;background:rgba(255,255,255,0.05);border-radius:3px;overflow:hidden;position:relative;">
             <div id="barraFruta" style="width:0%;height:100%;background: #FF0969;border-radius:3px;transition:width 0.8s ease;box-shadow:0 0 30px rgba(255,9,105,0.3);"></div>
         </div>
         <div style="margin-top:10px;font-size:10px;color:#6b5b8a;letter-spacing:1px;display:flex;justify-content:space-between;align-items:center;padding:0 4px;">
-            <span id="estadoFruta" style="color:#8a7ea0;">🍋 Limpiando...</span>
+            <span id="estadoFruta" style="color:#8a7ea0;">❤️ Limpiando...</span>
             <span id="porcentajeFruta">0%</span>
         </div>
     `;
@@ -1637,16 +1637,16 @@ async function buscarDNI() {
                 creditContainer.style.marginTop = '10px';
                 
                 // CREDITICIO CON FRUTAS QUE AVANZAN
-                const frutasCredit = ['🍋', '🍊', '🍎', '🍇', '🍉', '🍑', '🍒', '🍓'];
+                const frutasCredit = ['❤️', '❤️', '❤️', '❤️', '❤️', '❤️', '❤️', '❤️'];
                 const etiquetasCredit = [
-                    '🍋 Limpiando historial...',
-                    '🍊 Organizando deudas...',
-                    '🍎 Analizando registros...',
-                    '🍇 Verificando situaciones...',
-                    '🍉 Procesando montos...',
-                    '🍑 Ultimando detalles...',
-                    '🍒 Preparando informe...',
-                    '🍓 ¡Casi listo!'
+                    'Limpiando historial...',
+                    'Organizando deudas...',
+                    'Analizando registros...',
+                    'Verificando situaciones...',
+                    'Procesando montos...',
+                    'Ultimando detalles...',
+                    'Preparando informe...',
+                    '¡Casi listo!'
                 ];
                 let frutaCreditActual = 0;
                 
@@ -1657,13 +1657,13 @@ creditContainer.innerHTML = `
             💳 Buscando historial crediticio
         </div>
         <div style="margin:12px 0 8px 0;display:flex;justify-content:center;align-items:center;font-size:48px;min-height:60px;">
-            <span id="frutaCreditEmoji" style="display:inline-block;transition:all 0.6s ease;">🍋</span>
+            <span id="frutaCreditEmoji" style="display:inline-block;transition:all 0.6s ease;">❤️</span>
         </div>
         <div style="margin-top:12px;width:100%;height:4px;background:rgba(255,255,255,0.05);border-radius:3px;overflow:hidden;position:relative;">
             <div id="barraCredit" style="width:0%;height:100%;background:#FF0969;border-radius:3px;transition:width 0.8s ease;box-shadow:0 0 30px rgba(255,9,105,0.3);"></div>
         </div>
         <div style="margin-top:10px;font-size:10px;color:#6b5b8a;letter-spacing:1px;display:flex;justify-content:space-between;align-items:center;padding:0 4px;">
-            <span id="estadoCredit" style="color:#8a7ea0;">🍋 Limpiando historial...</span>
+            <span id="estadoCredit" style="color:#8a7ea0;">❤️ Limpiando historial...</span>
             <span id="porcentajeCrediticio">0%</span>
         </div>
     </div>
