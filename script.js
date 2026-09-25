@@ -1364,151 +1364,89 @@ function construirTextoMacro(data) {
 }
 
 // ============================================================
-// LOADING CON FRUTAS (BARRA DE PROGRESO CON EMOJIS DE FRUTAS)
+// LOADER SPINNER VIOLETA
 // ============================================================
 function mostrarLoadingFrutas(mensajePersonalizado = null, dni = null) {
-    const frutas = ['❤️', '❤️', '❤️', '❤️', '❤️', '❤️', '❤️', '❤️'];
-    const etiquetas = [
-        'Limpiando...',
-        'Organizando...',
-        'Procesando...',
-        'Analizando...',
-        'Casi listo...',
-        'Ultimando...',
-        'Preparando...',
-        '¡Casi!'
-    ];
+    const mensajes = [''];
+    let i = 0;
     
-    let frutaActual = 0;
-    let progreso = 0;
-    
-    let loadingDiv = document.getElementById('frutaLoading');
-    if (!loadingDiv) {
-        loadingDiv = document.createElement('div');
-        loadingDiv.id = 'frutaLoading';
-        loadingDiv.style.cssText = `
-            text-align: center;
-            padding: 30px 20px;
-            color: var(--violet-soft);
-            font-size: 13px;
-            border: 1px solid rgba(160,68,255,0.06);
-            border-radius: 16px;
-            background: var(--bg-card);
-            margin: 10px 0;
-            transition: all 0.3s ease;
-        `;
-        document.getElementById('resultText').innerHTML = '';
-        document.getElementById('resultText').appendChild(loadingDiv);
-    }
-    
-    const dniText = dni ? ` para DNI ${dni}` : '';
-    const titulo = mensajePersonalizado || `📋 Buscando${dniText}`;
-    
-    loadingDiv.innerHTML = `
-        <div style="margin-bottom:6px;font-size:13px;color:#8a7ea0;letter-spacing:1px;font-weight:300;">
-            ${titulo}
-        </div>
-        <div style="margin:12px 0 8px 0;display:flex;justify-content:center;align-items:center;font-size:48px;min-height:60px;">
-            <span id="frutaEmoji" style="display:inline-block;transition:all 0.1s ease;">❤️</span>
-        </div>
-        <div style="margin-top:12px;width:100%;height:4px;background:rgba(255,255,255,0.05);border-radius:3px;overflow:hidden;position:relative;">
-            <div id="barraFruta" style="width:0%;height:100%;background: #FF0969;border-radius:3px;transition:width 0.8s ease;box-shadow:0 0 30px rgba(255,9,105,0.3);"></div>
-        </div>
-        <div style="margin-top:10px;font-size:10px;color:#6b5b8a;letter-spacing:1px;display:flex;justify-content:space-between;align-items:center;padding:0 4px;">
-            <span id="estadoFruta" style="color:#8a7ea0;">❤️ Limpiando...</span>
-            <span id="porcentajeFruta">0%</span>
+    const div = document.createElement('div');
+    div.id = 'spinnerLoader';
+    div.innerHTML = `
+        <style>
+            @keyframes spinViolet {
+                to { transform: rotate(360deg); }
+            }
+            @keyframes pulseViolet {
+                0%, 100% { box-shadow: 0 0 20px rgba(79, 70, 229, 0.25); }
+                50%      { box-shadow: 0 0 32px rgba(79, 70, 229, 0.55); }
+            }
+        </style>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:44px 20px;">
+            <div style="
+                position: relative;
+                width: 52px;
+                height: 52px;
+            ">
+                <div style="
+                    position: absolute;
+                    inset: 0;
+                    border: 3px solid rgba(79, 70, 229, 0.12);
+                    border-radius: 50%;
+                "></div>
+                <div style="
+                    position: absolute;
+                    inset: 0;
+                    border: 3px solid transparent;
+                    border-top-color: #4f46e5;
+                    border-right-color: #4f46e5;
+                    border-radius: 50%;
+                    animation: spinViolet 0.9s linear infinite;
+                    animation-timing-function: cubic-bezier(0.5, 0.1, 0.5, 0.9);
+                    box-shadow: 0 0 24px rgba(79, 70, 229, 0.35);
+                    animation-name: spinViolet, pulseViolet;
+                    animation-duration: 0.9s, 1.8s;
+                    animation-iteration-count: infinite, infinite;
+                    animation-timing-function: linear, ease-in-out;
+                "></div>
+            </div>
+            <div id="spinnerText" style="
+                font-size: 12px;
+                color: #8a7ea0;
+                letter-spacing: 2px;
+                font-weight: 300;
+                transition: opacity 0.2s ease;
+            ">
+                ${mensajes[0]}
+            </div>
         </div>
     `;
     
-    const avanzarFruta = () => {
-        if (frutaActual < frutas.length - 1) {
-            frutaActual++;
-            const emojiSpan = document.getElementById('frutaEmoji');
-            if (emojiSpan) {
-                emojiSpan.style.transition = 'all 0.1s ease';
-                emojiSpan.style.transform = 'scale(1.4)';
-                emojiSpan.textContent = frutas[frutaActual];
-                setTimeout(() => {
-                    emojiSpan.style.transform = 'scale(1)';
-                }, 400);
-            }
-            const estadoSpan = document.getElementById('estadoFruta');
-            if (estadoSpan) {
-                estadoSpan.textContent = etiquetas[frutaActual] || '🍉 Cargando...';
-            }
+    document.getElementById('resultText').innerHTML = '';
+    document.getElementById('resultText').appendChild(div);
+    
+    const interval = setInterval(() => {
+        i = (i + 1) % mensajes.length;
+        const el = document.getElementById('spinnerText');
+        if (el) {
+            el.style.opacity = '0.3';
+            setTimeout(() => {
+                el.textContent = mensajes[i];
+                el.style.opacity = '1';
+            }, 100);
         }
-    };
-    
-    const intervalFrutas = setInterval(() => {
-        avanzarFruta();
-    }, 1800);
-    
-    const intervalBarra = setInterval(() => {
-        const incremento = Math.random() * 3 + 1.5;
-        progreso = Math.min(progreso + incremento, 98);
-        const barra = document.getElementById('barraFruta');
-        const porcentaje = document.getElementById('porcentajeFruta');
-        if (barra) barra.style.width = progreso + '%';
-        if (porcentaje) porcentaje.textContent = Math.round(progreso) + '%';
-    }, 400);
-    
-    loadingDiv._intervalFrutas = intervalFrutas;
-    loadingDiv._intervalBarra = intervalBarra;
-    loadingDiv._frutaActual = 0;
+    }, 350);
     
     return {
-        actualizarMensaje: (nuevoMensaje) => {
-            const tituloDiv = loadingDiv.querySelector('div:first-child');
-            if (tituloDiv) {
-                tituloDiv.textContent = nuevoMensaje;
-                tituloDiv.style.transition = 'opacity 0.3s ease';
-                tituloDiv.style.opacity = '0.5';
-                setTimeout(() => {
-                    tituloDiv.style.opacity = '1';
-                }, 200);
-            }
-        },
+        actualizarMensaje: () => {},
         completar: () => {
-            const barra = document.getElementById('barraFruta');
-            const porcentaje = document.getElementById('porcentajeFruta');
-            const emojiSpan = document.getElementById('frutaEmoji');
-            const estadoSpan = document.getElementById('estadoFruta');
-            
-            if (barra) {
-                barra.style.width = '100%';
-                barra.style.background = '#FF0969';
-                barra.style.boxShadow = '0 0 30px rgba(255,9,105,0.5)';
+            clearInterval(interval);
+            const el = document.getElementById('spinnerLoader');
+            if (el) {
+                el.style.transition = 'opacity 0.3s ease';
+                el.style.opacity = '0';
+                setTimeout(() => el.remove(), 300);
             }
-            if (porcentaje) porcentaje.textContent = '100% ✅';
-            if (emojiSpan) {
-                emojiSpan.textContent = '✅';
-                emojiSpan.style.transition = 'all 0.6s ease';
-                emojiSpan.style.transform = 'scale(1.3)';
-                setTimeout(() => {
-                    emojiSpan.style.transform = 'scale(1)';
-                }, 400);
-            }
-            if (estadoSpan) {
-                estadoSpan.textContent = '✅ ¡Completado!';
-                estadoSpan.style.color = '#22c55e';
-            }
-            
-            clearInterval(loadingDiv._intervalFrutas);
-            clearInterval(loadingDiv._intervalBarra);
-            
-            setTimeout(() => {
-                const loading = document.getElementById('frutaLoading');
-                if (loading) {
-                    loading.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-                    loading.style.opacity = '0';
-                    loading.style.transform = 'scale(0.95)';
-                    setTimeout(() => {
-                        if (loading.parentNode) {
-                            loading.remove();
-                        }
-                    }, 600);
-                }
-            }, 800);
         }
     };
 }
@@ -1527,6 +1465,8 @@ async function buscarDNI() {
     const resultText = document.getElementById('resultText');
     const btnCopiar = document.getElementById('btnCopiar');
     const query = input.value.trim();
+
+    mostrarBotonPDF(false);
 
     if (!query || query.length < 2) {
         resultContent.className = 'results-section visible';
@@ -1652,53 +1592,53 @@ async function buscarDNI() {
                 
                 
 creditContainer.innerHTML = `
-    <div style="text-align:center;padding:20px;color:var(--violet-soft);font-size:13px;border:1px solid rgba(160,68,255,0.06);border-radius:16px;background:var(--bg-card);">
-        <div style="margin-bottom:6px;font-size:13px;color:#8a7ea0;letter-spacing:1px;font-weight:300;">
-            💳 Buscando historial crediticio
+    <style>
+        @keyframes spinVioletCredit {
+            to { transform: rotate(360deg); }
+        }
+        @keyframes pulseVioletCredit {
+            0%, 100% { box-shadow: 0 0 20px rgba(79, 70, 229, 0.25); }
+            50%      { box-shadow: 0 0 32px rgba(79, 70, 229, 0.55); }
+        }
+    </style>
+    <div style="text-align:center;padding:28px 20px;border:1px solid rgba(79,70,229,0.06);border-radius:16px;background:var(--bg-card);">
+        <div style="
+            position: relative;
+            width: 44px;
+            height: 44px;
+            margin: 0 auto 14px auto;
+        ">
+            <div style="
+                position: absolute;
+                inset: 0;
+                border: 3px solid rgba(79, 70, 229, 0.12);
+                border-radius: 50%;
+            "></div>
+            <div style="
+                position: absolute;
+                inset: 0;
+                border: 3px solid transparent;
+                border-top-color: #4f46e5;
+                border-right-color: #4f46e5;
+                border-radius: 50%;
+                animation: spinVioletCredit 0.9s linear infinite,
+                           pulseVioletCredit 1.8s ease-in-out infinite;
+                box-shadow: 0 0 24px rgba(79, 70, 229, 0.35);
+            "></div>
         </div>
-        <div style="margin:12px 0 8px 0;display:flex;justify-content:center;align-items:center;font-size:48px;min-height:60px;">
-            <span id="frutaCreditEmoji" style="display:inline-block;transition:all 0.6s ease;">❤️</span>
-        </div>
-        <div style="margin-top:12px;width:100%;height:4px;background:rgba(255,255,255,0.05);border-radius:3px;overflow:hidden;position:relative;">
-            <div id="barraCredit" style="width:0%;height:100%;background:#FF0969;border-radius:3px;transition:width 0.8s ease;box-shadow:0 0 30px rgba(255,9,105,0.3);"></div>
-        </div>
-        <div style="margin-top:10px;font-size:10px;color:#6b5b8a;letter-spacing:1px;display:flex;justify-content:space-between;align-items:center;padding:0 4px;">
-            <span id="estadoCredit" style="color:#8a7ea0;">❤️ Limpiando historial...</span>
-            <span id="porcentajeCrediticio">0%</span>
+        <div style="
+            font-size: 12px;
+            color: #8a7ea0;
+            letter-spacing: 2px;
+            font-weight: 300;
+        ">
+            BUSCANDO HISTORIAL CREDITICIO
         </div>
     </div>
 `;
 
                 resultText.appendChild(creditContainer);
                 
-                const intervalCreditFrutas = setInterval(() => {
-                    if (frutaCreditActual < frutasCredit.length - 1) {
-                        frutaCreditActual++;
-                        const emojiSpan = document.getElementById('frutaCreditEmoji');
-                        if (emojiSpan) {
-                            emojiSpan.style.transition = 'all 0.6s ease';
-                            emojiSpan.style.transform = 'scale(1.4)';
-                            emojiSpan.textContent = frutasCredit[frutaCreditActual];
-                            setTimeout(() => {
-                                emojiSpan.style.transform = 'scale(1)';
-                            }, 400);
-                        }
-                        const estadoSpan = document.getElementById('estadoCredit');
-                        if (estadoSpan) {
-                            estadoSpan.textContent = etiquetasCredit[frutaCreditActual] || '🍉 Procesando...';
-                        }
-                    }
-                }, 1800);
-                
-                let progresoCrediticio = 0;
-                const intervalCreditBarra = setInterval(() => {
-                    const incremento = Math.random() * 5 + 2;
-                    progresoCrediticio = Math.min(progresoCrediticio + incremento, 95);
-                    const barra = document.getElementById('barraCredit');
-                    const pct = document.getElementById('porcentajeCrediticio');
-                    if (barra) barra.style.width = progresoCrediticio + '%';
-                    if (pct) pct.textContent = Math.round(progresoCrediticio) + '%';
-                }, 400);
                 
                 loading.actualizarMensaje('💳 Buscando historial crediticio');
                 await new Promise(resolve => setTimeout(resolve, 1000));
@@ -1710,30 +1650,6 @@ creditContainer.innerHTML = `
                         
                         const container = document.getElementById('creditContainer');
                         
-                        clearInterval(intervalCreditFrutas);
-                        clearInterval(intervalCreditBarra);
-                        const barra = container ? document.getElementById('barraCredit') : null;
-                        const pct = container ? document.getElementById('porcentajeCrediticio') : null;
-                        const emojiSpan = container ? document.getElementById('frutaCreditEmoji') : null;
-                        const estadoSpan = container ? document.getElementById('estadoCredit') : null;
-                        
-                        if (barra) {
-                            barra.style.width = '100%';
-                            barra.style.background = 'linear-gradient(90deg, #22c55e, #22c55e)';
-                        }
-                        if (pct) pct.textContent = '100% ✅';
-                        if (emojiSpan) {
-                            emojiSpan.textContent = '✅';
-                            emojiSpan.style.transition = 'all 0.6s ease';
-                            emojiSpan.style.transform = 'scale(1.3)';
-                            setTimeout(() => {
-                                emojiSpan.style.transform = 'scale(1)';
-                            }, 400);
-                        }
-                        if (estadoSpan) {
-                            estadoSpan.textContent = '✅ ¡Completado!';
-                            estadoSpan.style.color = '#22c55e';
-                        }
                         
                         if (creditData && !creditData.error && creditData.length > 0) {
                             registrosCrediticios = creditData.length;
@@ -1756,8 +1672,6 @@ creditContainer.innerHTML = `
                             ultimoResultado = construirTextoPlano(data, null);
                         }
                     } else {
-                        clearInterval(intervalCreditFrutas);
-                        clearInterval(intervalCreditBarra);
                         const container = document.getElementById('creditContainer');
                         if (container) {
                             container.outerHTML = `
@@ -1770,8 +1684,6 @@ creditContainer.innerHTML = `
                     }
                 } catch (e) {
                     console.warn('Error al obtener datos crediticios:', e);
-                    clearInterval(intervalCreditFrutas);
-                    clearInterval(intervalCreditBarra);
                     const container = document.getElementById('creditContainer');
                     if (container) {
                         container.outerHTML = `
@@ -1812,7 +1724,9 @@ creditContainer.innerHTML = `
                 resultText.innerHTML += estadisticasHTML;
             }
             
+            mostrarBotonPDF(true);	
             loading.completar();
+
             
         } else if (comando.tipo === 'politicas') {
             loading.actualizarMensaje('📋 Buscando políticas de entidades');
@@ -2327,6 +2241,16 @@ function iniciarChat() {
 }
 
 // ============================================================
+// MOSTRAR/OCULTAR BOTÓN EXPORTAR PDF
+// ============================================================
+function mostrarBotonPDF(mostrar) {
+    const btn = document.getElementById('btnExportarPDF');
+    if (btn) {
+        btn.style.display = mostrar ? 'inline-flex' : 'none';
+    }
+}
+
+// ============================================================
 // EVENT LISTENERS
 // ============================================================
 
@@ -2381,3 +2305,546 @@ document.addEventListener('keydown', function(e) {
         }
     }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ============================================================
+// FUNCIÓN PARA EXPORTAR INFORME A PDF - VERSIÓN FINAL ACTUALIZADA
+// ============================================================
+function exportarPDF() {
+    const resultText = document.getElementById('resultText');
+    const btnExportar = document.getElementById('btnExportarPDF');
+    
+    if (!resultText || resultText.innerHTML.trim() === '') {
+        alert('⚠️ No hay ningún informe para exportar. Realiza una búsqueda primero.');
+        return;
+    }
+    
+    const contenido = resultText.innerHTML;
+    if (!contenido.includes('DATOS PERSONALES') && !contenido.includes('header-card')) {
+        alert('⚠️ Solo se pueden exportar informes de DNI.');
+        return;
+    }
+    
+    btnExportar.disabled = true;
+    btnExportar.textContent = '⏳ Generando PDF...';
+    
+    try {
+        // Extraer datos del DOM
+        const dniElement = document.querySelector('.dni-number');
+        const dni = dniElement ? dniElement.textContent.replace('🔍 ', '').trim() : '---';
+        
+        let nombre = 'Sin nombre';
+        let datosPersonales = {};
+        let datosLaborales = {};
+        let contactos = {};
+        let deudas = [];
+        let morosidadData = null;
+        
+        document.querySelectorAll('.seccion').forEach(seccion => {
+            const titulo = seccion.querySelector('.seccion-titulo');
+            const tituloText = titulo ? titulo.textContent : '';
+            const campos = seccion.querySelectorAll('.campo');
+            
+            campos.forEach(campo => {
+                const label = campo.querySelector('.label');
+                const valor = campo.querySelector('.valor');
+                if (label && valor) {
+                    const key = label.textContent.trim();
+                    const value = valor.textContent.trim();
+                    
+                    if (key === 'Nombre') nombre = value;
+                    
+                    if (tituloText.includes('DATOS PERSONALES')) {
+                        datosPersonales[key] = value;
+                    } else if (tituloText.includes('DATOS LABORALES')) {
+                        datosLaborales[key] = value;
+                    } else if (tituloText.includes('CONTACTO')) {
+                        contactos[key] = value;
+                    }
+                }
+            });
+            
+            if (tituloText.includes('NIVEL DE MOROSIDAD')) {
+                const statsDivs = seccion.querySelectorAll('div[style*="display:grid"] > div');
+                let normales = '0', riesgo = '0', irrecuperables = '0', montoTotal = '$0';
+                
+                statsDivs.forEach(div => {
+                    const text = div.textContent || '';
+                    const valorDiv = div.querySelector('div:last-child');
+                    const valor = valorDiv ? valorDiv.textContent : '0';
+                    
+                    if (text.includes('Normales')) normales = valor;
+                    else if (text.includes('En riesgo')) riesgo = valor;
+                    else if (text.includes('Irrecuperables')) irrecuperables = valor;
+                });
+                
+                // Buscar el monto total correctamente - MÁS ROBUSTO
+                const allText = seccion.textContent || '';
+                const montoMatch = allText.match(/\$([\d,.]+)/g);
+                if (montoMatch && montoMatch.length > 0) {
+                    // Tomar el último monto que aparece (el total)
+                    montoTotal = montoMatch[montoMatch.length - 1];
+                }
+                
+                // También buscar por el span específico
+                const montoSpans = seccion.querySelectorAll('span');
+                montoSpans.forEach(span => {
+                    const text = span.textContent || '';
+                    if (text.includes('$') && text.includes('Monto total')) {
+                        const parent = span.closest('div');
+                        if (parent) {
+                            const valorSpan = parent.querySelector('span:last-child');
+                            if (valorSpan) {
+                                const montoText = valorSpan.textContent || '';
+                                if (montoText.includes('$')) {
+                                    montoTotal = montoText;
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                const barra = seccion.querySelector('div[style*="width:"]');
+                const porcentaje = barra ? barra.style.width : '0%';
+                
+                morosidadData = { normales, riesgo, irrecuperables, montoTotal, porcentaje };
+            }
+            
+            if (tituloText.includes('DETALLE DE DEUDAS')) {
+                const items = seccion.querySelectorAll('div[style*="padding:8px 0;"]');
+                items.forEach(item => {
+                    const spans = item.querySelectorAll('span');
+                    const entidad = spans.length > 0 ? spans[0].textContent : 'Sin entidad';
+                    const estado = spans.length > 1 ? spans[1].textContent : 'Normal';
+                    const infoDiv = item.querySelector('div[style*="display:flex;justify-content:space-between"]');
+                    const periodoSpan = infoDiv ? infoDiv.querySelector('span:first-child') : null;
+                    const montoSpan = infoDiv ? infoDiv.querySelector('span:nth-child(2)') : null;
+                    const periodo = periodoSpan ? periodoSpan.textContent : '-';
+                    const monto = montoSpan ? montoSpan.textContent : '$0';
+                    deudas.push({ entidad, estado, periodo, monto });
+                });
+            }
+        });
+        
+        // Crear el PDF
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('p', 'mm', 'a4');
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const margin = 15;
+        let y = 20;
+        
+        const colores = {
+            primary: [79, 70, 229],
+            primaryDark: [49, 46, 129],
+            primaryLight: [129, 140, 248],
+            accent: [251, 191, 36],
+            success: [34, 197, 94],
+            warning: [245, 158, 11],
+            danger: [239, 68, 68],
+            pink: [255, 9, 105],
+            text: [30, 27, 43],
+            textLight: [107, 91, 138],
+            bgCard: [248, 247, 255],
+            border: [229, 231, 235],
+            white: [255, 255, 255]
+        };
+        
+        // ===== HEADER =====
+        doc.setFillColor(colores.primary[0], colores.primary[1], colores.primary[2]);
+        doc.rect(0, 0, pageWidth, 42, 'F');
+        
+        doc.setFillColor(colores.pink[0], colores.pink[1], colores.pink[2]);
+        doc.rect(0, 42, pageWidth, 3, 'F');
+        
+        doc.setTextColor(colores.white[0], colores.white[1], colores.white[2]);
+        doc.setFontSize(22);
+        doc.setFont('helvetica', 'bold');
+        doc.text('asistAI', margin, 20);
+        
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(colores.primaryLight[0], colores.primaryLight[1], colores.primaryLight[2]);
+        doc.text('Informe Crediticio', margin, 30);
+        
+        const fecha = new Date();
+        const fechaStr = fecha.toLocaleDateString('es-AR', { 
+            day: '2-digit', month: '2-digit', year: 'numeric'
+        });
+        const horaStr = fecha.toLocaleTimeString('es-AR', { 
+            hour: '2-digit', minute: '2-digit'
+        });
+        doc.setFontSize(8);
+        doc.setTextColor(199, 210, 254);
+        doc.text(fechaStr + '  ' + horaStr, pageWidth - margin - 40, 20);
+        
+        // ===== CABECERA CON DNI Y NOMBRE =====
+        y = 55;
+        
+        // Tarjeta más alta (22mm)
+        doc.setFillColor(colores.bgCard[0], colores.bgCard[1], colores.bgCard[2]);
+        doc.setDrawColor(colores.primary[0], colores.primary[1], colores.primary[2]);
+        doc.setLineWidth(0.5);
+        doc.roundedRect(margin, y - 3, pageWidth - (margin * 2), 27, 4, 4, 'FD');
+        
+        // DNI - primera línea (alineado a la izquierda)
+        doc.setTextColor(colores.primary[0], colores.primary[1], colores.primary[2]);
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bold');
+        doc.text('DNI:', margin + 8, y + 8);
+        
+        doc.setTextColor(colores.text[0], colores.text[1], colores.text[2]);
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text(dni, margin + 18, y + 8);
+        
+        // Nombre - segunda línea (debajo del DNI, alineado a la izquierda)
+        doc.setTextColor(colores.primary[0], colores.primary[1], colores.primary[2]);
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Nombre:', margin + 8, y + 8 + 10);
+        
+        doc.setTextColor(colores.text[0], colores.text[1], colores.text[2]);
+        doc.setFontSize(13);
+        doc.setFont('helvetica', 'bold');
+        const nombreCompleto = nombre || 'Sin nombre';
+        const maxNombreLen = 55;
+        const nombreDisplay = nombreCompleto.length > maxNombreLen ? 
+                            nombreCompleto.substring(0, maxNombreLen) + '...' : 
+                            nombreCompleto;
+        doc.text(nombreDisplay, margin + 24, y + 8 + 10);
+        
+        y += 26;
+        
+        // ===== FUNCIÓN PARA CREAR BURBUJAS CON TÍTULOS CENTRADOS =====
+        function crearBurbujaTitulo(texto, yPos, color) {
+            const altura = 9;
+            
+            doc.setFillColor(color[0], color[1], color[2]);
+            doc.roundedRect(margin, yPos, pageWidth - (margin * 2), altura, 3, 3, 'F');
+            doc.setTextColor(colores.white[0], colores.white[1], colores.white[2]);
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'bold');
+            
+            const textWidth = doc.getTextWidth(texto);
+            const xCentro = margin + ((pageWidth - (margin * 2)) / 2) - (textWidth / 2);
+            doc.text(texto, xCentro, yPos + 6.5);
+            
+            return yPos + altura + 5;
+        }
+        
+        // ===== DATOS PERSONALES =====
+        y = crearBurbujaTitulo('DATOS PERSONALES', y, colores.primary);
+        
+        const datosGrid = [
+            ['Nombre', datosPersonales['Nombre'] || '---'],
+            ['DNI', datosPersonales['DNI'] || '---'],
+            ['Domicilio', datosPersonales['Domicilio'] || 'Sin domicilio en padrón'],
+            ['Localidad', datosPersonales['Localidad'] || '-'],
+            ['Provincia', datosPersonales['Provincia'] || '-']
+        ];
+        
+        datosGrid.forEach(function(item, index) {
+            const label = item[0];
+            const valor = item[1];
+            const x1 = margin + 4;
+            const x2 = margin + 50;
+            const yPos = y + (index * 7);
+            
+            doc.setFontSize(8);
+            doc.setTextColor(colores.textLight[0], colores.textLight[1], colores.textLight[2]);
+            doc.setFont('helvetica', 'bold');
+            doc.text(label + ':', x1, yPos + 1);
+            
+            doc.setTextColor(colores.text[0], colores.text[1], colores.text[2]);
+            doc.setFont('helvetica', 'normal');
+            const valorStr = String(valor || '-');
+            const maxLen = 50;
+            doc.text(valorStr.length > maxLen ? valorStr.substring(0, maxLen) + '...' : valorStr, x2, yPos + 1);
+        });
+        y += (datosGrid.length * 7) + 6;
+        
+        // ===== DATOS LABORALES =====
+        if (Object.keys(datosLaborales).length > 0) {
+            if (y > 200) { doc.addPage(); y = 20; }
+            
+            y = crearBurbujaTitulo('DATOS LABORALES', y, colores.primary);
+            
+            const laboralGrid = [
+                ['Empleador', datosLaborales['Empleador'] || 'Sin empleo conocido'],
+                ['CUIT', datosLaborales['CUIT'] || '-'],
+                ['Empleados', datosLaborales['Empleados'] || '-']
+            ];
+            
+            laboralGrid.forEach(function(item, index) {
+                const label = item[0];
+                const valor = item[1];
+                const x1 = margin + 4;
+                const x2 = margin + 50;
+                const yPos = y + (index * 7);
+                
+                doc.setFontSize(8);
+                doc.setTextColor(colores.textLight[0], colores.textLight[1], colores.textLight[2]);
+                doc.setFont('helvetica', 'bold');
+                doc.text(label + ':', x1, yPos + 1);
+                
+                doc.setTextColor(colores.text[0], colores.text[1], colores.text[2]);
+                doc.setFont('helvetica', 'normal');
+                const valorStr = String(valor || '-');
+                const maxLen = 50;
+                doc.text(valorStr.length > maxLen ? valorStr.substring(0, maxLen) + '...' : valorStr, x2, yPos + 1);
+            });
+            y += (laboralGrid.length * 7) + 6;
+        }
+        
+        // ===== CONTACTO =====
+        if (Object.keys(contactos).length > 0) {
+            if (y > 200) { doc.addPage(); y = 20; }
+            
+            y = crearBurbujaTitulo('CONTACTO', y, colores.primary);
+            
+            const contactoGrid = [
+                ['Celular 1', contactos['Celular 1'] || '-'],
+                ['Celular 2', contactos['Celular 2'] || '-'],
+                ['Fijo 1', contactos['Fijo 1'] || '-'],
+                ['Fijo 2', contactos['Fijo 2'] || '-'],
+                ['Email', contactos['Email'] || '-']
+            ];
+            
+            contactoGrid.forEach(function(item, index) {
+                const label = item[0];
+                const valor = item[1];
+                const x1 = margin + 4;
+                const x2 = margin + 50;
+                const yPos = y + (index * 7);
+                
+                doc.setFontSize(8);
+                doc.setTextColor(colores.textLight[0], colores.textLight[1], colores.textLight[2]);
+                doc.setFont('helvetica', 'bold');
+                doc.text(label + ':', x1, yPos + 1);
+                
+                doc.setTextColor(colores.text[0], colores.text[1], colores.text[2]);
+                doc.setFont('helvetica', 'normal');
+                const valorStr = String(valor || '-');
+                const maxLen = 35;
+                doc.text(valorStr.length > maxLen ? valorStr.substring(0, maxLen) + '...' : valorStr, x2, yPos + 1);
+            });
+            y += (contactoGrid.length * 7) + 6;
+        }
+        
+        // ===== MOROSIDAD =====
+        if (morosidadData && deudas.length > 0) {
+            if (y > 180) { doc.addPage(); y = 20; }
+            
+            const porcentajeNum = parseInt(morosidadData.porcentaje) || 0;
+            const colorSeccion = porcentajeNum < 30 ? colores.success : 
+                                 porcentajeNum < 60 ? colores.warning : colores.danger;
+            
+            y = crearBurbujaTitulo('NIVEL DE MOROSIDAD', y, colorSeccion);
+            
+            const cardY = y;
+            doc.setFillColor(colores.bgCard[0], colores.bgCard[1], colores.bgCard[2]);
+            doc.setDrawColor(colores.border[0], colores.border[1], colores.border[2]);
+            doc.setLineWidth(0.3);
+            doc.roundedRect(margin, cardY, pageWidth - (margin * 2), 32, 4, 4, 'FD');
+            
+            const barWidth = pageWidth - (margin * 2) - 30;
+            const barX = margin + 12;
+            const barY = cardY + 6;
+            const barHeight = 6;
+            
+            doc.setFillColor(229, 231, 235);
+            doc.roundedRect(barX, barY, barWidth, barHeight, 3, 3, 'F');
+            
+            const colorBarra = porcentajeNum < 30 ? '#22c55e' : 
+                              porcentajeNum < 60 ? '#f59e0b' : '#ef4444';
+            doc.setFillColor(colorBarra);
+            const fillWidth = (barWidth * Math.min(porcentajeNum, 100)) / 100;
+            if (fillWidth > 0) {
+                doc.roundedRect(barX, barY, fillWidth, barHeight, 3, 3, 'F');
+            }
+            
+            doc.setTextColor(colores.text[0], colores.text[1], colores.text[2]);
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'bold');
+            doc.text(porcentajeNum + '%', barX + barWidth + 6, barY + 5);
+            
+            const stats = [
+                { label: 'Normales', valor: morosidadData.normales || '0', color: '#22c55e' },
+                { label: 'En riesgo', valor: morosidadData.riesgo || '0', color: '#f59e0b' },
+                { label: 'Irrecuperables', valor: morosidadData.irrecuperables || '0', color: '#ef4444' }
+            ];
+            
+            const statWidth = (pageWidth - (margin * 2) - 24) / 3;
+            stats.forEach(function(stat, index) {
+                const x = margin + 10 + (index * (statWidth + 4));
+                const yPos = barY + 14;
+                
+                doc.setTextColor(colores.textLight[0], colores.textLight[1], colores.textLight[2]);
+                doc.setFontSize(7);
+                doc.setFont('helvetica', 'normal');
+                doc.text(stat.label, x, yPos + 1);
+                
+                doc.setTextColor(stat.color);
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'bold');
+                doc.text(stat.valor, x + 30, yPos + 1);
+            });
+            
+            y = cardY + 34;
+            
+            if (y > 200) { doc.addPage(); y = 20; }
+            
+            doc.setFillColor(255, 251, 235);
+            doc.setDrawColor(251, 191, 36);
+            doc.setLineWidth(0.3);
+            doc.roundedRect(margin, y, pageWidth - (margin * 2), 11, 4, 4, 'FD');
+            
+            doc.setTextColor(colores.textLight[0], colores.textLight[1], colores.textLight[2]);
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'normal');
+            doc.text('Monto total de deudas:', margin + 10, y + 7);
+            
+            doc.setTextColor(colores.accent[0], colores.accent[1], colores.accent[2]);
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text(morosidadData.montoTotal || '$0', pageWidth - margin - 45, y + 7);
+            
+            y += 15;
+            
+            if (deudas.length > 0) {
+                if (y > 200) { doc.addPage(); y = 20; }
+                
+                y = crearBurbujaTitulo('DETALLE DE DEUDAS', y, [6, 95, 70]);
+                
+                doc.setTextColor(colores.textLight[0], colores.textLight[1], colores.textLight[2]);
+                doc.setFontSize(8);
+                doc.setFont('helvetica', 'normal');
+                doc.text('Total: ' + deudas.length + ' registros', margin + 6, y + 2);
+                y += 6;
+                
+                const tableHeaders = ['Entidad', 'Estado', 'Periodo', 'Monto'];
+                const colWidths = [(pageWidth - (margin * 2) - 12) * 0.35, 
+                                  (pageWidth - (margin * 2) - 12) * 0.22, 
+                                  (pageWidth - (margin * 2) - 12) * 0.2, 
+                                  (pageWidth - (margin * 2) - 12) * 0.23];
+                let tableY = y;
+                
+                doc.setFillColor(colores.primary[0], colores.primary[1], colores.primary[2]);
+                doc.roundedRect(margin, tableY - 2, pageWidth - (margin * 2), 6, 2, 2, 'F');
+                let xPos = margin + 4;
+                doc.setTextColor(colores.white[0], colores.white[1], colores.white[2]);
+                doc.setFontSize(7);
+                doc.setFont('helvetica', 'bold');
+                tableHeaders.forEach(function(header, i) {
+                    doc.text(header, xPos, tableY + 3);
+                    xPos += colWidths[i];
+                });
+                tableY += 7;
+                
+                deudas.forEach(function(deuda, index) {
+                    if (tableY > 260) {
+                        doc.addPage();
+                        tableY = 20;
+                        doc.setFillColor(colores.primary[0], colores.primary[1], colores.primary[2]);
+                        doc.roundedRect(margin, tableY - 2, pageWidth - (margin * 2), 6, 2, 2, 'F');
+                        xPos = margin + 4;
+                        doc.setTextColor(colores.white[0], colores.white[1], colores.white[2]);
+                        doc.setFontSize(7);
+                        doc.setFont('helvetica', 'bold');
+                        tableHeaders.forEach(function(header, i) {
+                            doc.text(header, xPos, tableY + 3);
+                            xPos += colWidths[i];
+                        });
+                        tableY += 7;
+                    }
+                    
+                    const colorFila = index % 2 === 0 ? [255, 255, 255] : [248, 247, 255];
+                    doc.setFillColor(colorFila[0], colorFila[1], colorFila[2]);
+                    doc.roundedRect(margin, tableY - 2, pageWidth - (margin * 2), 5, 2, 2, 'F');
+                    
+                    xPos = margin + 4;
+                    doc.setTextColor(colores.text[0], colores.text[1], colores.text[2]);
+                    doc.setFontSize(6.5);
+                    doc.setFont('helvetica', 'normal');
+                    
+                    const entidad = deuda.entidad.length > 22 ? deuda.entidad.substring(0, 19) + '...' : deuda.entidad;
+                    doc.text(entidad, xPos, tableY + 3);
+                    xPos += colWidths[0];
+                    
+                    const estadoColor = deuda.estado.includes('Irrecuperable') ? '#ef4444' : 
+                                       deuda.estado.includes('riesgo') ? '#f59e0b' : '#22c55e';
+                    doc.setTextColor(estadoColor);
+                    doc.text(deuda.estado, xPos, tableY + 3);
+                    xPos += colWidths[1];
+                    
+                    doc.setTextColor(colores.text[0], colores.text[1], colores.text[2]);
+                    doc.text(deuda.periodo, xPos, tableY + 3);
+                    xPos += colWidths[2];
+                    
+                    doc.setTextColor(colores.accent[0], colores.accent[1], colores.accent[2]);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text(deuda.monto, xPos, tableY + 3);
+                    doc.setFont('helvetica', 'normal');
+                    
+                    tableY += 5;
+                });
+                y = tableY + 6;
+            }
+        }
+        
+        // ===== FOOTER =====
+        if (y > 260) {
+            doc.addPage();
+            y = 20;
+        }
+        
+        doc.setDrawColor(colores.primary[0], colores.primary[1], colores.primary[2]);
+        doc.setLineWidth(0.5);
+        doc.line(margin, y, pageWidth - margin, y);
+        y += 4;
+        
+        doc.setFillColor(colores.pink[0], colores.pink[1], colores.pink[2]);
+        doc.roundedRect(margin, y, 12, 3, 2, 2, 'F');
+        
+        doc.setTextColor(colores.textLight[0], colores.textLight[1], colores.textLight[2]);
+        doc.setFontSize(7);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Informe generado por asistAI v2.0  |  ' + 
+                fechaStr + ' ' + horaStr + '  |  ' +
+                'Confidencial - Uso interno', margin + 16, y + 2.5);
+        
+        const nombreArchivo = 'asistAI_informe_' + dni + '_' + 
+            fecha.getFullYear() + '-' + String(fecha.getMonth()+1).padStart(2,'0') + '-' + 
+            String(fecha.getDate()).padStart(2,'0') + '.pdf';
+        doc.save(nombreArchivo);
+        
+        btnExportar.disabled = false;
+        btnExportar.textContent = '📄 EXPORTAR PDF';
+        btnExportar.style.background = '#22c55e';
+        btnExportar.textContent = '✅ PDF EXPORTADO';
+        setTimeout(function() {
+            btnExportar.style.background = '#FF0969';
+            btnExportar.textContent = '📄 EXPORTAR PDF';
+        }, 3000);
+        
+    } catch (e) {
+        console.error('Error al generar PDF:', e);
+        alert('❌ Error al generar el PDF: ' + e.message);
+        btnExportar.disabled = false;
+        btnExportar.textContent = '📄 EXPORTAR PDF';
+        btnExportar.style.background = '#FF0969';
+    }
+}
